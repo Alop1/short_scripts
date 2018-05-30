@@ -53,6 +53,10 @@ class Test_name_recognizer():
         words = text.split()
         return words
 
+
+
+
+
     def add_payload_zeros(self,  ascii_word):
         length_difference = self.longest_word - len(ascii_word)
         listofzeros = [0] * length_difference
@@ -93,16 +97,29 @@ def main():
 
     tab_test_names = test_names.split()
     test_name_supervosor = [1] * len(tab_test_names)
-    ranadom_words = ''
+    print "len(tab_test_names)", len(tab_test_names)
+    print "test_name_supervosor", len(test_name_supervosor)
+    other_words = ''
+    with open("other_names.txt", 'r') as f:
+        for line in f:
+            other_words += line
+    print other_words[0]
+
+    ranadom_words = other_words
     ranadom_words_tab = ranadom_words.split()
+    print ranadom_words_tab[-1]
+    print "len ranadom_words_tab", len(ranadom_words_tab)
+
     ranadom_words_supervisor = [0] * len(ranadom_words_tab)
+    print "len ", len(ranadom_words_tab)
+    print "len super ", len(ranadom_words_supervisor)
 
 
     text = 'to sa dane testowe, ktore bede zamienione na slowa a pozniej na znaki23 hkjhdsa Automated_eNB__Capacity_RRC_Paging__FSMF_BW-10 Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_max720_FSMF__BW-5_10_15 Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF_shared_BB_pool__BW Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF_shared_BB_pool__BW-5__UE-1260 '
     # text = 'take e tttt rewq dfgh yhpt cftyu'
     supervisor = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1]
 
-    text = test_names + ranadom_words
+    text = test_names + ' ' +ranadom_words
     supervisor = test_name_supervosor + ranadom_words_supervisor
 
 
@@ -110,8 +127,8 @@ def main():
     tree_test.preper_training_data()
     tree_test.train_clf_tree()
 
-    tree_test.test_data = 'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace' #dodac brakujace zera!!
-    tree_test.test_data = '#'
+    tree_test.test_data = '\"Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_pola\"' #dodac brakujace zera!!
+    #tree_test.test_data = '#'
     tree_test.test_model()
 
 
