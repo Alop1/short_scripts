@@ -132,7 +132,7 @@ def main():
     tree_test.train_clf_tree()
 
     tree_test.test_data = '\"Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_pola\"' #dodac brakujace zera!!
-    tree_test.test_data = 'kot'
+    tree_test.test_data = '\"kot,\"'
     #tree_test.test_data = '#'
     tree_test.test_model()
 
