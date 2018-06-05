@@ -1,4 +1,6 @@
 from sklearn import tree
+import os.path
+import numpy as np
 import sklearn
 #TODO zamienic  testy i commissionigi  na  dane wejsciowe, stworzyc tablice ze slowami(slowa oddziela spacja)-> zamienic kazdy znak w slowie na ascii
 #TODO ustawic do tych  supervisora
@@ -13,6 +15,8 @@ class Test_name_recognizer():
         self.training_data = []
         self.tree_clf = tree.DecisionTreeClassifier()
         self.longest_word = 0
+        self.positive_test = True
+        self.testing_supervisor = []
 
     def find_longest_word(self, words):
         sortedwords = sorted(words, key=len)
@@ -32,18 +36,69 @@ class Test_name_recognizer():
     def train_xxx(self):
         pass
 
-    def preper_test_data(self):
+    def prepare_test_data(self):
         text = self.test_data
-        words = self.split_string_to_words(text)
+        self.string_tests_name = self.test_data[:]
+        if self.isfile(text):
+            print "to jest plik"
+            words = self.read_file(text)
+            print words
+        else:
+            words = self.split_string_to_words(text)
+        self.string_tests_name = words[:]
         self.test_data = self.convert_to_ascii(words)
+
+    def isfile(self, text):
+        return os.path.isfile(text)
+
+    def read_file(self,text):
+        with open(text, 'r') as f:
+            plain_text = ''
+            for line in f:
+                plain_text += line
+        words = self.split_string_to_words(plain_text)
+        self.create_supervisor(words)
+        return words
+
+    def create_supervisor(self, words):
+        sortedwords = sorted(words, key=len)
+        longest_word = len(sortedwords[-1])
+        if self.positive_test == True:
+            self.testing_supervisor = [1] * longest_word
+        else:
+            self.testing_supervisor = [0] * longest_word
+
+    def count_corretnes(self):
+        pass
+
+
+    def present_data(self,prediction_list, data):
+        print "PREZENTACJA DANYCH "
+        for i in xrange(len(prediction_list)):
+            print "slowo ",data[i], "jest testem ", prediction_list[i]
+        pass
+
+
 
     def test_model(self):
         """take diffrent already trained models"""
-        self.preper_test_data()
-        if self.tree_clf.predict(self.test_data):
-            print "to jest test"
-        else:
-            print "to NIE jest test"
+        self.prepare_test_data()
+        data = []
+        data.append(self.test_data)
+        predictions_list = map(self.tree_clf.predict, data)
+        # predictions_list =  predictions_list[0]
+        print list(predictions_list[0])
+        predictions_list = list(predictions_list[0])
+        print predictions_list
+        print len(predictions_list)
+        print len(data[0])
+        data = self.input_data.split()
+        self.present_data(predictions_list, self.string_tests_name)
+        # if self.tree_clf.predict(self.test_data):
+        #     print "to jest test"
+        #
+        # else:
+        #     print "to NIE jest test"
 
 
 
@@ -131,8 +186,11 @@ def main():
     tree_test.preper_training_data()
     tree_test.train_clf_tree()
 
-    tree_test.test_data = '\"Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_pola\"' #dodac brakujace zera!!
-    tree_test.test_data = '\"kot,\"'
+    tree_test.test_data =   '\\"Airscale_BTS_Capacity_Static_Users_840UEs_3cell_4x4MIMO_IRC_24Mbps_UL_111Mbps_DL_20MHz\\'   #dodac brakujace zera!!
+    tree_test.test_model()
+    tree_test.test_data = '\"eNB_Capacity_PTT_user_amount_QCI66_BW-5__UE-120\",'
+    tree_test.test_model()
+    tree_test.test_data = 'tests_positive.txt'
     #tree_test.test_data = '#'
     tree_test.test_model()
 
