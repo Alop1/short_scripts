@@ -9,14 +9,15 @@ import sklearn
 
 
 class Test_name_recognizer():
-    def __init__(self, input_data, supervisor):
+    def __init__(self, input_data, supervisor, pos_or_neg=True):
         self.input_data = input_data
         self.supervisor = supervisor
+        #TODO ustawic mozliwosc wczytania testowych negatywnych danych
         self.test_data = ''
         self.training_data = []
         self.clf = tree.DecisionTreeClassifier()
         self.longest_word = 0
-        self.positive_test = True
+        self.positive_test = pos_or_neg
         self.testing_supervisor = []
 
     def train_clf_tree(self):
@@ -61,7 +62,7 @@ class Test_name_recognizer():
             for line in f:
                 plain_text += line
         words = self.split_string_to_words(plain_text)
-        # self.create_supervisor(words)
+        self.create_supervisor(words)
         return words
 
     def create_supervisor(self, words):
@@ -90,8 +91,21 @@ class Test_name_recognizer():
         print "PREZENTACJA DANYCH "
         for i in xrange(len(prediction_list)):
             print "slowo ",data[i], "jest testem ", prediction_list[i]
+        self.count_corretnes(prediction_list)
 
-    def count_corretnes(self):
+    def count_corretnes(self, preduction_list):
+        if self.positive_test:
+            error_no = preduction_list.count(0)
+            error_ratio = error_no/len(preduction_list)
+            print "#########################################################"
+            print "PREDICTION ERROR: ", error_ratio
+            print "#########################################################"
+        else:
+            error_no = preduction_list.count(1)
+            error_ratio = error_no/len(preduction_list)
+            print "#########################################################"
+            print "PREDICTION ERROR: ", error_ratio
+            print "#########################################################"
         pass
 
 
@@ -153,15 +167,15 @@ def main():
     Random_words_set = Training_data("other_names.txt", 0)
     train_data_tl226 = Training_data("training_positive_tl226.txt",1)
 
-    text = Random_words_set.training_content + Call_modes_set.training_content + Tests_names001_set.training_content + train_data_tl226.training_content
-    supervisor = Random_words_set.training_supervisor + Call_modes_set.training_supervisor + Tests_names001_set.training_supervisor +  train_data_tl226.training_supervisor
+    training_data = Random_words_set.training_content + Call_modes_set.training_content + Tests_names001_set.training_content + train_data_tl226.training_content
+    supervisor = Random_words_set.training_supervisor + Call_modes_set.training_supervisor + Tests_names001_set.training_supervisor + train_data_tl226.training_supervisor
 
-    #prepare model
-    tree_test =  Test_name_recognizer(text, supervisor)
+    # prepare decision tree model
+    tree_test = Test_name_recognizer(training_data, supervisor)
     tree_test.prepare_training_data()
     tree_test.train_clf_tree()
 
-    #TESTOWANIE MODELU
+    # TESTOWANIE MODELU
     tree_test.test_data = '"Airscale_BTS_Capacity_Static_Users_840UEs_3cell_4x4MIMO_IRC_24Mbps_UL_111Mbps_DL_20MHz'
     tree_test.test_model()
     tree_test.test_data = '"eNB_Capacity_PTT_user_amount_QCI66_BW-5__UE-120",'
@@ -175,33 +189,24 @@ def main():
     tree_test.test_data = 'tests_negative.txt'
     tree_test.test_model()
 
-    #prepare RF model
-    random_forest = Test_name_recognizer(text, supervisor)
+    # prepare RF model
+    random_forest = Test_name_recognizer(training_data, supervisor)
     random_forest.prepare_training_data()
     random_forest.train_clf_random_forest()
 
+    # test RF model
     random_forest.test_data = '"Airscale_BTS_Capacity_Static_Users_840UEs_3cell_4x4MIMO_IRC_24Mbps_UL_111Mbps_DL_20MHz'
     random_forest.test_model()
-
     random_forest.test_data = '\'Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz,\''
     random_forest.test_model()
-
     random_forest.test_data = 'tests_positive_168.txt'
     random_forest.test_model()
-    print random_forest.clf.predict_proba(random_forest.test_data)
-
+    # print random_forest.clf.predict_proba(random_forest.test_data)
     random_forest.test_data = '\'Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz,\''
     random_forest.test_model()
-    print random_forest.clf.predict_proba(random_forest.test_data)
-
+    # print random_forest.clf.predict_proba(random_forest.test_data)
     random_forest.test_data = 'tests_negative.txt'
     random_forest.test_model()
-    print
-
-
-
-
-
 
 
 
