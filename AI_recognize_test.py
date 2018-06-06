@@ -89,8 +89,8 @@ class Test_name_recognizer():
 
     def present_data(self,prediction_list, data):
         print "PREZENTACJA DANYCH "
-        for i in xrange(len(prediction_list)):
-            print "slowo ",data[i], "jest testem ", prediction_list[i]
+        # for i in xrange(len(prediction_list)):
+        #     print "slowo ",data[i], "jest testem ", prediction_list[i]
         self.count_corretnes(prediction_list)
 
     def count_corretnes(self, preduction_list):
@@ -99,13 +99,13 @@ class Test_name_recognizer():
             error_ratio = error_no/len(preduction_list)
             print "#########################################################"
             print "PREDICTION ERROR: ", error_ratio
-            print "#########################################################"
+            print "#########################################################\n"
         else:
             error_no = preduction_list.count(1)
             error_ratio = error_no/len(preduction_list)
             print "#########################################################"
             print "PREDICTION ERROR: ", error_ratio
-            print "#########################################################"
+            print "#########################################################\n"
         pass
 
 
