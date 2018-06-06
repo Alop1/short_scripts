@@ -13,10 +13,18 @@ class Test_name_recognizer():
         self.supervisor = supervisor
         self.test_data = ''
         self.training_data = []
-        self.tree_clf = tree.DecisionTreeClassifier()
+        self.clf = tree.DecisionTreeClassifier()
         self.longest_word = 0
         self.positive_test = True
         self.testing_supervisor = []
+
+    def train_clf_tree(self):
+        self.clf.fit(self.training_data, self.supervisor)
+
+    def train_clf_random_forest(self):
+        #todo stworzyc rnadom fores super
+        #todo wytrenowac go
+        pass
 
     def find_longest_word(self, words):
         sortedwords = sorted(words, key=len)
@@ -28,13 +36,6 @@ class Test_name_recognizer():
         self.find_longest_word(words)
         self.is_training_data_eq_supervisor(words)
         self.training_data = self.convert_to_ascii(words)
-
-    def train_clf_tree(self):
-        self.tree_clf.fit(self.training_data, self.supervisor)
-
-
-    def train_xxx(self):
-        pass
 
     def prepare_test_data(self):
         text = self.test_data
@@ -51,7 +52,7 @@ class Test_name_recognizer():
     def isfile(self, text):
         return os.path.isfile(text)
 
-    def read_file(self,text):
+    def read_file(self, text):
         with open(text, 'r') as f:
             plain_text = ''
             for line in f:
@@ -68,25 +69,12 @@ class Test_name_recognizer():
         else:
             self.testing_supervisor = [0] * longest_word
 
-    def count_corretnes(self):
-        pass
-
-
-    def present_data(self,prediction_list, data):
-        print "PREZENTACJA DANYCH "
-        for i in xrange(len(prediction_list)):
-            print "slowo ",data[i], "jest testem ", prediction_list[i]
-        pass
-
-
-
     def test_model(self):
         """take diffrent already trained models"""
         self.prepare_test_data()
         data = []
         data.append(self.test_data)
-        predictions_list = map(self.tree_clf.predict, data)
-        # predictions_list =  predictions_list[0]
+        predictions_list = map(self.clf.predict, data)
         print list(predictions_list[0])
         predictions_list = list(predictions_list[0])
         print predictions_list
@@ -94,23 +82,20 @@ class Test_name_recognizer():
         print len(data[0])
         data = self.input_data.split()
         self.present_data(predictions_list, self.string_tests_name)
-        # if self.tree_clf.predict(self.test_data):
-        #     print "to jest test"
-        #
-        # else:
-        #     print "to NIE jest test"
 
+    def present_data(self,prediction_list, data):
+        print "PREZENTACJA DANYCH "
+        for i in xrange(len(prediction_list)):
+            print "slowo ",data[i], "jest testem ", prediction_list[i]
 
+    def count_corretnes(self):
+        pass
 
 
     ###########################################
     def split_string_to_words(self, text):
         words = text.split()
         return words
-
-
-
-
 
     def add_payload_zeros(self,  ascii_word):
         length_difference = self.longest_word - len(ascii_word)
@@ -119,7 +104,6 @@ class Test_name_recognizer():
         return ready_ascii_word
 
     def convert_to_ascii(self, words):
-
         words_by_letter = self.convert_word_to_char_list(words)
         ascii_rep = []
         for word in words_by_letter:
@@ -138,61 +122,59 @@ class Test_name_recognizer():
         return [list(word) for word in words]
 
     def is_training_data_eq_supervisor(self,words):
-        print len(self.supervisor), len(words)
+        print "#########################################################"
+        print "to training you use", len(self.supervisor), len(words)
+        print "#########################################################"
         if len(self.supervisor) != len(words):
             print len(self.supervisor), len(words)
             raise Exception('blad')
+
+class Training_data:
+    def __init__(self, file_name, pos_or_neg):
+        read_file = ''
+        with open(file_name, 'r') as f:
+            for line in f:
+                read_file += line
+        tab_read_file = read_file.split()
+        read_file += ' '
+        self.training_supervisor = [pos_or_neg] * len(tab_read_file)
+        self.training_content = read_file
 
 
 
 def main():
 
 
-    test_names = '\"Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-5\", \'Automated_eNB_Capacity__Traffic_profile_FSMF_normal_MME_outage__BW-10\', \"Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-10\", \"Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-15\", \"Automated_eNB_Capacity__Traffic_profile_FSMF_normal_no_syslogging__BW-20\",	 \"Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-20\", \"Automated_eNB_Capacity__Traffic_profile_FSMF_normal_long__BW-20\",  \"Automated_eNB_Capacity__Traffic_profile_FSMF_normal_LTE1042__BW-20\", \"Automated_eNB_Capacity__Traffic_profile_FSMF_high_long__BW-20\", \"Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_cell_trace__BW-20\", \"Automated_eNB_Capacity__Traffic_profile_FSMF_high__BW-20\", \"BTS_Capacity_U-Plane_Burst_Load_enabled\", \"BTS_Capacity_U-Plane_Burst_Load_disabled\",  \"BTS_Capacity_HO_Burst_Load_enabled\",  \"BTS_Capacity_HO_Burst_Load_disabled\",   \"Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20\",  \"Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20_X2_update\",  \"Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL\",  \"Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL\",  \"Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace\",  \"Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_and_cell_trace\",   \"Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv4\",  \"Automated_eNB_LTE1771_Dual_UPlane_Performace_Handovers\",  \"Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv4_single_interface\",  \"Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv6\",  \"BTS_Capacity_LTE1788_Automatic_Access_Class_Barring_-_Basic_scenario_-_ACB_start\",   \'Dual_UPlane_Call_Model_2cables_IPv4\',  \'Dual_UPlane_Handovers_2cables_IPv4\',  \'Dual_UPlane_Call_Model_2cables_IPv6\',  \'Dual_UPlane_Call_Model_1cable_IPv4_single\',  \'Traffic_profile_FSMF_normal__BW-5\',  \'Traffic_profile_FSMF_normal__BW-10\',  \'Traffic_profile_FSMF_normal_MME_outage__BW-10\',                                                        \'Traffic_profile_FSMF_normal__BW-15\',  \'Traffic_profile_FSMF_normal__BW-20\',  \'Traffic_profile_FSMF_normal_no_syslogging__BW-20\',                                                 \'Traffic_profile_FSMF_normal_with_cell_trace__BW-20\',                                                  \'Traffic_profile_FSMF_normal_LTE1042__BW-20\',                                                        \'Traffic_profile_FSMF_high__BW-20\',                                                                      \'Traffic_profile_FSMF_normal_long__BW-20\',  \'Traffic_profile_FSMF_high_long__BW-20\',  \'Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20\',                                                                          \'Traffic_profile_FSMF_extreme_high_intraENB_HO_ACB\',                                                  \'BTS_Capacity_SR_Burst_Load_OVL_control_enabled\',  \'BTS_Capacity_SR_Burst_Load_OVL_control_disabled\',  \'BTS_Capacity_HO_Burst_Load_OVL_control_enabled\',  \'BTS_Capacity_HO_Burst_Load_OVL_control_disabled\',  \'Traffic_profile_FSMF_extreme_high__BW-20\',  \'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL\',                                 \'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL\',                                    \'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace\',                  \'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_and_cell_trace\',                     \'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace\',  \'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_and_cell_trace\',  \'Traffic_profile_FSMF_extreme_high_with_SDL__BW-20_short\',  \'Traffic_profile_FSMF_extreme_high_intraENB_HO_ACB_short\',  \'Traffic_profile_FSMF_normal__BW-20_new\', '
-    tab_test_names = test_names.split()
-    new_data = ''
-    with open('tests_names_001.txt', 'r') as f:
-        for line in f:
-            new_data += line
-    tab_new_data = new_data.split()
-    new_data += ' '
-
-    new_data_supervosor = [1] * len(tab_new_data)
-    test_name_supervosor = [1] * len(tab_test_names)
-
-
-    other_words = ''
-    with open("other_names.txt", 'r') as f:
-        for line in f:
-            other_words += line
-
-    ranadom_words = other_words
-    ranadom_words_tab = ranadom_words.split()
-
-
-    ranadom_words_supervisor = [0] * len(ranadom_words_tab)
-
+    Call_modes_set = Training_data("train_data_call_models.txt", 1)
+    Tests_names001_set = Training_data("tests_names_001.txt", 1)
+    Random_words_set = Training_data("other_names.txt", 0)
 
 
     text = 'to sa dane testowe, ktore bede zamienione na slowa a pozniej na znaki23 hkjhdsa Automated_eNB__Capacity_RRC_Paging__FSMF_BW-10 Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_max720_FSMF__BW-5_10_15 Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF_shared_BB_pool__BW Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF_shared_BB_pool__BW-5__UE-1260 '
     # text = 'take e tttt rewq dfgh yhpt cftyu'
     supervisor = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1]
 
-    text = test_names + ' ' + new_data + ranadom_words
-    supervisor = test_name_supervosor + new_data_supervosor +ranadom_words_supervisor
-
+    text = Call_modes_set.training_content + Tests_names001_set.training_content + Random_words_set.training_content
+    supervisor = Call_modes_set.training_supervisor + Tests_names001_set.training_supervisor + Random_words_set.training_supervisor
 
     tree_test =  Test_name_recognizer(text, supervisor)
     tree_test.preper_training_data()
     tree_test.train_clf_tree()
 
-    tree_test.test_data =   '\\"Airscale_BTS_Capacity_Static_Users_840UEs_3cell_4x4MIMO_IRC_24Mbps_UL_111Mbps_DL_20MHz\\'   #dodac brakujace zera!!
+    #TESTOWANIE MODELU
+    tree_test.test_data = '"Airscale_BTS_Capacity_Static_Users_840UEs_3cell_4x4MIMO_IRC_24Mbps_UL_111Mbps_DL_20MHz'
     tree_test.test_model()
-    tree_test.test_data = '\"eNB_Capacity_PTT_user_amount_QCI66_BW-5__UE-120\",'
+    tree_test.test_data = '"eNB_Capacity_PTT_user_amount_QCI66_BW-5__UE-120",'
     tree_test.test_model()
     tree_test.test_data = 'tests_positive.txt'
-    #tree_test.test_data = '#'
     tree_test.test_model()
+    tree_test.test_data = '"Airscale_BTS_Throughput_200UEs_3cell_4x4MIMO_IRC_206_245Mbps_DL_TM4_15_20MHz,"'
+    tree_test.test_model()
+    tree_test.test_data = '\'Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz,\''
+    tree_test.test_model()
+    tree_test.test_data = 'tests_negative.txt'
+    tree_test.test_model()
+
 
 
 
