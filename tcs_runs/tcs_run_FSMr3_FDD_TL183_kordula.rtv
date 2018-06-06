@@ -1,0 +1,101 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 0;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17 SP\GRnD\PET\CRT';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL23';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+
+my $sw_version = 'FL00_FSM4_9999_160912_011318'; ##must be on EMSS
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+{-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version,}},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-GENERATE_COMMON_DEVICES}{-CREDENTIALS}{-PASSWORD}    = 'ssp123!!Macro';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'NO';
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "software_update",
+####CALL MODEL 6CELLS
+    # "Commisioning_Call_model_6cells_20MHZ_with_IPHY_xml_change",
+    # "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-5",
+    # "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-10",
+    # "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-15",
+    # "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-20",
+    # "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-20_test2",
+
+###LIQUID CELL CA 20mhz 15mhz
+     "Commisioning_Liquid_2cells_2frig_20MHZ_15MHZ_with_IPHY_xml_change",
+    # "Automated_eNB_Capacity__Throughput_DL_TCP_with_FSMF_FBBC__CA15_20_Liquid_Cell",
+###
+#"BTS_Capacity_configured_CA_UEs_4cells_mixed_BW_config",
+
+# "PARSE_PMSTATS_TEST",
+###TL39
+# "Commisioning_3cells_3FRIG_TL183_20MHZ_with_IPHY_xml_change",
+# "Commisioning_3cells_3FRIG_TL183_20MHZ",
+# "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-20__UE-4500_test",
+    
+
+
+    
+    # "Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF_FBBC__BW-20_UE-1800",
+    #"Automated_eNB_Capacity__VoLTE_1800_UEs_with_50_UEs_UDP_DL_throughput_with_FSMF_FBBA_BW-20",
+    #"Automated_eNB_Capacity__Actively_scheluded_users_DL_with_FSMF_FBBA_4dsp__BW-20",
+    #"Automated_eNB_Capacity__Actively_scheluded_users_UL_with_FSMF_FBBA_4dsp__BW-20",
+    #"Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_DL_4dsp_BW-20",
+    #"Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_UL_4dsp_BW-20",
+    #"Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_3_DRBs_DL_FSMF_FBBx_BW-20",
+    #"Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_3_DRBs_UL_FSMF_FBBx_BW-20",
+    #"Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_UL_35mbps_FSMF_FBBC_BW-20",
+    #"Automated_eNB_Capacity__Intra_eNB_handover_performance_with_high_data_FSMF_FBBx__BW-20__RATE-90",
+# "Commisioning_3cells_15MHZ",
+    # "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-15__UE-3750",
+    # "Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF_FBBC_BW-15_UE-1500",
+    # "Automated_eNB_Capacity__VoLTE_1500_UEs_with_50_UEs_UDP_DL_throughput_with_FSMF_FBBA_BW-15",
+    # "Automated_eNB_Capacity__Actively_scheluded_users_DL_with_FSMF_FBBA_4dsp__BW-15",
+    # "Automated_eNB_Capacity__Actively_scheluded_users_UL_with_FSMF_FBBA_4dsp__BW-15",
+    # "Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_DL_4dsp_BW-15",
+    # "Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_UL_4dsp_BW-15",
+
+# "Commisioning_3cells_10MHZ",
+    # "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-10__UE-3000",
+    # "Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_DL_with_FSMF_14UE_28TB__BW-10",
+    # "Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_14UE_14TB__BW-10",
+
+# "Commisioning_3cells_5MHZ",
+    # "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-5__UE-2520",
+    
+# "Commisioning_3cells_20MHZ_UL_50_to_1500_Tput",
+    # "Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_DL_120mbps_FSMF_FBBC_BW-20",
+
+# "Commisioning_3cells_15MHZ_UL_50_to_1250_Tput",
+    # "Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_DL_UL_FSMF_FBBx_BW-15",
+    
+# "Commisioning_3cells_5MHZ_Tput",
+# "Commisioning_3cells_10MHZ_DL_50_to_1000_Tput",
+# "Commisioning_3cells_15MHZ_DL_50_to_1250_Tput",
+# "Commisioning_3cells_20MHZ_DL_50_to_1500_Tput",
+# "Commisioning_3cells_5MHZ_DL_50_to_840_Tput",
+# "Commisioning_3cells_10MHZ_UL_50_to_1000_Tput",
+# "Commisioning_3cells_5MHZ_UL_50_to_840_Tput",
+###TL39
+
+##OTHERS
+# 'call_model_20MHz',
+# "Commisioning_6cells_20MHZ_with_IPHY_xml_change", 
+# "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-15__UE-3750_test_PAF",
+# "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-15__UE-3750_test_PAF",
+# "Automated_eNB__Performance_Total_BTS_Throughput__FSMF_DL_UL_BW-10",
+];
+
+

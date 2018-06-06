@@ -48,7 +48,7 @@
         "Airscale_BTS_Capacity_Static_Users_840UEs_4cell_4x4MIMO_MRC_15MHz",
         "Airscale_BTS_Capacity_Static_Users_600UEs_840UEs_4cell_2x2MIMO_MRC_5MHz_20MHz",
 		 "Airscale_BTS_Capacity_Static_Users_600UEs_840UEs_4cell_2x2MIMO_MRC_5MHz_20MHz",
-	'Airscale_BTS_Capacity_Static_Users_600UEs_840UEs_4cell_2x2MIMO_MRC_5MHz_20MHz_with_PCMD',	 
+	"Airscale_BTS_Capacity_Static_Users_600UEs_840UEs_4cell_2x2MIMO_MRC_5MHz_20MHz_with_PCMD",	 
       "Airscale_BTS_Capacity_Static_Users_600UEs_4cell_2x2MIMO_MRC_10MHz",
 
 

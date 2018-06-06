@@ -1,0 +1,60 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 0;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'Trunk_CRT\GRnD\PET\CRT2';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL080';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'Test Cases\FD-LTE WMP\Automation test cases';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-PERFORM_ENB_COMMISSIONING}{-CHECK_RRH_ALARM_FOR_SWUPDATE} = 'NO';
+
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'NO'; # RTPM set to YES is disabling COLLECT_PMSTATS | Disable collecting RTPMstats
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COPY_SCENARIO_FILE}              = 'YES';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-COLLECT_TTI}{-COPY_PARSER_FILES}                 = 'YES';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-COLLECT_TTI}{-TTI_SCRIPT_DIR}	 = '/home/lmts/tti/';	# Used default one
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-PRECHECK_UE_SIM_ENV}{-RTG}{-FEATURE}{-CHECK_ATTACH}{-SCENARIO}   = 'attach';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-PRECHECK_UE_SIM_ENV}{-RTG}{-FEATURE}{-CHECK_ATTACH}{-COPY_SCENARIO_FILE}= 'NO';
+
+my $sw_version = 'FL00_FSM3_9999_170409_036577'; ##must be on EMSS 
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+
+{-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version,}},
+];
+ $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-COLLECT_TTI}{-TTI_SCRIPT_DIR}	 = '/home/lmts/tti/';	# Used default one
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'YES';
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "software_update",
+
+# your test execution
+# Call Modele, manual Commisioning
+
+#"Commissionning_for_Traffic_profile_FSMF_high__BW-20",
+#"Commissionning_BTS_ENB81_1cable_1cell",
+#	"Traffic_profile_FSMF_high__BW-20",
+
+  "Cloud_commissioning_bts",
+#   "Cloud_Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_DL_with_FSMF_20UE_28TB__BW-20",
+#   "Cloud_Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_20UE_20TB__BW-20",
+#   "Cloud_Automated_eNB_Capacity__Maximum_DRB_amount_with_FSMF_actHighRrc=False__BW-20__DRBSum-7560",
+#   "Cloud_Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF__BW-20__RATE-90",
+#   "Cloud_Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF__BW-20__RATE-150",
+
+];
+
+

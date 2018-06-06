@@ -1,0 +1,290 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+# require "/home/stasiuk/auto/sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+
+# ##FL17ASP1###
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17A SP1\GRnD\PET\CRT';
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL11 Traffic models';
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+# my $release = "FL17ASP1";
+
+##FL18###
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'L18 OMS\GRnD\PET\CRT';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL193 Traffic models';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+my $release = "FL18";
+
+my $sw_version = 'FL18_ENB_0000_000301_000116'; ##must be on EMSS
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+{-TC => "Reconfigure_EPCSIM_standard", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './configs/epc_cfg_3cells_call_models.lua', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Reconfigure_EPCSIM_2MMEs", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './configs/epc_cfg_3cells_call_models_2MMEs_sim.lue', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Reconfigure_EPCSIM_maxLNRELs", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './configs/epc_cfg_3cells_call_models_with_x2_64x6.lua', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "software_update" , -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version, -USE_NEWEST_BUILD => 'YES', -RELEASE => $release}},
+
+{
+    -TC => "Traffic_profile_FSMF_extreme_high_intraENB_HO_ACB_longer", -TP => 'PAF',
+    -EXECUTION_PARAMS => {
+        -TEST => {
+           -DURATION => 1*82*60,
+        },
+        -FEATURE_FLAG => {
+            -APPEND_SWCONFIG => 'YES',
+			-MODIFY_VENDOR_FILE => 'YES',
+        },
+        -DETAILS_PARAMS => {
+            -START_SCENARIO             => {
+                -SCENARIO_NAME              => 'Traffic_profile_FSMF_extreme_high_intraENB_HO_ACB_longer.scn',
+                -SCENARIO_START_OFFSET      => -5,
+            },
+			-PERFORM_ENB_COMMISSIONING => {
+                -FILES                          => ['CRT_call_models_BW-20_ACB.xml',],
+            },
+            -PREPARE_UE_SIM_ENV => {
+                -LMTS => {
+                    -FEATURE => {
+                        -LMTS_CONFIG_UPDATE => {
+                            -SOURCE_FILE        => 'lmts3cells_call_models.ini',
+                        },
+                    },
+                },
+            },
+            -UPLOAD_TO_REP_PORTAL       => {
+
+                -TC_QC                      => "[1][1.0] BTS Capacity_LTE1788 Automatic Access Class Barring - Basic scenario - ACB start",
+            },
+            -GENERATE_KPI_EXCEL => {
+                -KPI_TARGETS                    => {-LTE_PERCENTAGE_TIME_ACB_FL17SP => 1},
+				-SKIP_FIRST => 0,
+				-SKIP_N_FIRST => 0,
+				-SKIP_LAST => 0,
+				-SKIP_N_LAST => 0,
+				-TAKE_N_LAST => 5,
+            },
+			-APPEND_SWCONFIG => {
+				-SWCONFIG_GIT_FILE              => 'swconfig_default_FSMr3.txt',
+				-REBOOT_AFTER_SWCONFIG_CHANGE   => 'YES',
+			},
+            -RESTART_EPCSIM => {
+                -EPCSIM_SIM_CONFIG             => 'epc_cfg_3cells_call_models.lua', # sstlib_scripts\PAF\CONF\EPCSIM\PET\<testline_name>\
+                -EPCSIM_UE_CONFIG              => undef,
+            },
+			-MODIFY_VENDOR_FILE => {
+				-ENB_DEVICE_NAME => ['ENB1_FCT'],
+				-ATTRIBUTES_TO_MODIFY => { ovlThrOvl1 => '5', ovlThrOvl2 => '15' },
+				-REBOOT_AFTER_SUCCESSFUL_MODIFICATION => 'YES',
+            },
+        },
+        -POST => {
+            -VALIDATION_RULESETS => ['LTE1788_Access_Class_Barring'],
+        },
+	 },
+},
+
+
+
+{
+    -TC => "Traffic_profile_FSMF_high__BW-20_short", -TP => 'PAF',
+    -EXECUTION_PARAMS => {
+        -TEST => {
+           -DURATION => 1*21*60,
+        },
+        -FEATURE_FLAG => {
+            # -PREPARE_UE_SIM_ENV => 'YES',  - inaczej check attach
+            # -QUICK_START => 'YES',
+            -APPEND_SWCONFIG => 'NO',
+        },
+        -DETAILS_PARAMS => {
+            -START_SCENARIO             => {
+				-SCENARIO_NAME              => 'Traffic_profile_FSMF_high__BW-20_dluzsze_SRy.scn',
+                -SCENARIO_START_OFFSET      => -5,
+            },
+			-PERFORM_ENB_COMMISSIONING => {
+                -FILES                          => ['CRT_call_models_FL17SP_BW-20_high.xml',],
+            },
+            -PREPARE_UE_SIM_ENV => {
+                -LMTS => {              
+                    -FEATURE => {
+                        -LMTS_CONFIG_UPDATE => {
+                            -SOURCE_FILE        => 'lmts3cells_call_models.ini', 
+							#-SOURCE_FILE        => 'lmts_3plus1cells_call_models_CRT_FSMF11.ini',
+                        },
+                    },
+                },
+            },
+            -UPLOAD_TO_REP_PORTAL       => {
+             
+                -TC_QC                      => "",
+            },
+            -GENERATE_KPI_EXCEL => {
+				-KPI_TARGETS                    => {-AVG_MCU_LOAD__FSMF__FCM_high => 0, -AVG_MCU_LOAD__FSMF__FSP_ALL_high => 0,},
+				-SKIP_FIRST => 1,
+				-SKIP_LAST => 0,
+				-SKIP_N_FIRST => 0,
+				-SKIP_N_LAST => 0,
+				-TAKE_N_FIRST => 0,
+				-TAKE_N_LAST => 2
+            },  
+			-APPEND_SWCONFIG => {        
+				-SWCONFIG_GIT_FILE              => 'swconfig_no_syslogging_FSMr3.txt',
+				-REBOOT_AFTER_SWCONFIG_CHANGE   => 'YES',
+			},
+            -RESTART_EPCSIM => {
+                -EPCSIM_SIM_CONFIG             => 'epc_cfg_3cells_call_models.lua', # sstlib_scripts\PAF\CONF\EPCSIM\PET\<testline_name>\
+				#-EPCSIM_SIM_CONFIG             => 'epc_cfg_TL11_LTE1042.lua', 
+                -EPCSIM_UE_CONFIG              => undef,
+                #-EPCSIM_PATH       => '/home/EPCSim/',
+                #-EPCSIM_CONFIG_PATH=> '/home/EPCSim/config_files/',
+                #-EPCSIM_SCRIPT_PATH=> '/home/EPCSim/config_files/',
+            },
+        },
+        -POST => {        
+            -VALIDATION_RULESETS => ['Automated_eNB_Capacity__Traffic_profile_FSMF_high__BW_20_KPI_CRT','Success_rate_KPIs','CPU_FSMF_2','Automated_eNB_Capacity__Traffic_profile_FSMF_high__BW_20_counters_FL16A'],
+			-MEASUREMENT_START => 30,
+			-MEASUREMENT_END => 30,
+        },       
+	 },
+},
+
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}              = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}                 = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}                    = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-APPEND_SWCONFIG}                    = 'NO';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-GENERATE_COMMON_DEVICES}{-CREDENTIALS}{-PASSWORD}    = 'ssp123!!Macro';
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "software_update",
+
+
+		
+
+######	BW-5 
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-5",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-5",
+	
+######  BW-10
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_MME_outage__BW-10",
+	# 'Automated_eNB_Capacity__Traffic_profile_FSMF_normal_MME_outage__BW-10',
+# 'Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-10',
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-10",
+	
+######  BW-15
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-15",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-15",
+	
+######  BW-20
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_no_syslogging__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_no_syslogging__BW-20",	
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-20",
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_long__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_long__BW-20", 
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_LTE1042__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_LTE1042__BW-20",
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_high_long__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_high_long__BW-20",
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_cell_trace__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_cell_trace__BW-20",
+	
+######  BURST_LOAD
+"Commissionning_for_BTS_Capacity_U-Plane_Burst_Load_enabled",
+	"BTS_Capacity_U-Plane_Burst_Load_enabled",
+# "Commissionning_for_BTS_Capacity_U-Plane_Burst_Load_disabled",
+	# "BTS_Capacity_U-Plane_Burst_Load_disabled",
+# "Commissionning_for_BTS_Capacity_HO_Burst_Load_enabled",
+	# "BTS_Capacity_HO_Burst_Load_enabled",
+# "Commissionning_for_BTS_Capacity_HO_Burst_Load_disabled",
+	# "BTS_Capacity_HO_Burst_Load_disabled", 
+
+######  LNRELS
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20_X2_update",
+	
+######  SDL
+# "Commissionning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL",
+	# "Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL",
+# "Commissionning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL",
+	# "Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL",
+	
+######  SDL + CELL_TRACE
+# "Commisioning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace",
+	# "Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace",
+# "Commissionning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_and_cell_trace",
+	# "Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_and_cell_trace", 
+
+######  DUAL_UPLANE
+# "Commissionning_for_Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv4",
+	# "Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv4",
+	# "Automated_eNB_LTE1771_Dual_UPlane_Performace_Handovers",
+# "Commissionning_for_Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv4_single_interface", 
+	# "Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv4_single_interface",
+# "Commissionning_for_Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv6",
+	# "Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv6",
+
+###### COMMISIONINGI DO ENB2 NA RAZIE NIE DZIAŁAJĄ TAK JAK POWINNY (DUAL_UPLANE)
+# "Commissionning_for_Traffic_profile_6cells_ENB2",     
+# "Commissionning_for_Traffic_profile_6cells_1cable_ENB2",
+# "Commissionning_for_Traffic_profile_6cells_2cable_IPV6_ENB2", 
+	      
+###### ACB 
+# "Commissionning_for_BTS_Capacity_LTE1788_Automatic_Access_Class_Barring_-_Basic_scenario_-_ACB_start", 
+	# "BTS_Capacity_LTE1788_Automatic_Access_Class_Barring_-_Basic_scenario_-_ACB_start", 
+
+	   
+
+####### GUIDE	   
+#Przy commisioningach ręcznych na BTSsitemanager patrz żeby brać commisioning z katalogu FL18 
+#Testy BW-5,10,15,20 + BURST_LOAD puść na początku, zawsze przechodzą, dlatego masz je z głowy
+#Ogólnie Dawid przerzucił moje TL do makro i pare rzeczy się pozmieniało
+#W kilku testach może być problem z KPI "ATTACH_DETACH_RATE", ma wartość 0.3 zamiast 0.33. Z reguły to passuj bo ten sam KPI tylko na innej cellce ma wtedy wartość 0.4 i wszystko sie zgadza
+#test dual_uplane_single----commisioningi to TRS.xml
+#czasem mogą sie nie zebrać countery "processor_load|FSP CPU, olej to, bo to jest błąd w walidacjach, część już usunąłem, ale może się jeszcze zdarzyć
+
+
+#Test "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20"
+	#----zrób commisioning ręcznie (CRT_call_models_BW-20_max_LNRELs.xml) + lmts3cells_call_models.ini + epc_cfg_3cells_call_models_with_x2_64x6.lua
+	#----następnie wejdź na główną WS(TL193/TL11) i odpal skrypt sprawdzający sąsiedztwa (alias "lnrels")
+	#----po zestawieniu 65 sąsiedztw odpal testline_name
+#Test "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20_X2_update"
+	#----zrób commisioning ręcznie (CRT_call_models_BW-20_max_LNRELs.xml) + lmts3cells_call_models.ini +  epc_cfg_tl16277_X2.lua
+	#----następnie wejdź na główną WS(TL193/TL11) i odpal skrypt sprawdzający sąsiedztwa (alias "lnrels")
+	#----po zestawieniu 65 sąsiedztw odpal test6.lua (skrypt generujący X2, ścieżka: /home/lmts/EPCSim/instance_7_X2Case/test6.lua)
+	#----możesz już spokojnie odpalać test6
+#Test ACB puszczaj jako ostatni, ponieważ zmienia pliki konfiguracyjne, po których trzeba zrobić sw_update (można zmienić je spowrotem ręcznie--onenote Roberta) 	   
+#Testy DUAL_UPLANE---commisioningi rób ręcznie, bo automaty do zmiany konfiguracji na ENB2 robią dodatkowo sw_update na niej, pewnie to kwestia flagi, ale nie mialem czasu tego zrobic
+#Testy SDL + CELL_TRACE---Sławek osiński naprawia porty
+#Testy SDL---wystawione Pronto, Pronto Roberta:https://pronto.int.net.nokia.com/pronto/problemReportSearch.html?freeTextdropDownID=prId&searchTopText=PR316091&HomeFlag=true
+
+	   
+	   
+	   
+	   
+
+	
+	
+	
+
+####### Test odpalamy, gdy na eNB zestawi się 65 aktywnych sąsiedztw, czyli  gdy komenda na eNB (FCT) 'grep -c 'x2LinkStatus">available' /flash/config/SCFC_*.xml' na eNB zwróci 65 #######
+####epc_cfg_TL11_with_x2_64x6.lua
+
+ # 'Reconfigure_EPCSIM_maxLNRELs',
+	]

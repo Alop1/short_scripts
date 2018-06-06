@@ -1,0 +1,327 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17A\GRnD\PET\CRT';
+
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17A SP1\GRnD\PET\CRT';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'L18 OMS\GRnD\PET\CRT';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Airscale TL1069';
+
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'FL17A\FL17A MP CRT\PET CRT\PET_KRA';
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT_PET_KRA_AIRSCALE_TL1013';
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+
+my $sw_version = 'FL18_ENB_0000_000148_000000'; ##must be on EMSS
+# my $sw_version = 'FL17A_ENB_1000_000637_000000'; ##must be on EMSS
+# my $release = "FL17ASP1";
+my $release = "FL18";
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+{-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version,}},
+{-TC => "newest_software_update" , -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version, -USE_NEWEST_BUILD => 'YES', -RELEASE => $release}},
+{-TC => "Turn_on_TL1013", -TP => 'power_switch_state_tp', -EXECUTION_PARAMS => {-PORT => 4, -STATE => 'ON'}},
+{-TC => "Turn_off_TL1013", -TP => 'power_switch_state_tp', -EXECUTION_PARAMS => {-PORT => 4, -STATE => 'OFF'}},
+{
+    -TC => "Commissionning_for_Clocky", -TP => 'FLEXI_RECONFIG',
+    -EXECUTION_PARAMS => {
+                -IPHY_XML => ['iphy-4frig-4cells-iphy1.xml','iphy-4frig-4cells-iphy2.xml','iphy-4frig-4cells-iphy3.xml'],
+                -CONFIG_FILE_NAME =>   'Commissioning_IAV_KRA_TL1013_for_Clocky.xml', # tmp
+                -IPHY_EGATE_CONFIG_FILE => 'sanity_fsm189_12cells_3iphy_Clocky.lua', # tmp
+                -SCFC_SWAP => 1,
+                },
+},
+{
+    -TC => "Commissionning_for_prepare_nb_iot", -TP => 'FLEXI_RECONFIG',
+    -EXECUTION_PARAMS => {
+                -IPHY_XML => ['iphy-fxed-3cells-2tx2rx.xml'],#'iphy_0cells.xml','iphy_0cells.xml'],
+                -CONFIG_FILE_NAME =>   'Commissioning_IAV_KRK_TL078_FDEX_3cells_normal1_nb_and_catm_enabled.xml',
+                -IPHY_EGATE_CONFIG_FILE => 'configuration_for_NB_IoT_UEs_3_Inband_cells.lua',
+                -SCFC_SWAP => 1,
+                },
+},
+];
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-PERFORM_ENB_COMMISSIONING}{-CHECK_RRH_ALARM_FOR_SWUPDATE} = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_IPHY_PERIODIC_STATS}     = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PRECHECK_UE_SIM_ENV}              = 'NO';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-GENERATE_COMMON_DEVICES}{-CREDENTIALS}{-PASSWORD}    = 'ssp123!!Macro';
+
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Airscale TL1069';
+$::RTV{LAUNCHER}->{TCS} = [
+##########################
+######### tests
+    #  'Commissionning_for_AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__2xULCoMP__Max_Throughput__1200UEs',
+    #      'AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__2xULCoMP__Max_Throughput__1200UEs',
+    #  'Commissionning_for_AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__Max_Throughput__1200UEs',
+        #  'AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__Max_Throughput__1200UEs',
+    #  'Commissionning_for_AirScale__LTE3615__2xBBPool__6x20MHz_2x2MIMO_6x10MHz_4x4MIMO__Max_Thr__900UEs',
+    #      'AirScale__LTE3615__2xBBPool__6x20MHz_2x2MIMO_6x10MHz_4x4MIMO__Max_Thr__900UEs',
+######### end of tests
+##########################
+# "wait_for_build_on_emss",
+# "software_update",
+# "newest_software_update",
+#"Turn_off_TL1013",
+# "Commissionning_for_Clocky",
+# ]; my $a =[
+########################################
+####       ######  #         ##    ###
+####       #       #        # #   #   #
+####       ######  #       #  #    ###
+####       #       #          #   #   #
+####       #       ######     #    ###
+########################################
+
+##################################################
+####       ######  #         ##    ###       #
+####       #       #        # #   #   #     # #
+####       ######  #       #  #    ###     #   #
+####       #       #          #   #   #   #######
+####       #       ######     #    ###   #       #
+###################################################
+##################################################
+####       ######  #         ##   #####      #
+####       #       #        # #      #      # #
+####       ######  #       #  #     #      #   #
+####       #       #          #    #      #######
+####       #       ######     #   #      #       #
+###################################################
+#########################################################################
+####       ######  #         ##   #####      #       ###     #####     ##
+####       #       #        # #      #      # #     #        #    #   # #
+####       ######  #       #  #     #      #   #      #      #####   #  #
+####       #       #          #    #      #######       #    #          #
+####       #       ######     #   #      #       #   ###     #          #
+#########################################################################
+
+#############################################################
+######                  Capacity tests                      #
+#############################################################
+
+#      'Commissionning_for_AirScale_LTE2733_1xBBPool_1x5MHz_Cell_Capacity_1500UEs',
+#          'AirScale_LTE2733_1xBBPool_1x5MHz_Cell_Capacity_1500UEs',
+#      'Commissionning_for_AirScale_LTE2733_1xBBPool_1x10MHz_Cell_Capacity_1500UEs',
+#          'AirScale_LTE2733_1xBBPool_1x10MHz_Cell_Capacity_1500UEs',
+#
+#      'Commissionning_for_AirScale_LTE2733_2xBBPool_16x5MHz_1_cell_tested_Cell_Capacity_and_Throughput_700UEs_DL',
+#          'AirScale_LTE2733_2xBBPool_16x5MHz_1_cell_tested_Cell_Capacity_and_Throughput_700UEs_DL', #
+#          'AirScale_LTE2733_2xBBPool_16x5MHz_1_cell_tested_Cell_Capacity_and_Throughput_700UEs_UL', #
+#    'Commissionning_for_AirScale_LTE2733_2xBBPool_16x5MHz_1_cell_tested_Cell_Capacity_and_Throughput_700UEs_UL',
+#
+#      'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_420UEs',
+#          'AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_420UEs',
+#     ############  'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_420UEs_on_5_cells',
+#          'AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_420UEs_on_5_cells',
+#      'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_300UEs_120emergency',
+#          'AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_300UEs_120emergency',
+#      'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_6cells_tested_DRB_Capacity_300UEs',
+#          'AirScale_LTE2733_2xBBPool_12x20MHz_6cells_tested_DRB_Capacity_300UEs',
+#
+#      'Commissionning_for_AirScale_LTE2733_1xBBPool_6x20MHz_1_cell_tested_Num_UE_per_TTI_UL_DL',
+#          'AirScale_LTE2733_1xBBPool_6x20MHz_1_cell_tested_Num_UE_per_TTI_DL',
+#          'AirScale_LTE2733_1xBBPool_6x20MHz_1_cell_tested_Num_UE_per_TTI_UL', #sometime one ue not attaching, try to improve scenario
+#          'AirScale_LTE2733_1xBBPool_6x20MHz_1_cell_tested_Num_UE_per_TTI_UL_DL',
+#      'Commissionning_for_AirScale_LTE2733_1xBBPool_8x5MHz_1_cell_tested_Num_UE_per_TTI_UL_DL',
+#          'AirScale_LTE2733_1xBBPool_8x5MHz_1_cell_tested_Num_UE_per_TTI_DL',
+#          'AirScale_LTE2733_1xBBPool_8x5MHz_1_cell_tested_Num_UE_per_TTI_UL',
+#          'AirScale_LTE2733_1xBBPool_8x5MHz_1_cell_tested_Num_UE_per_TTI_UL_DL',
+#      'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_6_cell_tested_Num_UE_per_TTI_UL_DL',
+#          'AirScale_LTE2733_2xBBPool_12x20MHz_6_cell_tested_Num_UE_per_TTI_DL',
+#          'AirScale_LTE2733_2xBBPool_12x20MHz_6_cell_tested_Num_UE_per_TTI_UL',
+#          'AirScale_LTE2733_2xBBPool_12x20MHz_6_cell_tested_Num_UE_per_TTI_UL_DL',
+# # # # # # # # # #
+# # # # # # # # # # #############################################################
+# # # # # # # # # # #####                      Tput tests                       #
+# # # # # # # # # # #############################################################
+# # # # # # # # # # # #
+    #  'Commissionning_for_AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__2xULCoMP__Max_Throughput__1200UEs',
+    # #  ]; my $a =[
+        #  'AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__2xULCoMP__Max_Throughput__1200UEs',
+#      'Commissionning_for_AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__Max_Throughput__1200UEs',
+#          'AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__Max_Throughput__1200UEs',
+#      'Commissionning_for_AirScale__LTE3615__2xBBPool__6x20MHz_2x2MIMO_6x10MHz_4x4MIMO__Max_Thr__900UEs',
+#          'AirScale__LTE3615__2xBBPool__6x20MHz_2x2MIMO_6x10MHz_4x4MIMO__Max_Thr__900UEs',
+#     'Commissionning_for_AirScale__LTE3615__2xBBPool__8x10MHz_8x20MHz_2x2MIMO__Throughput_Discarded_Packets__2310ping_210data_UEs',
+#         'AirScale__LTE3615__2xBBPool__8x10MHz_8x20MHz_2x2MIMO__Thr_Disc_Pack__2310p_210d_UEs',
+#     'Commissionning_for_AirScale__LTE3615__2xBBPool__12x20MHz_2x2MIMO__Throughput_Discarded_Packets__2240ping_280data_UEs',
+#         'AirScale__LTE3615__2xBBPool__12x20MHz_2x2MIMO__Thr_Disc_Pack__2240p_280d_UEs',
+# # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # #############################################################
+# # # # # # # # # # # # # # # #####                          NFTR                       #
+# # # # # # # # # # # # # # # #############################################################
+# # # # # # # # # # # # # #
+# #
+#      "Commissionning_AirScale_BTS_LTE2582_Capacity_2600UEs8cells.xml", # TODO pucch_release with universal configuration, check the difference with old configuration -> probably not connected with universal configuration, also
+#          "AirScale_BTS_LTE2582_Capacity__static_users_2600UEs_CA_2340UEs_nonCA_8cells",
+#          "AirScale_BTS_LTE2582_Capacity__static_users_2600UEs_CA_2340UEs_nonCA_8cells",
+#          "AirScale_BTS_LTE2582_Capacity__static_users_2600UEs_CA_2340UEs_nonCA_8cells",
+#
+#      "Commissionning_AirScale_BTS_LTE2582_Throughput_74UEs_CA_CATM_8Cell_38MBPS_DL_36MBPS_UL_UDP",
+#          "AirScale_BTS_LTE2582_Throughput_74UEs_CA_CATM_8Cell_38MBPS_DL_36MBPS_UL_UDP",
+#         #  ]; my $a =[
+#
+#     "Commissionning_AirScale_BTS_LTE2733_Throughput_186UEs_LTE_M_16Cell_13MBPS_DL_11MBPS_UL_UDP",
+#         "AirScale_BTS_LTE2733_Throughput_186UEs_LTE_M_16Cell_13MBPS_DL_11MBPS_UL_UDP",
+#         "AirScale_BTS_LTE2733_Throughput_290UEs_LTE_M_16Cell_13MBPS_DL_11MBPS_UL_UDP", # 5
+#         "AirScale_BTS_LTE2733_Throughput_290UEs_LTE_M_16Cell_13MBPS_DL_11MBPS_UL_UDP", # 5
+#         "AirScale_BTS_LTE2733_Throughput_290UEs_LTE_M_16Cell_13MBPS_DL_11MBPS_UL_UDP", # 5
+#         "AirScale_BTS_LTE2733_Throughput_290UEs_LTE_M_16Cell_13MBPS_DL_11MBPS_UL_UDP", # 5
+# #         # ]; my $a =[
+# # #
+# # # # # ###############################################
+# # # # # ## 2 new test cases from Oulu, Starts from FL18
+# # # # # ###############################################
+# # # # # # TODO add one minute in tcs_def
+#     'Commissionning_for_AirScale_no_BBPool_4x10MHz_4x5MHz_8_cell_tested_5040UE_per_ABIA',
+#         'AirScale_no_BBPool_4x10MHz_4x5MHz_8_cell_tested_5040UE_per_ABIA', # 4
+    'Commissionning_for_AirScale_LTE3615_1xBBPool_6x10MHz_4x4MIMO_2520UE_per_ABIA',
+        # 'AirScale_LTE3615_1xBBPool_6x10MHz_4x4MIMO_2520UE_per_ABIA', # 5
+# #
+# #########################################################
+# ####  CAT_M and NB-IoT test (starts from FL18SP)
+# #########################################################
+#
+    # "Commissionning_for_prepare_nb_iot",
+#         "Automated_eNB_Performance_Throughput_3cells_BW-10_only_NB_IoT", #'configuration_for_NB_IoT_UEs_3_Inband_cells.lua',
+#         "Automated_eNB_Performance_Throughput_LTE3582_3cells_BW-10_only_CAT-M",
+#         "Automated_eNB_Performance_Throughput_LTE3819_combined_CAT-M_NB_IoT_legacy",
+
+# #########################################################
+##### liquid cell, just for test if works, not reported
+# #########################################################
+    # "Commisioning_Liquid_2cells_2frig_20MHZ_15MHZ_with_IPHY_xml_change",
+        # "Automated_eNB_Capacity__Throughput_DL_TCP_with_FSMF_FBBC__CA15_20_Liquid_Cell",
+#
+#Other nftr, not work, jira to wts
+    # "Commissionning_for_AirScale_LTE2733_1xBBPool_7x5MHz_5x15Mhz_BTS_Capacity_Static_Users", #JIRA
+        # "AirScale_LTE2733_1xBBPool_7x5MHz_5x15Mhz_BTS_Capacity_Static_Users",                #JIRA
+    # "Commissionning_AirScale_BTS_LTE2582_Throughput_50UEs_CA_4CC_4cell_718MBPS_DL_UDP",   #JIRA
+        # "AirScale_BTS_LTE2582_Throughput_50UEs_CA_4CC_4cell_718MBPS_DL_UDP",              #JIRA
+    # "Commissionning_AirScale_BTS_LTE2582_Throughput_50UEs_CA_3CC_9Cell_935MBPS_DL_UDP",   #JIRA
+        # "AirScale_BTS_LTE2582_Throughput_50UEs_CA_3CC_9Cell_935MBPS_DL_UDP",              #JIRA
+
+#########################################################
+#### OLD test from TL1068/TL1012
+###################################
+#######3xABIA 3xCELL 3xFRIG 2x2 and 4x4 configuration
+###################################
+# "Commisioning_with_IPHY_xml_change_3frig_3abia",
+
+    # "Commissionning_for_DL_Throughput__15_20MHz__4x4__TM4",
+        # "Airscale_BTS_Throughput_200UEs_3cell_4x4MIMO_IRC_206_245Mbps_DL_TM4_15_20MHz",  # C1
+    # "Commissionning_for_DL_Throughput__5_15_20MHz__64QAM_4x4__TM9",
+        # "Airscale_BTS_Throughput_200UEs_3cell_4x4MIMO_IRC_162Mbps_214Mbps_DL_TM9_15_20MHz_100UEs_2x2MIMO_MRC_13Mbps_UL_5MHz",  # C3 C4 C8
+    # "Commissionning_for_Capacity_UL_DL_Throughput__20MHz__4x4__2520DRB_3ABIA",
+        # "Airscale_BTS_Capacity_Static_Users_840UEs_3cell_4x4MIMO_IRC_24Mbps_UL_111Mbps_DL_20MHz",  # C5 C6 C7
+    # "Commissioning_for_10_15_20_MHz_TPut_64QAM_UL",
+        # "Airscale_BTS_Throughput_100_200UEs_3cell_2x2MIMO_MRC_33_50_68_Mbps_10_15_20MHz",  # C9 C10 C11
+
+#############################################################
+# 3xABIA 3cells 3xFRHA 2x2 configuration            	    #
+############################################################
+# "Commissionning_for_Case1_Capacity__20MHz__2x2_with_IPHY_xml_change",
+
+    # "Commissionning_for_Case1_Capacity__20MHz__2x2",
+        # "Airscale_BTS_Capacity_Static_Users_840UEs_3cell_2x2MIMO_IRC_20MHz",
+    # "Commissionning_for_Case2_Tput_Model__5MHz__2x2",
+        # "Airscale_BTS_Throughput_100UEs_3cell_2x2MIMO_IRC_32Mbps_DL_10Mbpp_UL_5MHz",
+    # "Commissionning_for_Case3_Tput_Model__10MHz__2x2",
+    #     "Airscale_BTS_Throughput_100UEs_3cell_2x2MIMO_IRC_69Mbps_DL_24Mbps_UL_10MHz",
+    # "Commissionning_for_Case4_Tput_Model__15MHz__2x2",
+    #     "Airscale_BTS_Throughput_200UEs_3cell_2x2MIMO_IRC_104Mbps_DL_37Mbps_UL_15MHz",
+    # "Commissionning_for_Case5_Tput_Model__20MHz__2x2",
+    #     "Airscale_BTS_Throughput_200UEs_3cell_2x2MIMO_IRC_143Mbps_DL_49Mbps_UL_20MHz",
+
+########################################
+## 3xABIA 3cells 3xFRHA from 1xFRHA
+########################################
+
+	# "Commissionning_for_Capacity__5_10MHz",
+    #   "Airscale_BTS_Capacity_Static_Users_600UEs_3cell_2x2MIMO_IRC_5_10MHz", #C1 C2 #NOTE works only sometimes
+    # "Commissionning_for_Capacity_UL_DL_Throughput_15MHz",
+    #     "Airscale_BTS_Capacity_Static_Users_840UEs_Throughput_200UEs_3cell_2x2MIMO_IRC_MRC_37Mbps_UL_104Mbps_DL_15MHz", #C3 C5 C6
+    # "Commissionning_for_Capacity_UL_DL_Throughput_20MHz",
+    #     "Airscale_BTS_Capacity_Static_Users_840UEs_Throughput_200UEs_3cell_2x2MIMO_IRC_MRC_49Mbps_UL_143Mbps_DL_20MHz", #C4 C7 C8
+    # "Commissionning_for_Capacity_and_DL_UL_Tput__15MHz_3ABIA",
+    #     "Airscale_BTS_Capacity_Static_Users_840UEs_3cell_2x2MIMO_MRC_17Mbps_88Mbps_UL_DL_15MHz", # C10 C11
+    # "Commissionning_for_DL_Capacity_660__20MHz_3ABIA",
+        # "Airscale_BTS_Capacity_Static_Users_660UEs_3cell_MRC_2x2MIMO_20MHz_ver1_ver2", # C44 C45
+
+    ####### C46 cannot be combined with C44 C45
+    # "Commissionning_for_DL_Capacity_840__20MHz",
+        # "Airscale_BTS_Capacity_Static_Users_840UEs_1cell_MRC_2x2MIMO_4200RBs_20MHz", #C46
+
+##########################################################
+## 1xABIA 4cells 4xFRIG 4x4 and 2x2 configuration            #
+##########################################################
+# "Commisioning_Capacity__20MHz__4x4_with_IPHY_xml_change",
+
+    # "Commisioning_Capacity__20MHz__4x4__DL_UL",
+        # "Airscale_BTS_Capacity_Static_Users_840UEs_4cell_4x4MIMO_MRC_20MHz",
+        # "Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz",
+        # "Airscale_BTS_UE_per_TTI_UL_4cell_4x4MIMO_MRC_20MHz",
+    # "Commisioning_Capacity__5MHz__4x4",
+        # "Airscale_BTS_Capacity_Static_Users_600UEs_4cell_4x4MIMO_IRC_5MHz",
+    # "Commisioning_Capacity__10MHz__4x4",
+        # "Airscale_BTS_Capacity_Static_Users_600UEs_4cell_4x4MIMO_IRC_10MHz",
+    # "Commisioning_Capacity__15MHz__4x4",
+        # "Airscale_BTS_Capacity_Static_Users_840UEs_4cell_4x4MIMO_MRC_15MHz",
+    #  "Commisioning_Capacity__20MHz__2x2",
+    #     "Airscale_BTS_Capacity_Static_Users_600UEs_840UEs_4cell_2x2MIMO_MRC_5MHz_20MHz",
+    # "Commisioning_Capacity__10MHz__2x2",
+        # "Airscale_BTS_Capacity_Static_Users_600UEs_4cell_2x2MIMO_MRC_10MHz",
+
+################################################################
+#### 1xABIA 3cells 3xFRGP 2x2 Public Safety configuration      # TODO nie działa iphy_xml_update? są jakies nowe głowice FRGP_??
+################################################################
+# "Commisioning_Public_Safety_QCI65_QCI66_20MHz_with_IPHY_xml_change",
+#
+#     # "Commisioning_Public_Safety_QCI65_QCI66_20MHz",
+        # "eNB_Capacity_PTT_user_amount_QCI65_BW-20__UE-360",
+#         "eNB_Capacity_PTT_user_amount_QCI66_BW-20__UE-360",
+#     "Commisioning_Public_Safety_QCI65_QCI66_15MHz",
+#         "eNB_Capacity_PTT_user_amount_QCI65_BW-15__UE-300",
+#         "eNB_Capacity_PTT_user_amount_QCI66_BW-15__UE-300",
+    # "Commisioning_Public_Safety_QCI65_QCI66_10MHz",
+#         "eNB_Capacity_PTT_user_amount_QCI65_BW-10__UE-240",
+        # "eNB_Capacity_PTT_user_amount_QCI66_BW-10__UE-240",
+#     "Commisioning_Public_Safety_QCI65_QCI66_5MHz",
+#         "eNB_Capacity_PTT_user_amount_QCI65_BW-5__UE-120",
+#         "eNB_Capacity_PTT_user_amount_QCI66_BW-5__UE-120",
+
+##################################################
+### Old tests but with new rrh configuration, wroclaw request
+##################################################
+    # "Commissionning_for_Capacity__5MHz_6cell",
+        # "Airscale_BTS_Capacity_Static_Users_600UEs_1cell_2x2MIMO_IRC_5MHz", #TL1 C1
+    # "Commissionning_for_Capacity__10MHz_6cell",
+        # "Airscale_BTS_Capacity_Static_Users_600UEs_1cell_2x2MIMO_IRC_10MHz", #TL1 C2
+
+    # "Commissionning_for_UL_Throughput__5MHz__2x2__64QAM_6cell",
+        # "Airscale_BTS_Throughput_100UEs_1cell_2x2MIMO_MRC_13Mbps_UL_5MHz", #TL2 C8
+    # "Commissionning_for_UL_Throughput__10MHz__2x2__64QAM_6cell",
+        # "Airscale_BTS_Throughput_100UEs_1cell_2x2MIMO_MRC_33Mbps_UL_10MHz", #TL2 C9
+
+### TESTS FROM OULU, FROM FL17SP
+    # "Commisioning_Capacity__20MHz__2x2__DL_UL_4cell_16TTI",
+        # "Airscale_BTS_UE_per_TTI_DL_4cell_2x2MIMO_MRC_20MHz",
+        # "Airscale_BTS_UE_per_TTI_UL_4cell_2x2MIMO_MRC_20MHz",
+    # "Commisioning_Capacity__20MHz__2x2__DL_UL_1cell_20TTI",
+        # "Airscale_BTS_UE_per_TTI_DL_1cell_2x2MIMO_MRC_20MHz",
+        # "Airscale_BTS_UE_per_TTI_UL_1cell_2x2MIMO_MRC_20MHz",
+];

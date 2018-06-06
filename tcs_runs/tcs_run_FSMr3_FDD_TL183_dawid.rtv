@@ -1,0 +1,245 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 0;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17 SP\GRnD\PET\CRT';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL23';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+
+my $sw_version = 'FL00_FSM4_9999_160912_011318'; ##must be on EMSS
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+{-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version,}},
+{
+    -TC => "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-20__UE-4500_test", -TP => 'PAF',
+    -EXECUTION_PARAMS => {
+        -TEST => {
+           # -DURATION => 1*12*60,
+        },
+        -FEATURE_FLAG => {
+            # -PREPARE_UE_SIM_ENV => 'YES',  ##- inaczej check attach
+            # -QUICK_START => 'YES',
+            # -APPEND_SWCONFIG => 'YES'
+            # -COLLECT_TTI => 'YES',
+        },
+        -DETAILS_PARAMS => {
+            -START_SCENARIO             => {
+                -SCENARIO_NAME              => 'useramounts_1500_all_cells_UDP_data.lua',
+                -SCENARIO_START_OFFSET      => -3,
+            },
+            -PREPARE_UE_SIM_ENV => {
+                -IPHY => {
+                    -EGATE_CONFIG_FILE          => 'config_3cells_3frig.lua',
+                    -IPHY_XML => ['iphy-3frig-3cells-12-34-2txrx-TL183.xml',],
+                },
+            },
+            -UPLOAD_TO_REP_PORTAL       => {
+                -TC_QC                      => "[1]Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-20__UE-4500",
+                # -EXTRA_RP_TC_NAME           => ['[1]Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-15__UE-3750', '[1]Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-10__UE-3000'],
+            },
+            -COLLECT_RTPMSTATS => {
+                -NUM_RECEIVED_RTPM          => 5,
+            },
+            -GENERATE_KPI_EXCEL => {
+                -KPI_TARGETS                    => {-LTE_ACT_UE_MAX_RRC_MAX => 1, -LTE_5242a => 1500},
+            },
+            -COLLECT_TTI => {
+                -TTI_CHECK => 1,
+                -TTI_INITIAL_DELAY => 3*60,
+                -TTI_INTERVAL => 5*60,
+                -DELETE_OLD_TTI_FILES => 1,
+            }
+        },
+        -POST => {        
+            -VALIDATION_RULESETS => ["Automated_eNB_Capacity__User_amount_with_FSMx_FBBx_BW-20__UE-4500","KPI_counter_check_active_UEs_usearmounts_no_data_ratios_avg_max", 'UE_FAILURE_IPHY'],
+        
+        },
+    },
+},
+
+{
+    -TC => "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-20_test2", -TP => 'PAF',
+    -EXECUTION_PARAMS => {
+        -TEST => {
+           -DURATION => 1*30*60,
+        },
+        -FEATURE_FLAG => {
+            -PREPARE_UE_SIM_ENV => 'YES',  #- inaczej check attach
+            # -QUICK_START => 'YES',
+            # -APPEND_SWCONFIG => 'YES',
+        },
+        -DETAILS_PARAMS => {
+            -START_SCENARIO             => {
+                -SCENARIO_NAME              => 'Call_model_FSMr3_TL183.lua',
+                -SCENARIO_START_OFFSET      => -6,
+            },
+            -PREPARE_UE_SIM_ENV => {
+                -IPHY => {
+                    -EGATE_CONFIG_FILE          => 'LTE2302_call_model_cfg_6uec.lua',
+                    -IPHY_XML                   => ['iphy-3frig-6cells-12-34-2txrx-TL183.xml',],
+                },
+            },
+            -PERFORM_ENB_COMMISSIONING => {
+                # -FILES                          => ['Commissioning_IAV_KRA_TL183_BTS_Call_Model_6cells_20MHz_with_HOIF_objects_and_interENB_LNREL.xml',],
+                -FILES                          => ['Commissioning_IAV_KRA_TL183_BTS_Call_model_LTE2302.xml',],
+            },
+            -UPLOAD_TO_REP_PORTAL       => {
+                -TC_QC                      => "[1]Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-20",
+            },
+            -GENERATE_KPI_EXCEL => {
+                -KPI_TARGETS                    => {
+                    -LTE_5048b => 100, -LTE_5084a => 100, -LTE_5750a => 1,
+                    # -ATTACH_DETACH_RATE => 0.07, 
+                    # -BEARER_ADDITION_RELEASE_RATE => 2.21, 
+                    # -HO_RATE => 10.58, 
+                    -LTE_CAP_1788_1792_PDCP => 32.4,  
+                    -LTE_CAP_1795_PDCP => 117, 
+                    # -STAT_TRANSITIONS_RATE => 29.53, 
+                    # -PAGING_AT_S1_RATE => 88.6,
+                    # -TA_UPDATES_RATE => 12.6,
+                },
+            },       
+        },
+        -POST => {        
+            -VALIDATION_RULESETS => ["Automated_eNB_Capacity_Traffic_profile_FSMF_normal_6cells_BW_20_counters", "Automated_eNB_Capacity_Traffic_profile_FSMF_normal_6cells_BW_20_KPI", 'UE_FAILURE_IPHY'],
+        
+        },       
+	 },
+},
+{
+    -TC => "BTS_Capacity_configured_CA_UEs_4cells_mixed_BW_config", -TP => 'PAF',
+    -EXECUTION_PARAMS => {
+        -TEST => {
+           -DURATION => 1*30*60,
+        },
+        -FEATURE_FLAG => {
+            # -PREPARE_UE_SIM_ENV => 'YES',  #- inaczej check attach
+            # -QUICK_START => 'YES',
+            # -APPEND_SWCONFIG => 'YES',
+        },
+        -DETAILS_PARAMS => {
+            -START_SCENARIO             => {
+                -SCENARIO_NAME              => 'BTS_Capacity_configured_CA_UEs_4cells_mixed_BW.lua',
+                -SCENARIO_START_OFFSET      => -3,
+            },
+            -PREPARE_UE_SIM_ENV => {
+                -IPHY => {
+                    -EGATE_CONFIG_FILE          => 'config_4CC_4mixed_cells.lua',
+                    -IPHY_XML                   => ['iphy-fxed-frhc-4cells-2and4txrx_4CC.xml',],
+                },
+            },
+            -PERFORM_ENB_COMMISSIONING => {
+                # -FILES                          => ['Commissioning_IAV_KRA_TL183_BTS_Call_Model_6cells_20MHz_with_HOIF_objects_and_interENB_LNREL.xml',],
+                -FILES                          => ['Commissioning_IAV_KRA_TL183_BTS_Call_model_LTE2302.xml',],
+            },
+            -UPLOAD_TO_REP_PORTAL       => {
+                -TC_QC                      => "[1]BTS_Capacity_configured_CA_UEs_4cells_mixed_BW_config",
+            },
+            -GENERATE_KPI_EXCEL => {
+                -KPI_TARGETS                    => {
+                    -LTE_5048b => 100, -LTE_5084a => 100, -LTE_5750a => 1,
+                    -LTE_ACT_UE_MAX_RRC_MAX => 1, -LTE_5319b => 50, -LTE_5672a => 50, -LTE_5242a => 1350,
+                },
+            },       
+        },
+        -POST => {        
+            -VALIDATION_RULESETS => ["Automated_eNB_CRT_LTE1804_tc5_ALL",'UE_FAILURE_IPHY'],
+        
+        },       
+	 },
+},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-GENERATE_COMMON_DEVICES}{-CREDENTIALS}{-PASSWORD}    = 'ssp123!!Macro';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}                  = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_IPHY_PERIODIC_STATS}     = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'NO';
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "software_update",
+####CALL MODEL 6CELLS
+    # "Commisioning_Call_model_6cells_20MHZ_with_IPHY_xml_change",
+    # "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-5",
+    # "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-10",
+    # "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-15",
+    # "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-20",
+    # "Automated_eNB_Capacity_BHCA_Traffic_model_6cells__BW-20_test2",
+
+###LIQUID CELL CA 20mhz 15mhz
+    # "Commisioning_Liquid_2cells_2frig_20MHZ_15MHZ_with_IPHY_xml_change",
+    # "Automated_eNB_Capacity__Throughput_DL_TCP_with_FSMF_FBBC__CA15_20_Liquid_Cell",
+###
+"BTS_Capacity_configured_CA_UEs_4cells_mixed_BW_config",
+
+# "PARSE_PMSTATS_TEST",
+###TL39
+# "Commisioning_3cells_3FRIG_TL183_20MHZ_with_IPHY_xml_change",
+# "Commisioning_3cells_3FRIG_TL183_20MHZ",
+# "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-20__UE-4500_test",
+    
+
+
+    
+    # "Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF_FBBC__BW-20_UE-1800",
+    #"Automated_eNB_Capacity__VoLTE_1800_UEs_with_50_UEs_UDP_DL_throughput_with_FSMF_FBBA_BW-20",
+    #"Automated_eNB_Capacity__Actively_scheluded_users_DL_with_FSMF_FBBA_4dsp__BW-20",
+    #"Automated_eNB_Capacity__Actively_scheluded_users_UL_with_FSMF_FBBA_4dsp__BW-20",
+    #"Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_DL_4dsp_BW-20",
+    #"Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_UL_4dsp_BW-20",
+    #"Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_3_DRBs_DL_FSMF_FBBx_BW-20",
+    #"Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_3_DRBs_UL_FSMF_FBBx_BW-20",
+    #"Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_UL_35mbps_FSMF_FBBC_BW-20",
+    #"Automated_eNB_Capacity__Intra_eNB_handover_performance_with_high_data_FSMF_FBBx__BW-20__RATE-90",
+# "Commisioning_3cells_15MHZ",
+    # "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-15__UE-3750",
+    # "Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF_FBBC_BW-15_UE-1500",
+    # "Automated_eNB_Capacity__VoLTE_1500_UEs_with_50_UEs_UDP_DL_throughput_with_FSMF_FBBA_BW-15",
+    # "Automated_eNB_Capacity__Actively_scheluded_users_DL_with_FSMF_FBBA_4dsp__BW-15",
+    # "Automated_eNB_Capacity__Actively_scheluded_users_UL_with_FSMF_FBBA_4dsp__BW-15",
+    # "Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_DL_4dsp_BW-15",
+    # "Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_UL_4dsp_BW-15",
+
+# "Commisioning_3cells_10MHZ",
+    # "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-10__UE-3000",
+    # "Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_DL_with_FSMF_14UE_28TB__BW-10",
+    # "Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_14UE_14TB__BW-10",
+
+# "Commisioning_3cells_5MHZ",
+    # "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-5__UE-2520",
+    
+# "Commisioning_3cells_20MHZ_UL_50_to_1500_Tput",
+    # "Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_DL_120mbps_FSMF_FBBC_BW-20",
+
+# "Commisioning_3cells_15MHZ_UL_50_to_1250_Tput",
+    # "Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_DL_UL_FSMF_FBBx_BW-15",
+    
+# "Commisioning_3cells_5MHZ_Tput",
+# "Commisioning_3cells_10MHZ_DL_50_to_1000_Tput",
+# "Commisioning_3cells_15MHZ_DL_50_to_1250_Tput",
+# "Commisioning_3cells_20MHZ_DL_50_to_1500_Tput",
+# "Commisioning_3cells_5MHZ_DL_50_to_840_Tput",
+# "Commisioning_3cells_10MHZ_UL_50_to_1000_Tput",
+# "Commisioning_3cells_5MHZ_UL_50_to_840_Tput",
+###TL39
+
+##OTHERS
+# 'call_model_20MHz',
+# "Commisioning_6cells_20MHZ_with_IPHY_xml_change", 
+# "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-15__UE-3750_test_PAF",
+# "Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-15__UE-3750_test_PAF",
+# "Automated_eNB__Performance_Total_BTS_Throughput__FSMF_DL_UL_BW-10",
+];
+
+

@@ -1,5 +1,7 @@
 from sklearn import tree
 import os.path
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.datasets import make_classification
 import numpy as np
 import sklearn
 #TODO zamienic  testy i commissionigi  na  dane wejsciowe, stworzyc tablice ze slowami(slowa oddziela spacja)-> zamienic kazdy znak w slowie na ascii
@@ -8,7 +10,6 @@ import sklearn
 
 class Test_name_recognizer():
     def __init__(self, input_data, supervisor):
-        # clasifier
         self.input_data = input_data
         self.supervisor = supervisor
         self.test_data = ''
@@ -23,14 +24,16 @@ class Test_name_recognizer():
 
     def train_clf_random_forest(self):
         #todo stworzyc rnadom fores super
+        self.clf = RandomForestClassifier(max_depth=10, random_state=1, verbose=1, bootstrap=True)
         #todo wytrenowac go
+        self.clf.fit(self.training_data, self.supervisor)
         pass
 
     def find_longest_word(self, words):
         sortedwords = sorted(words, key=len)
         self.longest_word = len(sortedwords[-1])
 
-    def preper_training_data(self):
+    def prepare_training_data(self):
         text = self.input_data
         words = self.split_string_to_words(text)
         self.find_longest_word(words)
@@ -58,7 +61,7 @@ class Test_name_recognizer():
             for line in f:
                 plain_text += line
         words = self.split_string_to_words(plain_text)
-        self.create_supervisor(words)
+        # self.create_supervisor(words)
         return words
 
     def create_supervisor(self, words):
@@ -144,21 +147,18 @@ class Training_data:
 
 def main():
 
-
+    # prepare training data
     Call_modes_set = Training_data("train_data_call_models.txt", 1)
     Tests_names001_set = Training_data("tests_names_001.txt", 1)
     Random_words_set = Training_data("other_names.txt", 0)
+    train_data_tl226 = Training_data("training_positive_tl226.txt",1)
 
+    text = Random_words_set.training_content + Call_modes_set.training_content + Tests_names001_set.training_content + train_data_tl226.training_content
+    supervisor = Random_words_set.training_supervisor + Call_modes_set.training_supervisor + Tests_names001_set.training_supervisor +  train_data_tl226.training_supervisor
 
-    text = 'to sa dane testowe, ktore bede zamienione na slowa a pozniej na znaki23 hkjhdsa Automated_eNB__Capacity_RRC_Paging__FSMF_BW-10 Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_max720_FSMF__BW-5_10_15 Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF_shared_BB_pool__BW Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF_shared_BB_pool__BW-5__UE-1260 '
-    # text = 'take e tttt rewq dfgh yhpt cftyu'
-    supervisor = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1]
-
-    text = Call_modes_set.training_content + Tests_names001_set.training_content + Random_words_set.training_content
-    supervisor = Call_modes_set.training_supervisor + Tests_names001_set.training_supervisor + Random_words_set.training_supervisor
-
+    #prepare model
     tree_test =  Test_name_recognizer(text, supervisor)
-    tree_test.preper_training_data()
+    tree_test.prepare_training_data()
     tree_test.train_clf_tree()
 
     #TESTOWANIE MODELU
@@ -175,7 +175,28 @@ def main():
     tree_test.test_data = 'tests_negative.txt'
     tree_test.test_model()
 
+    #prepare RF model
+    random_forest = Test_name_recognizer(text, supervisor)
+    random_forest.prepare_training_data()
+    random_forest.train_clf_random_forest()
 
+    random_forest.test_data = '"Airscale_BTS_Capacity_Static_Users_840UEs_3cell_4x4MIMO_IRC_24Mbps_UL_111Mbps_DL_20MHz'
+    random_forest.test_model()
+
+    random_forest.test_data = '\'Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz,\''
+    random_forest.test_model()
+
+    random_forest.test_data = 'tests_positive_168.txt'
+    random_forest.test_model()
+    print random_forest.clf.predict_proba(random_forest.test_data)
+
+    random_forest.test_data = '\'Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz,\''
+    random_forest.test_model()
+    print random_forest.clf.predict_proba(random_forest.test_data)
+
+    random_forest.test_data = 'tests_negative.txt'
+    random_forest.test_model()
+    print
 
 
 

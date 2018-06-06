@@ -1,0 +1,64 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-DEPARTMENT}    = 'CIPET_KRA';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB}   = 'Trunk_CRT\GRnD\PET\CIT';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CI_PET Flexi rel3';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN}  = 'GRnD\Automation Test Cases';
+
+
+
+$::stability_commands = {
+    -START_COMMANDS => {
+        'FCT'          => [
+            "/opt/trs/www/html/protected/enableRndPorts.cgi", 
+        ],
+        'FSP'          => [
+        ],
+    },
+    -ONESHOT_COMMANDS => {
+        'FCT'          => [
+            "smemcap > /tmp/smemcapture_results.tar &",
+        ],
+    },
+    -COMMANDS       => {
+        'FCM'          => "/home/auto/sstlib_scripts/LTE/FA_SSP/conf/CMD/flexi/enb_fcm",
+		'FCT'          => "/home/auto/sstlib_scripts/LTE/FA_SSP/conf/CMD/flexi/enb_fct",
+      	'FSP'          => "/home/auto/sstlib_scripts/LTE/FA_SSP/conf/CMD/flexi/enb_fsp", 
+    },
+    -END_COMMANDS   => {
+        'FCT'          => [
+        ],
+        'FSP'          => [
+        ],
+    },
+};
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-RUN_PERIODICAL_CMDS}{-UNIV_MMI_CMD}                    = $::stability_commands;
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "Software_update", -TP => 'FLEXI_SW_UPDATE', -EXECUTION_PARAMS => {-TARGET => '/home/emssim/LOADS/FSM3_Trunk_Candidate_latest/ENB_release_BTSSM_downloadable_wo_images.zip',}},
+{-TC => "Reconfigure_EPCSIM", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './configs/epc.cfg', -EPCSIM=>  'EPCSIM', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+];
+
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL} = 'NO';
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-GENERATE_KPI_EXCEL}{-GET_PMSTATS_FROM_EMSS}            = 'YES';
+
+## ADDITIONAL FLAGS IF NEEDED
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-ARCHIVE_SESSION}{-REMOVE_DIR}                   = 'NO'; 
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-ARCHIVE_SESSION}{-REMOVE_LOCAL_ARCHIVE}         = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}                                = 'NO'; 
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}                                   = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-RUN_DSP_SCRIPT}		            	     = 'YES';
+
+
+$::RTV{LAUNCHER}->{TCS} = [
+#'Software_update',
+#'Reconfigure_EPCSIM',
+'Automated_eNB_Capacity__Traffic_profile_high_FSMF_FBBC_BW_20_688_events_30min',
+];
