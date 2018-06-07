@@ -1,6 +1,7 @@
 from sklearn import tree
 import os.path
 from sklearn.ensemble import RandomForestClassifier
+from decimal import Decimal
 from sklearn.datasets import make_classification
 import numpy as np
 import sklearn
@@ -19,13 +20,14 @@ class Test_name_recognizer():
         self.longest_word = 0
         self.positive_test = pos_or_neg
         self.testing_supervisor = []
+        self.tests_list = []
 
     def train_clf_tree(self):
         self.clf.fit(self.training_data, self.supervisor)
 
     def train_clf_random_forest(self):
         #todo stworzyc rnadom fores super
-        self.clf = RandomForestClassifier(max_depth=10, random_state=1, verbose=1, bootstrap=True)
+        self.clf = RandomForestClassifier(max_depth=5, random_state=1, verbose=1, bootstrap=True)
         #todo wytrenowac go
         self.clf.fit(self.training_data, self.supervisor)
         pass
@@ -37,6 +39,10 @@ class Test_name_recognizer():
     def prepare_training_data(self):
         text = self.input_data
         words = self.split_string_to_words(text)
+        #TODO dodac usuwanie cudzyslowiu
+        words = [word.replace('"', '') for word in words]
+        words = [word.replace("'", '') for word in words]
+
         self.find_longest_word(words)
         self.is_training_data_eq_supervisor(words)
         self.training_data = self.convert_to_ascii(words)
@@ -45,11 +51,13 @@ class Test_name_recognizer():
         text = self.test_data
         self.string_tests_name = self.test_data[:]
         if self.isfile(text):
-            print "to jest plik"
+            # print "to jest plik"
             words = self.read_file(text)
-            print words
         else:
             words = self.split_string_to_words(text)
+        words = [word.replace('"', '') for word in words]
+        words = [word.replace("'", '') for word in words]
+        # print words
         self.string_tests_name = words[:]
         self.test_data = self.convert_to_ascii(words)
 
@@ -79,30 +87,36 @@ class Test_name_recognizer():
         data = []
         data.append(self.test_data)
         predictions_list = map(self.clf.predict, data)
-        print list(predictions_list[0])
+        # print list(predictions_list[0])
         predictions_list = list(predictions_list[0])
-        print predictions_list
-        print len(predictions_list)
-        print len(data[0])
+        # print predictions_list
+        # print len(predictions_list)
+        # print len(data[0])
         data = self.input_data.split()
         self.present_data(predictions_list, self.string_tests_name)
 
     def present_data(self,prediction_list, data):
         print "PREZENTACJA DANYCH "
-        # for i in xrange(len(prediction_list)):
-        #     print "slowo ",data[i], "jest testem ", prediction_list[i]
-        self.count_corretnes(prediction_list)
+        print "red list ", len(prediction_list), "dtat ", len(data)
+        for i in xrange(len(prediction_list)):
+            # print i," slowo ",data[i], "jest testem ", prediction_list[i]
+            if prediction_list[i]:
+                temp = data[i]
+                true_test = temp.replace(",", '')
+                self.tests_list.append(true_test)
+
+        # self.count_corretnes(prediction_list)
 
     def count_corretnes(self, preduction_list):
         if self.positive_test:
             error_no = preduction_list.count(0)
-            error_ratio = error_no/len(preduction_list)
+            error_ratio = Decimal(error_no)/Decimal(len(preduction_list))
             print "#########################################################"
             print "PREDICTION ERROR: ", error_ratio
             print "#########################################################\n"
         else:
             error_no = preduction_list.count(1)
-            error_ratio = error_no/len(preduction_list)
+            error_ratio = Decimal(error_no)/Decimal(len(preduction_list))
             print "#########################################################"
             print "PREDICTION ERROR: ", error_ratio
             print "#########################################################\n"
@@ -171,23 +185,23 @@ def main():
     supervisor = Random_words_set.training_supervisor + Call_modes_set.training_supervisor + Tests_names001_set.training_supervisor + train_data_tl226.training_supervisor
 
     # prepare decision tree model
-    tree_test = Test_name_recognizer(training_data, supervisor)
-    tree_test.prepare_training_data()
-    tree_test.train_clf_tree()
+    # tree_test = Test_name_recognizer(training_data, supervisor)
+    # tree_test.prepare_training_data()
+    # tree_test.train_clf_tree()
 
     # TESTOWANIE MODELU
-    tree_test.test_data = '"Airscale_BTS_Capacity_Static_Users_840UEs_3cell_4x4MIMO_IRC_24Mbps_UL_111Mbps_DL_20MHz'
-    tree_test.test_model()
-    tree_test.test_data = '"eNB_Capacity_PTT_user_amount_QCI66_BW-5__UE-120",'
-    tree_test.test_model()
-    tree_test.test_data = 'tests_positive.txt'
-    tree_test.test_model()
-    tree_test.test_data = '"Airscale_BTS_Throughput_200UEs_3cell_4x4MIMO_IRC_206_245Mbps_DL_TM4_15_20MHz,"'
-    tree_test.test_model()
-    tree_test.test_data = '\'Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz,\''
-    tree_test.test_model()
-    tree_test.test_data = 'tests_negative.txt'
-    tree_test.test_model()
+    # tree_test.test_data = '"Airscale_BTS_Capacity_Static_Users_840UEs_3cell_4x4MIMO_IRC_24Mbps_UL_111Mbps_DL_20MHz'
+    # tree_test.test_model()
+    # tree_test.test_data = '"eNB_Capacity_PTT_user_amount_QCI66_BW-5__UE-120",'
+    # tree_test.test_model()
+    # tree_test.test_data = 'tests_positive.txt'
+    # tree_test.test_model()
+    # tree_test.test_data = '"Airscale_BTS_Throughput_200UEs_3cell_4x4MIMO_IRC_206_245Mbps_DL_TM4_15_20MHz,"'
+    # tree_test.test_model()
+    # tree_test.test_data = '\'Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz,\''
+    # tree_test.test_model()
+    # tree_test.test_data = 'tests_negative.txt'
+    # tree_test.test_model()
 
     # prepare RF model
     random_forest = Test_name_recognizer(training_data, supervisor)
@@ -195,19 +209,28 @@ def main():
     random_forest.train_clf_random_forest()
 
     # test RF model
+    '''
     random_forest.test_data = '"Airscale_BTS_Capacity_Static_Users_840UEs_3cell_4x4MIMO_IRC_24Mbps_UL_111Mbps_DL_20MHz'
     random_forest.test_model()
     random_forest.test_data = '\'Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz,\''
     random_forest.test_model()
     random_forest.test_data = 'tests_positive_168.txt'
     random_forest.test_model()
-    # print random_forest.clf.predict_proba(random_forest.test_data)
+    #### print random_forest.clf.predict_proba(random_forest.test_data)
     random_forest.test_data = '\'Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz,\''
     random_forest.test_model()
-    # print random_forest.clf.predict_proba(random_forest.test_data)
-    random_forest.test_data = 'tests_negative.txt'
+    #### print random_forest.clf.predict_proba(random_forest.test_data)
+    # random_forest.test_data = 'tests_negative.txt'
+    # random_forest.test_model()
+    '''
+    random_forest.test_data = 'tcs_runs/tcs_run_FSMr3_FDD_TL183_dawid.rtv'
     random_forest.test_model()
+    random_forest.tests_list
 
+    # random_forest.test_data = '\'Airscale_BTS_UE_per_TTI_DL_4cell_4x4MIMO_MRC_20MHz,\''
+    # random_forest.test_model()
+    # random_forest.test_data = 'tests_positive_168.txt'
+    # random_forest.test_model()
 
 
 if __name__== "__main__":
