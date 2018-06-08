@@ -5,7 +5,7 @@
 from AI_recognize_test import Test_name_recognizer, Training_data
 import re
 from shutil import copyfile, rmtree, move
-import os, errno, glob
+import os, errno
 
 class Conf_test_finder():
     def __init__(self, tests_names, desire_string_conf='-SCENARIO_NAME', test_info_file='tcs_def_LMTS.rtv'):
@@ -61,27 +61,13 @@ class Cleaner():
         self.conf_dir = conf_dir
 
     def move_selected_files_to_temp(self):
-        if not os.path.exists('testing/temp'):
-            os.mkdir('testing/temp')
-        # move('testing/tcs_def_IPHY.rtv', 'testing/temp/new.rtv')
-        self.copy_old_files_to_old()
-        # rmtree('/testing/temp')
+        if not os.path.exists('temp'):
+            os.mkdir('temp')
+        move('tcs_def_IPHY.rtv', 'temp/new.rtv')
+        # rmtree('temp')
 
-    def copy_old_files_to_old(self):
-        if not os.path.exists('testing/old'):
-            os.mkdir('testing/old')
-        os.chdir("testing/")
-        fileList = os.listdir('D:\userdata\lacz\Desktop\developing\short_scripts\\testing')
-        print fileList
-        for file in glob.glob("*"):
-            print file
-            if re.search(pattern,file):
-                move(file, 'old/'+file)
-            # try:
-            #     move(file, 'old/'+file)
-            # except Exception:
-            #     print "do ladnego obsluzenia"
 
+    pass
 
 
 def main():

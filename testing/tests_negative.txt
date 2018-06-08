@@ -1,0 +1,137 @@
+$::RTV{LAUNCHER}->{TCS} = [
+# "Turn_off_TL1012",
+# "Turn_on_TL1012",
+# "wait_for_build_on_emss",
+# "software_update",
+# "newest_software_update",
+ # ]; my $a =[
+ #!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17A SP1\GRnD\PET\CRT';
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Airscale TL1012';
+
+my $sw_version = 'FL17A_ENB_1000_000472_000000'; ##must be on EMSS
+my $release = "FL17ASP1";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'L18 SP\Branch_CRT\4G_ASL2L3_KRA\PET_Vrf_SG';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Airscale TL1068';
+my $release = "FL18SP";
+my $sw_version = 'FL18SP_ENB_0000_000012_000000'; ##must be on EMSS
+
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}                  = 'NO';
+
+
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+
+{-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version,}},
+{-TC => "newest_software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version, -USE_NEWEST_BUILD => 'YES', -RELEASE => $release}},
+{-TC => "Turn_on_TL1012", -TP => 'power_switch_state_tp', -EXECUTION_PARAMS => {-PORT => 3, -STATE => 'ON'}},
+{-TC => "Turn_off_TL1012", -TP => 'power_switch_state_tp', -EXECUTION_PARAMS => {-PORT => 3, -STATE => 'OFF'}},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_IPHY_PERIODIC_STATS}     = 'NO';
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-GENERATE_KPI_EXCEL}{-GENERATE_NEW_KPI_EXCEL}        = 'YES';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}										    = 'NO'; 
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-GENERATE_COMMON_DEVICES}{-CREDENTIALS}{-PASSWORD} 
+     = 'ssp123!!Macro'; 
+
+####################################
+#######3xABIA 3xCELL 3xFRIG 2x2 and 4x4 configuration **
+###################################	 
+	 
+	 
+"Commisioning_with_IPHY_xml_change_3frig_3abia",
+
+    "Commissionning_for_DL_Throughput__15_20MHz__4x4__TM4",	 
+		 # ]; my $a =[
+    "Commissionning_for_DL_Throughput__5_15_20MHz__64QAM_4x4__TM9", 
+	  "Commissionning_for_Capacity_UL_DL_Throughput__20MHz__4x4__2520DRB_3ABIA",
+	   "Commissioning_for_10_15_20_MHz_TPut_64QAM_UL",
+	 
+############################################################
+######## 3xABIA 3cells 3xFRHA 2x2 configuration     **       #
+############################################################
+"Commissionning_for_Case1_Capacity__20MHz__2x2_with_IPHY_xml_change",
+
+    "Commissionning_for_Case1_Capacity__20MHz__2x2",	 
+	    "Commissionning_for_Case2_Tput_Model__5MHz__2x2",
+     "Commissionning_for_Case3_Tput_Model__10MHz__2x2",
+    "Commissionning_for_Case4_Tput_Model__15MHz__2x2",
+    "Commissionning_for_Case4_Tput_Model__15MHz__2x2",
+   "Commissionning_for_Case5_Tput_Model__20MHz__2x2",
+##########################################
+## 3xABIA 3cells 3xFRHA from 1xFRHA
+##########################################
+    "Commissionning_for_Capacity__5_10MHz",
+	     "Commissionning_for_Capacity_UL_DL_Throughput_15MHz",
+    "Commissionning_for_Capacity_UL_DL_Throughput_20MHz",
+
+	    "Commissionning_for_Capacity_and_DL_UL_Tput__15MHz_3ABIA",
+	     "Commissionning_for_Capacity_and_DL_UL_Tput__15MHz_3ABIA",
+    "Commissionning_for_Capacity_and_DL_UL_Tput__15MHz_3ABIA",
+    ##### C46 cannot be combined with C44 C45
+    "Commissionning_for_DL_Capacity_840__20MHz",
+		 # "Commissionning_for_DL_Capacity_840__20MHz",
+######################################################
+#### 1xABIA 4cells 4xFRIG 4x4 and 2x2 configuration **
+######################################################
+"Commisioning_Capacity__20MHz__4x4_with_IPHY_xml_change",
+
+    "Commisioning_Capacity__20MHz__4x4__DL_UL",
+	    "Commisioning_Capacity__5MHz__4x4",
+	     "Commisioning_Capacity__10MHz__4x4",
+    "Commisioning_Capacity__15MHz__4x4",
+
+		    "Commisioning_Capacity__20MHz__2x2",
+ 	'Commisioning_Capacity__20MHz__2x2_with_PCMD',	 
+    "Commisioning_Capacity__10MHz__2x2",
+###########################################################
+### 1xABIA 3cells 3xFRGP 2x2 Public Safety configuration     ** #
+############################################################
+"Commisioning_Public_Safety_QCI65_QCI66_20MHz_with_IPHY_xml_change",
+
+    "Commisioning_Public_Safety_QCI65_QCI66_20MHz",
+	    "Commisioning_Public_Safety_QCI65_QCI66_15MHz",
+    "Commisioning_Public_Safety_QCI65_QCI66_10MHz",
+    "Commisioning_Public_Safety_QCI65_QCI66_5MHz",
+	##################################################
+### TESTY 6CELLKOWE Old tests but with new rrh configuration, wroclaw request
+##################################################
+
+
+		 
+		 
+		 
+		 
+		 
+		 
+		 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
