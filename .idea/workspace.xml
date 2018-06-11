@@ -2,24 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4c2c2279-a0f9-415d-9d34-6bfea205fc60" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/get_training_data.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/temp/new.rtv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/other_names.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/rm_unuse_conf_file.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/short_test_set.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/tcs_def_LMTS.rtv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/temp/new.rtv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/tests_names.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/tests_names_001.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/tests_names_193.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/tests_negative.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/tests_positive_168.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/train_data_call_models.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/training_positive_tl226.txt" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AI_recognize_test.py" afterPath="$PROJECT_DIR$/AI_recognize_test.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/rm_unuse_conf_file.py" afterPath="$PROJECT_DIR$/rm_unuse_conf_file.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -41,20 +24,22 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="rm_unuse_conf_file.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="rm_unuse_conf_file.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/rm_unuse_conf_file.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="35" column="55" lean-forward="false" selection-start-line="35" selection-start-column="42" selection-end-line="35" selection-end-column="55" />
-              <folding />
+            <state relative-caret-position="646">
+              <caret line="38" column="55" lean-forward="true" selection-start-line="38" selection-start-column="55" selection-end-line="38" selection-end-column="55" />
+              <folding>
+                <element signature="e#0#65#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AI_recognize_test.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="AI_recognize_test.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/AI_recognize_test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
+            <state relative-caret-position="867">
               <caret line="183" column="0" lean-forward="false" selection-start-line="183" selection-start-column="0" selection-end-line="183" selection-end-column="0" />
               <folding />
             </state>
@@ -88,6 +73,7 @@
       <find>slowo</find>
       <find>tests_list</find>
       <find>Old_file_cleaner</find>
+      <find>SCENARIO_NAME</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -255,7 +241,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#282#347#0" expanded="false" />
+            <element signature="e#0#65#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -283,7 +269,7 @@
         <state relative-caret-position="85">
           <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="15" selection-end-column="10" />
           <folding>
-            <element signature="e#282#347#0" expanded="false" />
+            <element signature="e#0#65#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -337,18 +323,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AI_recognize_test.py">
+    <entry file="file://$PROJECT_DIR$/rm_unuse_conf_file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="183" column="0" lean-forward="false" selection-start-line="183" selection-start-column="0" selection-end-line="183" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="646">
+          <caret line="38" column="55" lean-forward="true" selection-start-line="38" selection-start-column="55" selection-end-line="38" selection-end-column="55" />
+          <folding>
+            <element signature="e#0#65#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/rm_unuse_conf_file.py">
+    <entry file="file://$PROJECT_DIR$/AI_recognize_test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="35" column="55" lean-forward="false" selection-start-line="35" selection-start-column="42" selection-end-line="35" selection-end-column="55" />
+        <state relative-caret-position="867">
+          <caret line="183" column="0" lean-forward="false" selection-start-line="183" selection-start-column="0" selection-end-line="183" selection-end-column="0" />
           <folding />
         </state>
       </provider>

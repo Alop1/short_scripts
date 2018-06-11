@@ -1,7 +1,3 @@
-#TODO wczytac plik z nazwami testow i wybrac testy
-#TODO znalesc  tests_name w iphy/lmts_def
-#TODO znalesc dany wczesnij typ pliku konfiguracyjnego i zapisac found_file, rozroznic miedzy zmienna a stringiem
-#TODO przeniesc pliki ktore nie naleza do zbioru found_file do folderu old
 from AI_recognize_test import Test_name_recognizer, Training_data
 import re
 from shutil import copyfile, rmtree, move
@@ -26,15 +22,14 @@ class Conf_test_finder():
         # todo obsluzyc testy ktorych poczatek nazwy jest taki sam , akoncowka inna
         # todo obsluzyc blad  sytuacje , kiedy nie znalazlo testu, lub komponentu
         # todo obsluzyc nazwy testow gdzie wykryto [ [] ] itp
-        print "\n\nfind_tets_index_line"
         # testowe = 'perl'#'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_1500_FSMF_FBBx_BW-20'
         test_and_configuration = []
         for test in self.tests_names:
             test_pattern = r'-TC =>.*'+test
             found = False
+            #todo jezeli na jdzie zamiast -scenario name -TC to znaczy ze to jednak nie byl test i niech wyrzuci alarm
             for line in file_content:
                 if found and re.findall('-SCENARIO_NAME', line):
-                    # print line
                     test_and_configuration.append((test, line))
                     break
                 if re.findall(test_pattern, line):
@@ -60,12 +55,12 @@ class Cleaner():
 
     def start_celeaning(self):
         searched_dir = './SCENARIOS/'
+        os.chdir(searched_dir)
         self.move_selected_files_to_temp()
         self.copy_old_files_to_old()
         self.remove_tmp()
 
     def move_selected_files_to_temp(self):
-        os.chdir(searched_dir)
         if not os.path.exists('./temp'):
             os.mkdir('./temp')
         for test, conf in self.test_and_conf:
