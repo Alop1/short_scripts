@@ -1,0 +1,132 @@
+transfer TransferDL
+	type udp
+	packetSize 220
+	dir downlink
+	packetRate 2.0
+
+transfer TransferUL
+	type udp
+	packetSize 90
+	dir uplink
+	packetRate 2.0
+	
+	
+application AppTransfer [ bearerPDN ] 
+	startTransfer TransferDL on bearerPDN as sampleTransferPDNDL 
+	startTransfer TransferUL on bearerPDN as sampleTransferPDNUL 
+	wait 86400
+	stopTransfer sampleTransferPDNDL 
+	stopTransfer sampleTransferPDNUL 
+	
+application AppTransferShort [ bearerPDN ] 
+	startTransfer TransferDL on bearerPDN as sampleTransferShortPDNDL 
+	startTransfer TransferUL on bearerPDN as sampleTransferShortPDNUL 
+	wait 10
+	stopTransfer sampleTransferShortPDNDL 
+	stopTransfer sampleTransferShortPDNUL
+	
+mobileSession testSessionStep_1
+	connectBearer DEFAULT as stream1
+	startApplication AppTransfer [ stream1 ] as myAppTransfer1 &
+	wait applicationsFinish [ myAppTransfer1 ]
+	releaseBearer stream1
+	
+mobileSession testSessionStep_2
+	connectBearer DEFAULT as stream2
+	startApplication AppTransfer [ stream2 ] as myAppTransfer2 &
+	wait applicationsFinish [ myAppTransfer2 ]
+	releaseBearer stream2
+	
+mobileSession testSessionStep_3
+	connectBearer DEFAULT as stream3
+	startApplication AppTransfer [ stream3 ] as myAppTransfer3 &
+	wait applicationsFinish [ myAppTransfer3 ]
+	releaseBearer stream3
+	
+mobileSession testSessionStep_4
+	connectBearer DEFAULT as stream4
+	startApplication AppTransfer [ stream4 ] as myAppTransfer4 &
+	wait applicationsFinish [ myAppTransfer4 ]
+	releaseBearer stream4
+	
+mobileSession testSessionStep_5
+	connectBearer DEFAULT as stream5 
+	startApplication AppTransferShort [ stream5 ] as myAppTransferShort5 &
+	wait applicationsFinish [ myAppTransferShort5 ]
+	releaseBearer stream5
+	
+	
+mobileSession testSessionStep_6
+	connectBearer DEFAULT as stream6
+	startApplication AppTransferShort [ stream6 ] as myAppTransferShort6 &
+	wait applicationsFinish [ myAppTransferShort6 ]
+	releaseBearer stream6
+		
+testScenario
+
+	#######################################################################################
+	# Step 1
+	# 50 users attached (1st carrier)
+	#######################################################################################
+	testSessionStep_1
+		rate 50/s
+		cells[1]
+		delayToStart 0.0 s
+		activityIntervalLength 0.99 s
+		ueCapabilities cat5
+	
+	#######################################################################################
+	# Step 2
+	# 30sec later 50 users attached (2nd carrier)
+	#######################################################################################	
+	testSessionStep_2
+		rate 50/s
+		cells[2]
+		delayToStart 30.0 s
+		activityIntervalLength 0.99 s
+		ueCapabilities cat5
+	
+	#######################################################################################
+	# Step 3
+	# 30sec later 100 users attached (1st carrier)
+	#######################################################################################    
+	testSessionStep_3
+		 rate 100/s
+		 cells[1]
+		 delayToStart 60.0 s
+		 activityIntervalLength 0.99 s
+		 ueCapabilities cat5
+
+	#######################################################################################
+	# Step 4
+	# 40sec later 100 users attached (2nd carrier)
+	#######################################################################################		 
+	testSessionStep_4
+		rate 100/s
+		cells[2]
+		delayToStart 100.0 s
+		activityIntervalLength 0.99 s
+		ueCapabilities cat5
+	
+	#######################################################################################
+	# Step 5
+	# At the same time with step 4 100 users attach and detach every 10sec (1st carrier))
+	#######################################################################################	
+	testSessionStep_5
+		rate 3/min
+		cells[1]
+		delayToStart 101.0 s
+		ueCapabilities cat5
+		multiply 100
+		
+	#######################################################################################
+	# Step 6
+	# At the same time with step 4 100 users attach and detach every 10sec (2nd carrier)
+	#######################################################################################	
+	testSessionStep_6
+		rate 3/min
+		cells[2]
+		delayToStart 101.0 s
+		ueCapabilities cat5
+		multiply 100
+		

@@ -1,0 +1,139 @@
+trafficProfile Transfer_UL_SMALL_prof
+        uplink
+        packetSize 40
+        #packetRate 24	#UE cat4/6
+        packetRate 31.6	#UE cat5/8
+
+trafficProfile Transfer_UL_AVG_prof
+        uplink
+        packetSize 576
+        #packetRate 12	#UE cat4/6
+        packetRate 15.8	#UE cat5/8
+
+trafficProfile Transfer_UL_LARGE_prof
+        uplink
+        packetSize 1420
+        #packetRate 12	#UE cat4/6
+        packetRate 15.8	#UE cat5/8
+
+trafficProfile Transfer_DL_SMALL_prof
+        downlink
+        packetSize 40
+        packetRate 34
+
+trafficProfile Transfer_DL_AVG_prof
+        downlink
+        packetSize 576
+        packetRate 17
+
+trafficProfile Transfer_DL_LARGE_prof
+        downlink
+        packetSize 1420
+        packetRate 17
+
+trafficProfile Transfer_DL_SMALL_CA_prof
+        downlink
+        packetSize 40
+        packetRate 3560
+
+trafficProfile Transfer_DL_AVG_CA_prof
+        downlink
+        packetSize 576
+        packetRate 1780
+
+trafficProfile Transfer_DL_LARGE_CA_prof
+        downlink
+        packetSize 1420
+        packetRate 1780
+
+transfer Transfer_UL_SMALL
+        type udp
+        profile Transfer_UL_SMALL_prof
+
+transfer Transfer_UL_AVG
+	type udp
+        profile Transfer_UL_AVG_prof
+
+transfer Transfer_UL_LARGE
+	type udp
+        profile Transfer_UL_LARGE_prof
+
+transfer Transfer_DL_SMALL
+	type udp
+	profile Transfer_DL_SMALL_prof
+
+transfer Transfer_DL_AVG
+	type udp
+	profile Transfer_DL_AVG_prof
+
+transfer Transfer_DL_LARGE
+	type udp
+	profile Transfer_DL_LARGE_prof
+
+transfer Transfer_DL_SMALL_CA
+        type udp
+	profile Transfer_DL_SMALL_CA_prof
+
+transfer Transfer_DL_AVG_CA
+	type udp
+	profile Transfer_DL_AVG_CA_prof
+
+transfer Transfer_DL_LARGE_CA
+	type udp
+	profile Transfer_DL_LARGE_CA_prof
+
+application App [ bearer ]
+        startTransfer Transfer_UL_SMALL on bearer as Transfer1
+        startTransfer Transfer_UL_AVG on bearer as Transfer2
+        startTransfer Transfer_UL_LARGE on bearer as Transfer3
+        startTransfer Transfer_DL_SMALL on bearer as Transfer4
+        startTransfer Transfer_DL_AVG on bearer as Transfer5
+        startTransfer Transfer_DL_LARGE on bearer as Transfer6
+        wait 50000
+        stopTransfer Transfer1
+        stopTransfer Transfer2
+        stopTransfer Transfer3
+        stopTransfer Transfer4
+        stopTransfer Transfer5
+        stopTransfer Transfer6
+
+application AppCA [ bearer ]
+        startTransfer Transfer_UL_SMALL on bearer as Transfer1
+        startTransfer Transfer_UL_AVG on bearer as Transfer2
+        startTransfer Transfer_UL_LARGE on bearer as Transfer3
+        startTransfer Transfer_DL_SMALL_CA on bearer as Transfer4
+        startTransfer Transfer_DL_AVG_CA on bearer as Transfer5
+        startTransfer Transfer_DL_LARGE_CA on bearer as Transfer6
+        wait 50000
+        stopTransfer Transfer1
+        stopTransfer Transfer2
+        stopTransfer Transfer3
+        stopTransfer Transfer4
+        stopTransfer Transfer5
+        stopTransfer Transfer6
+
+mobileSession testSessionNonCA
+    connectBearer DEFAULT as stream
+    startApplication App [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+mobileSession testSessionCA
+    connectBearer DEFAULT as stream
+    startApplication AppCA [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+testScenario
+    testSessionNonCA
+        rate 10.0/s
+        cells[1]
+        ueCapabilities cat5
+        activityIntervalLength 9.4 s
+
+    testSessionCA
+        rate 1.0/s
+        cells[1]
+        ueCapabilities cat8
+        activityIntervalLength 4.9 s
+

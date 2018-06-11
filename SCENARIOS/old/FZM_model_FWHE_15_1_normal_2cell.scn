@@ -1,0 +1,854 @@
+#
+#***********************BEGIN_COPYRIGHT_HEADER******************
+#					   COPYRIGHT(C)Nokia 2015
+#						 ALL RIGHTS RESERVED
+#				   Nokia Confidential Proprietary
+#
+#**************************BEGIN_SCRIPT_HEADER******************
+#
+#	Last modification: ljurkows - 23/07/2015
+########################################################
+
+
+####################################################################################
+#
+#		TL15A - FZM FWHE - Traffic Model High Load
+#
+####################################################################################
+
+####################################################################################
+#		
+#
+####################################################################################
+
+transfer TransferDL
+    type udp
+    packetSize 512
+    dir downlink
+	packetRate 250.0			
+
+
+transfer TransferUL
+	type udp
+    packetSize 224
+	dir uplink
+	packetRate 210.0
+
+########################traffic model normal original from FWHE RL55
+	# transfer TransferDL
+    # type udp
+ # #   packetSize 536
+    # packetSize 620
+    # dir downlink
+	# packetRate 425.0			
+
+
+# transfer TransferUL
+	# type udp
+	# # packetSize 160
+    # packetSize 220
+	# dir uplink
+	# packetRate 425.0 
+#################################################	
+	
+	
+########################traffic model extreme original from FWHE RL55
+# transfer TransferDL
+    # type udp
+    # packetSize 512
+    # dir downlink
+        # packetRate 72.0                 
+
+
+# transfer TransferUL
+        # type udp
+    # packetSize 224
+        # dir uplink
+        # packetRate 30.0   	
+#################################################	
+
+
+# transfer TransferDL
+	# type udp
+	# packetSize 612
+	# dir downlink
+	# packetRate 320.0			
+
+
+# transfer TransferUL
+	# type udp
+	# packetSize 285
+	# dir uplink
+	# packetRate 400.0 
+	
+transfer TransferDLPing
+	type udp
+	packetSize 64
+	dir downlink
+	packetRate 1.0
+
+transfer TransferULPing
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 1.0
+
+
+	
+###################################################################################
+#
+#					   Measurement raport
+#
+##################################################################################
+
+configMeas conf1
+
+reportMeas report1
+		amount	  1
+		interval	1
+		servingCell rsrpMin=10 rsrpMax=10 rsrqMin=20 rsrqMax=20
+		#neighCell   rsrpMin=50 rsrpMax=50 rsrqMin=20 rsrqMax=20
+		events 2
+		skipNeigh
+ 
+	
+	
+####################################################################################
+#
+#		SERVICE REQUEST 
+#	   (UE State Transitions)
+#
+####################################################################################
+#  484 UE Initiated Attach BHCA on the primary eNB
+#
+#  calculation of AppSR duration:
+#  this "component" will require 414,57 [ UE ] in RRC_CONNECTED ( 484 - 38,11 /inter-eNB HO/ - 13,28 /TAU/ - 10,24 /Dedicated/ - 7,8 /ATTACH=PDN )
+#  to achieve this, the total RRC_CONNECTED time per UE needs to be 320,73 [ sec ] ( 414,57 [ UE ] * 1 [ sec ] / 1,293 (attach rate) [ UE ] ) :
+#  - 10 [ sec ] takes the UE to go idle before detaching
+#
+#  - Sum of SR: 31.022 /s; 31.022 = 0.518 attach/s * iterations => iterations = 24
+#  - there are 24 iterations of Service Request component, so each iteration needs to have a UE for 13.198[ sec ] in RRC_CONNECTED ( 320,73 [ sec ] / 24 = 13,363)
+#
+#  UEs RRC_CONN = 24 [iterations]*(10+4)[sec]*1,293 (attach_rate)=434,308
+#  UEs Idle = (12+24*10)[go to idle]*1,293(attach_rate)=325,731
+#  UEs Sending traffic = 24*4*1,293 = 124,088
+###################################################################################
+
+application AppSR_1[ bearerSR ] 
+	wait 12
+	idleHandover to 1
+	24x
+		wait 12
+		startTransfer TransferDL on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR as sampleTransferSRUL
+		wait 6
+        	#wait 4
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 12
+	idleHandover to 11
+	
+application AppSR_2[ bearerSR ]
+	wait 12
+	idleHandover to 2
+	24x
+		wait 12
+		startTransfer TransferDL on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR as sampleTransferSRUL 
+		wait 6
+        	#wait 4
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 12
+	idleHandover to 11
+	
+	
+application AppSRPing_1 [ bearerSRPing ] 
+	wait 12	
+	idleHandover to 1
+	24x
+		wait 12
+		startTransfer TransferDLPing on bearerSRPing as sampleTransferSRDLPing
+		startTransfer TransferULPing on bearerSRPing as sampleTransferSRULPing
+		wait 6
+        	#wait 4
+		stopTransfer sampleTransferSRDLPing
+		stopTransfer sampleTransferSRULPing
+	wait 12
+	idleHandover to 11
+	
+	
+application AppSRPing_2 [ bearerSRPing ] 
+	wait 12	
+	idleHandover to 2
+	24x
+		wait 12
+		startTransfer TransferDLPing on bearerSRPing as sampleTransferSRDLPing 
+		startTransfer TransferULPing on bearerSRPing as sampleTransferSRULPing 
+		wait 6
+        	#wait 4
+		stopTransfer sampleTransferSRDLPing
+		stopTransfer sampleTransferSRULPing
+	wait 12
+	idleHandover to 11
+
+	
+    
+mobileSession testSessionSR_1
+	connectBearer DEFAULT as stream1
+	startApplication AppSR_1 [ stream1 ] as myAppSR1
+	wait applicationsFinish [ myAppSR1 ]
+	releaseBearer stream1
+		
+mobileSession testSessionSRPing_1
+	connectBearer DEFAULT as stream1Ping
+	startApplication AppSRPing_1 [ stream1Ping ] as myAppSR1Ping
+	wait applicationsFinish [ myAppSR1Ping ]
+	releaseBearer stream1Ping		
+    
+mobileSession testSessionSR_2
+	connectBearer DEFAULT as stream2
+	startApplication AppSR_2 [ stream2 ] as myAppSR2
+	wait applicationsFinish [ myAppSR2 ]
+	releaseBearer stream2
+	
+mobileSession testSessionSRPing_2
+	connectBearer DEFAULT as stream2Ping
+	startApplication AppSRPing_2 [ stream2Ping ] as myAppSR2Ping
+	wait applicationsFinish [ myAppSR2Ping ]
+	releaseBearer stream2Ping
+
+
+	
+###################################################################################
+#
+#		PDN==ATTACH/DETACH
+#
+###################################################################################
+#  0,078 attach / s 
+#  No of UEs in RRC_CONNECTED : 100 * 0.078[ UEs ] / 1 [ sec ] = 7.8 UEs
+#  OK
+###################################################################################
+
+application AppPDN [ bearerPDN ]
+	startTransfer TransferDL on bearerPDN as sampleTransferPDNDL
+	startTransfer TransferUL on bearerPDN as sampleTransferPDNUL
+	wait 100
+	stopTransfer sampleTransferPDNDL
+	stopTransfer sampleTransferPDNUL
+
+application AppPDNPing [ bearerPDNPing ]
+	startTransfer TransferDLPing on bearerPDNPing as sampleTransferPDNDLPing
+	startTransfer TransferULPing on bearerPDNPing as sampleTransferPDNULPing
+	wait 100
+	stopTransfer sampleTransferPDNDLPing
+	stopTransfer sampleTransferPDNULPing
+	
+# application AppPDN2 [ bearerPDN2 ]
+	# startTransfer TransferDL2 on bearerPDN2 as sampleTransferPDNDL2
+	# startTransfer TransferUL2 on bearerPDN2 as sampleTransferPDNUL2
+	# wait 100
+	# stopTransfer sampleTransferPDNDL2
+	# stopTransfer sampleTransferPDNUL2
+
+# application AppPDNPing2 [ bearerPDNPing2 ]
+	# startTransfer TransferDLPing on bearerPDNPing2 as sampleTransferPDNDLPing2
+	# startTransfer TransferULPing on bearerPDNPing2 as sampleTransferPDNULPing2
+	# wait 100
+	# stopTransfer sampleTransferPDNDLPing2
+	# stopTransfer sampleTransferPDNULPing2	
+
+	
+mobileSession testSessionPDN1
+	connectBearer DEFAULT as stream1
+	startApplication AppPDN [ stream1 ] as myAppPDN1 &
+	wait applicationsFinish [ myAppPDN1 ]
+	releaseBearer stream1
+
+mobileSession testSessionPDN1Ping
+	connectBearer DEFAULT as stream1Ping
+	startApplication AppPDNPing [ stream1Ping ] as myAppPDN1Ping &
+	wait applicationsFinish [ myAppPDN1Ping ]
+	releaseBearer stream1Ping
+
+# mobileSession testSessionPDN2
+	# connectBearer DEFAULT as stream2
+	# startApplication AppPDN2 [ stream2 ] as myAppPDN2 &
+	# wait applicationsFinish [ myAppPDN2 ]
+	# releaseBearer stream2
+
+# mobileSession testSessionPDN2Ping
+	# connectBearer DEFAULT as stream2Ping
+	# startApplication AppPDNPing2 [ stream2Ping ] as myAppPDN2Ping &
+	# wait applicationsFinish [ myAppPDN2Ping ]
+	# releaseBearer stream2Ping
+
+	
+
+###################################################################################
+#
+#		INTER-ENB HO	
+#
+###################################################################################
+#  2.041/s inter-eNB (src) HOs / s  = 2.041/s - 0 (intra-eNB HO) - 0.0117 (dedicated bearers) = 1.9789 /s
+#  1.979/s = 10 iterations x 0.1979 attaches/s
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] * 3 [ sec ] ) * 0.1979 [ UEs ] / 1 [ sec ] = 5,936 UEs
+##################################################################################
+	
+## interFreq	
+application AppInterHO_1 [ bearerInterHO1 ]
+	startTransfer TransferDL on bearerInterHO1 as TransferInterHO1DL
+	startTransfer TransferUL on bearerInterHO1 as TransferInterHO1UL
+	10x
+		wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 3
+		handover to 1
+		wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO1DL
+	stopTransfer TransferInterHO1UL
+	
+application AppInterHOPing_1 [ bearerInterHO1Ping ]
+	startTransfer TransferDLPing on bearerInterHO1Ping as TransferInterHO1DLPing
+	startTransfer TransferULPing on bearerInterHO1Ping as TransferInterHO1ULPing
+	10x
+		wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 3
+		handover to 1
+		wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO1DLPing
+	stopTransfer TransferInterHO1ULPing
+	
+application AppInterHO_2 [ bearerInterHO1 ]
+	startTransfer TransferDL on bearerInterHO1 as TransferInterHO1DL
+	startTransfer TransferUL on bearerInterHO1 as TransferInterHO1UL
+	10x
+		wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 3
+		handover to 2
+		wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO1DL
+	stopTransfer TransferInterHO1UL	
+	
+application AppInterHOPing_2 [ bearerInterHO1Ping ]
+	startTransfer TransferDLPing on bearerInterHO1Ping as TransferInterHO1DLPing
+	startTransfer TransferULPing on bearerInterHO1Ping as TransferInterHO1ULPing
+	10x
+		wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 3
+		handover to 2
+		wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO1DLPing
+	stopTransfer TransferInterHO1ULPing
+
+	
+mobileSession testSessionInterHO_1
+	connectBearer DEFAULT as streamInterHO1
+	startApplication AppInterHO_1 [ streamInterHO1 ] as myAppInterHO1
+	wait applicationsFinish [ myAppInterHO1 ]
+	releaseBearer streamInterHO1	
+	
+mobileSession testSessionInterHOPing_1
+	connectBearer DEFAULT as streamInterHO1Ping
+	startApplication AppInterHOPing_1 [ streamInterHO1Ping ] as myAppInterHO1Ping
+	wait applicationsFinish [ myAppInterHO1Ping ]
+	releaseBearer streamInterHO1Ping
+	
+mobileSession testSessionInterHO_2
+	connectBearer DEFAULT as streamInterHO2
+	startApplication AppInterHO_2 [ streamInterHO2 ] as myAppInterHO2
+	wait applicationsFinish [ myAppInterHO2 ]
+	releaseBearer streamInterHO2	
+	
+mobileSession testSessionInterHOPing_2
+	connectBearer DEFAULT as streamInterHO2Ping
+	startApplication AppInterHOPing_2 [ streamInterHO2Ping ] as myAppInterHO2Ping
+	wait applicationsFinish [ myAppInterHO2Ping ]
+	releaseBearer streamInterHO2Ping
+
+
+
+	
+###################################################################################
+#
+#		INTRA-ENB HO	
+#
+###################################################################################
+# 
+###################################################################################
+		
+application AppIntraHO_2 [ bearerInterHO1 ]
+	startTransfer TransferDL on bearerInterHO1 as TransferInterHO1DL
+	startTransfer TransferUL on bearerInterHO1 as TransferInterHO1UL
+	3x
+		wait 2
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+		handover to 2
+		wait 2
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+		handover to 1
+	wait 3
+	startReporting conf1 report1
+	stopReporting
+	wait 3
+	handover to 11
+	stopTransfer TransferInterHO1DL
+	stopTransfer TransferInterHO1UL
+	
+application AppIntraHOPing_2 [ bearerInterHO1Ping ]
+	startTransfer TransferDLPing on bearerInterHO1Ping as TransferInterHO1DLPing
+	startTransfer TransferULPing on bearerInterHO1Ping as TransferInterHO1ULPing
+	3x
+		wait 2
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+		handover to 2
+		wait 2
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+		handover to 1
+	wait 3
+	startReporting conf1 report1
+	stopReporting
+	wait 3
+	handover to 11
+	stopTransfer TransferInterHO1DLPing
+	stopTransfer TransferInterHO1ULPing
+	
+	
+application AppIntraHO_1 [ bearerInterHO1 ]
+	startTransfer TransferDL on bearerInterHO1 as TransferInterHO1DL
+	startTransfer TransferUL on bearerInterHO1 as TransferInterHO1UL
+	3x
+		wait 2
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+		handover to 1
+		wait 2
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+		handover to 2
+	wait 3
+	startReporting conf1 report1
+	stopReporting
+	wait 3
+	handover to 11
+	stopTransfer TransferInterHO1DL
+	stopTransfer TransferInterHO1UL
+	
+application AppIntraHOPing_1 [ bearerInterHO1Ping ]
+	startTransfer TransferDLPing on bearerInterHO1Ping as TransferInterHO1DLPing
+	startTransfer TransferULPing on bearerInterHO1Ping as TransferInterHO1ULPing
+	3x
+		wait 2
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+		handover to 1
+		wait 2
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+		handover to 2
+	wait 3
+	startReporting conf1 report1
+	stopReporting
+	wait 3
+	handover to 11
+	stopTransfer TransferInterHO1DLPing
+	stopTransfer TransferInterHO1ULPing
+	
+
+mobileSession testSessionIntraHO_2
+	connectBearer DEFAULT as streamIntraHO1
+	startApplication AppIntraHO_2 [ streamIntraHO1 ] as myAppIntraHO1
+	wait applicationsFinish [ myAppIntraHO1 ]
+	releaseBearer streamIntraHO1	
+	
+mobileSession testSessionIntraHOPing_2
+	connectBearer DEFAULT as streamIntraHO1Ping
+	startApplication AppIntraHOPing_2 [ streamIntraHO1Ping ] as myAppIntraHO1Ping
+	wait applicationsFinish [ myAppIntraHO1Ping ]
+	releaseBearer streamIntraHO1Ping
+
+mobileSession testSessionIntraHO_1
+	connectBearer DEFAULT as streamIntraHO1
+	startApplication AppIntraHO_1 [ streamIntraHO1 ] as myAppIntraHO1
+	wait applicationsFinish [ myAppIntraHO1 ]
+	releaseBearer streamIntraHO1	
+	
+mobileSession testSessionIntraHOPing_1
+	connectBearer DEFAULT as streamIntraHO1Ping
+	startApplication AppIntraHOPing_1 [ streamIntraHO1Ping ] as myAppIntraHO1Ping
+	wait applicationsFinish [ myAppIntraHO1Ping ]
+	releaseBearer streamIntraHO1Ping
+	
+##################################################################################################################
+#
+#		TRACKING AREA UPDATE
+#
+##################################################################################################################
+#  7.12 TAU / s 
+#  7.12/s = 10 iterations x 0.4982 attaches/s
+#  63 / 7 + 1 = 10 [ iterations ]
+#  UEs connected = 30 iteration * 0,5s (T_NAS_DELAY) * 0.8853 attaches/s = 13.28
+#  UEs idle = 12s+12s+(205-30iteration*0,5)s*0.8853 attaches/s=214*0.3542s=192.21 UEs idle
+##################################################################################################################
+
+
+mobileSession testSessionTAU_1
+	wait 15
+	idleHandover to 1
+	wait 12
+	every 7.0 s tau as periodicTau
+	wait 205
+	cancel periodicTau
+	wait 12
+	idleHandover to 11
+
+mobileSession testSessionTAU_2
+	wait 15
+	idleHandover to 2
+	wait 12
+	every 7.0 s tau as periodicTau
+	wait 205
+	cancel periodicTau
+	wait 12
+	idleHandover to 11
+	
+
+#################################################################################################################
+#		Dedicated Bearers 
+#	   (Bearer Addition/Release)
+#  per cell
+#  0.624 Dedicated Bearers / s = 10 iterations x 0.0117 attaches/s
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] + 1) x 4 [ sec ] * 0.0117 UEs ] / 1 [ sec ] = 2.745
+#  UEs idle = 0
+#################################################################################################################
+	
+
+bearerQoS DED
+	qci 3
+	mbr_uplink 31
+	mbr_downlink 31
+	gbr_uplink 31
+	gbr_downlink 31
+	network_initiated FALSE
+	
+		
+application App_DED [ bearerDED ]
+	startTransfer TransferDL on bearerDED as sampleTransferDLDED
+	startTransfer TransferUL on bearerDED as sampleTransferULDED
+	wait 60
+	stopTransfer sampleTransferDLDED
+	stopTransfer sampleTransferULDED		
+	
+
+application App_DEDPing [ bearerDEDPing ]
+	startTransfer TransferDLPing on bearerDEDPing as sampleTransferDLDEDPing
+	startTransfer TransferULPing on bearerDEDPing as sampleTransferULDEDPing
+	wait 60
+	stopTransfer sampleTransferDLDEDPing	
+	stopTransfer sampleTransferULDEDPing	
+	
+	
+
+ mobileSession testSessionDED_1
+	connectBearer DEFAULT as D1
+	startApplication App_DED [ D1 ] as myApp_DEFAULT1 &
+	wait 2
+	startReporting conf1 report1
+	stopReporting
+	wait 1
+	handover to 1
+	10x
+		connectBearer DED on D1 as streamDED1
+		wait 4
+		releaseBearer streamDED1
+	wait 2
+	startReporting conf1 report1
+	stopReporting
+	wait 1
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1 ]
+	releaseBearer D1
+	
+
+mobileSession testSessionDEDPing_1
+	connectBearer DEFAULT as D1Ping
+	startApplication App_DEDPing [ D1Ping ] as myApp_DEFAULT1Ping &
+	wait 2
+	startReporting conf1 report1
+	stopReporting
+	wait 1
+	handover to 1
+	10x
+		connectBearer DED on D1Ping as streamDED1Ping
+		wait 4
+		releaseBearer streamDED1Ping
+	wait 2
+	startReporting conf1 report1
+	stopReporting
+	wait 1
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1Ping ]
+	releaseBearer D1Ping
+		
+
+		
+ mobileSession testSessionDED_2
+	connectBearer DEFAULT as D1
+	startApplication App_DED [ D1 ] as myApp_DEFAULT1 &
+	wait 2
+	startReporting conf1 report1
+	stopReporting
+	wait 1
+	handover to 2
+	10x
+		connectBearer DED on D1 as streamDED1
+		wait 4
+		releaseBearer streamDED1
+	wait 2
+	startReporting conf1 report1
+	stopReporting
+	wait 1
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1 ]
+	releaseBearer D1
+	
+
+mobileSession testSessionDEDPing_2
+	connectBearer DEFAULT as D1Ping
+	startApplication App_DEDPing [ D1Ping ] as myApp_DEFAULT1Ping &
+	wait 2
+	startReporting conf1 report1
+	stopReporting
+	wait 1
+	handover to 2
+	10x
+		connectBearer DED on D1Ping as streamDED1Ping
+		wait 4
+		releaseBearer streamDED1Ping
+	wait 2
+	startReporting conf1 report1
+	stopReporting
+	wait 1
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1Ping ]
+	releaseBearer D1Ping
+
+
+####################################################################################
+#  
+#		Traffic Model scenario
+#		   20% of UE with Traffic
+#		   80% of UE with Ping
+#
+####################################################################################
+
+##### *
+
+testScenario
+	
+## SERVICE REQUEST
+  testSessionSR_1
+#	rate 0.09165/s
+#	rate 0.07165/s
+	rate 0.01921/s
+	cells[11]
+	delayToStart 1.0 s
+	ueCapabilities simple1
+
+  testSessionSRPing_1
+#	rate 0.3666/s
+#	rate 0.2866/s
+	rate 0.07683/s
+	cells[11]
+	delayToStart 2.0 s
+	ueCapabilities simple1
+
+	testSessionSR_2
+#	rate 0.09165/s
+#	rate 0.07165/s
+	rate 0.01921/s
+	cells[11]
+	delayToStart 1.0 s
+	ueCapabilities simple1
+
+  testSessionSRPing_2
+#	rate 0.3666/s
+#	rate 0.2866/s
+	rate 0.07683/s
+	cells[11]
+	delayToStart 2.0 s
+	ueCapabilities simple1		
+	
+		
+## ATTACH/DETACH
+  testSessionPDN1
+#	rate 0.0078/s
+	rate 0.0021375/s
+	cells[1]
+	delayToStart 3.0 s
+	ueCapabilities simple1
+
+  testSessionPDN1Ping
+#	rate 0.0312/s
+	rate 0.00855/s
+	cells[1]
+	delayToStart 4.0 s	
+	ueCapabilities simple1
+		
+  testSessionPDN1
+#	rate 0.0078/s
+	rate 0.0021375/s
+	cells[2]
+	delayToStart 3.0 s
+	ueCapabilities simple1
+
+  testSessionPDN1Ping
+#	rate 0.0312/s
+	rate 0.00855/s
+	cells[2]
+	delayToStart 4.0 s	
+	ueCapabilities simple1
+
+ 
+### HANDOVER INTER-ENB
+  testSessionInterHO_1
+#	rate 0.07186/s
+	rate 0.02002/s
+	cells[11]
+	delayToStart 5.0 s
+	ueCapabilities simple1
+
+  testSessionInterHOPing_1
+#	rate 0.2874/s
+	rate 0.083078/s
+	cells[11]
+	delayToStart 6.0 s
+	ueCapabilities simple1
+
+  testSessionInterHO_2
+#	rate 0.07186/s
+	rate 0.02002/s
+	cells[11]
+	delayToStart 5.0 s
+	ueCapabilities simple1
+
+  testSessionInterHOPing_2
+#	rate 0.2874/s
+	rate 0.083078/s
+	cells[11]
+	delayToStart 6.0 s
+	ueCapabilities simple1	
+	
+	
+### INTRA-ENB HANDOVER
+  testSessionIntraHO_1
+#	rate 0.0308/s
+	rate 0.009386/s
+	cells[11]
+	delayToStart 5.0 s
+	ueCapabilities simple1
+
+  testSessionIntraHOPing_1
+#	rate 0.1231/s
+	rate 0.0375/s
+	cells[11]
+	delayToStart 6.0 s
+	ueCapabilities simple1
+  
+  testSessionIntraHO_2
+#	rate 0.0308/s
+	rate 0.009386/s
+	cells[11]
+	delayToStart 5.0 s
+	ueCapabilities simple1
+
+  testSessionIntraHOPing_2
+#	rate 0.1231/s
+	rate 0.0375/s
+	cells[11]
+	delayToStart 6.0 s
+	ueCapabilities simple1	
+
+	
+### TAU
+  testSessionTAU_1
+	rate 0.0966/s
+	#rate 0.3665/s
+	cells[11]
+	delayToStart 7.0 s
+	ueCapabilities simple1
+	
+  testSessionTAU_2
+	rate 0.0966/s
+	#rate 0.3665/s
+	cells[11]
+	delayToStart 7.0 s
+	ueCapabilities simple1
+
+	
+### BEARER ALLOCATION
+  testSessionDED_1
+#	rate 0.02328/s
+	rate 0.007087/s
+	cells[11]
+	delayToStart 8.0 s
+	ueCapabilities simple1
+
+  testSessionDEDPing_1
+#	rate 0.09312/s
+	rate 0.028365/s
+	cells[11]
+	delayToStart 9.0 s
+	ueCapabilities simple1
+
+  testSessionDED_2
+#	rate 0.02328/s
+	rate 0.007087/s
+	cells[11]
+	delayToStart 8.0 s
+	ueCapabilities simple1
+
+  testSessionDEDPing_2
+#	rate 0.09312/s
+	rate 0.028365/s
+	cells[11]
+	delayToStart 9.0 s
+	ueCapabilities simple1
+
+  
+

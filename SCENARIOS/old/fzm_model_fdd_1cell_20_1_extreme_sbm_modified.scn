@@ -1,0 +1,456 @@
+#
+#***********************BEGIN_COPYRIGHT_HEADER******************
+#					   COPYRIGHT(C)Nokia 2015
+#						 ALL RIGHTS RESERVED
+#				   Nokia Confidential Proprietary
+#
+#**************************BEGIN_SCRIPT_HEADER******************
+#
+#	Last modification: lskoczyl - 23/07/2015
+########################################################
+#####################
+
+# simulation
+
+#####################
+simulation set shannonNack
+        cqi1 simpleCQIRI1
+        cqi2 simpleCQIRI2
+        loss simpleLoss
+        offsets simpleOffset
+        pmis simplePmis
+        nackPolicy shannon
+
+simulation set noNack
+        cqi1 simpleCQIRI1
+        cqi2 simpleCQIRI2
+        loss simpleLoss
+        offsets simpleOffset
+        pmis simplePmis
+        nackPolicy never
+
+
+####################################################################################
+#
+#		FL15A - FDD - Traffic model  Extreme Load
+#
+####################################################################################
+#volte 
+
+transfer TransferDL_SIP
+	type tcp
+	packetSize 955
+	dir downlink
+	packetRate 10.0
+
+transfer TransferUL_SIP
+	type tcp
+	packetSize 868
+	dir uplink
+	packetRate 10.0
+
+	
+trafficProfile TransferDL_RTP_prof
+	downlink
+	packetSize 45       
+	packetRate 50.0
+	uplink
+	packetSize 20
+	packetRate 6.25
+
+trafficProfile TransferUL_RTP_prof
+	uplink
+	packetSize 45       
+	packetRate 50.0
+	downlink
+	packetSize 20
+	packetRate 6.25	  
+	
+transfer TransferDL_RTP
+	type rtp
+	profile TransferDL_RTP_prof
+  
+
+transfer TransferUL_RTP
+	type rtp
+	profile TransferUL_RTP_prof
+
+
+trafficProfile RTP_MV_prof
+	timeQuantum 10000
+	state1 TransferDL_RTP
+	state2 TransferUL_RTP
+	[ state2 state1 0.5 ]
+	[ state2 state2 0.5 ]
+	[ state1 state2 0.5 ]
+	[ state1 state1 0.5 ]
+	
+	
+transfer Transfer_RTP
+	type rtp
+	profile RTP_MV_prof
+
+####################################################################################
+#	Precondition:
+#		- Main eNB configured as cell 1
+#		- Secondary eNB: cell 11
+#		
+#
+####################################################################################
+
+transfer TransferDL
+	type tcp
+	packetSize 4
+	dir downlink
+	packetRate 100
+transfer TransferUL
+	type tcp
+	packetSize 4
+	dir uplink
+	packetRate 100
+
+transfer TransferDLN
+        type tcp
+        packetSize 128
+        dir downlink
+        packetRate 4920
+transfer TransferULN
+        type tcp
+        packetSize 128
+        dir uplink
+        packetRate 4920
+
+transfer TransferDLudp
+        type udp
+        packetSize 4
+        dir downlink
+        packetRate 100
+transfer TransferULudp
+        type udp
+        packetSize 4
+        dir uplink
+        packetRate 100
+
+transfer TransferDLNudp
+        type udp
+        packetSize 128
+        dir downlink
+        packetRate 4920
+transfer TransferULNudp
+        type udp
+        packetSize 128
+        dir uplink
+        packetRate 4920
+
+
+	
+transfer TransferDLPing
+	type tcp
+	packetSize 64
+	dir downlink
+	packetRate 10.0
+
+transfer TransferULPing
+	type tcp
+	packetSize 64
+	dir uplink
+	packetRate 10.0
+
+	
+###################################################################################
+#
+#					   Measurement raport
+#
+##################################################################################
+
+configMeas conf1
+
+reportMeas report1
+		amount	  1
+		interval	1
+		servingCell rsrpMin=10 rsrpMax=10 rsrqMin=20 rsrqMax=20
+		#neighCell   rsrpMin=50 rsrpMax=50 rsrqMin=20 rsrqMax=20
+		events 2
+		skipNeigh
+ 
+	
+#############	
+#volte
+application App_SIP [ bearerSIP ]
+	startTransfer TransferDL_SIP on bearerSIP as sampleTransferVoLTEDL_SIP1
+	startTransfer TransferUL_SIP on bearerSIP as sampleTransferVoLTEUL_SIP1
+	wait 1
+	stopTransfer sampleTransferVoLTEDL_SIP1
+	stopTransfer sampleTransferVoLTEUL_SIP1
+
+	
+application App_RTP [ bearerRTP ]
+	startTransfer Transfer_RTP on bearerRTP as sampleTransferVoLTEDL_RTP
+	wait 4
+	stopTransfer sampleTransferVoLTEDL_RTP
+
+application App_RTP2 [ bearerRTP ]
+        startTransfer Transfer_RTP on bearerRTP as sampleTransferVoLTEDL_RTP
+        wait 100
+        stopTransfer sampleTransferVoLTEDL_RTP
+
+bearerQoS VoLTE_RTP
+	qci 1
+	mbr_uplink 40
+	mbr_downlink 40
+	gbr_uplink 40
+	gbr_downlink 40
+	network_initiated FALSE
+	
+bearerQoS VoLTE_SIP
+	qci 5
+#	mbr_uplink 64
+#	mbr_downlink 64
+#	gbr_uplink 64
+#	gbr_downlink 64
+	network_initiated FALSE
+	
+bearerQoS Data_Stream
+	qci 7
+	network_initiated FALSE
+
+mobileSession testSessionVoLTE1
+	connectBearer DEFAULT as DEFAULT_alias
+	wait 2
+ 	connectBearer VoLTE_SIP on DEFAULT_alias as streamVoLTE_SIP1
+	startApplication App_SIP [ streamVoLTE_SIP1] as myApp_SIP1
+	wait 2
+	connectBearer VoLTE_RTP as streamVoLTE_RTP1
+	simulation select shannonNack
+	startApplication App_RTP [ streamVoLTE_RTP1 ] as myApp_RTP1 &
+	wait applicationsFinish [ myApp_SIP1 ]
+    	wait applicationsFinish [ myApp_RTP1 ]
+
+mobileSession testSessionVoLTE2
+        connectBearer DEFAULT as DEFAULT_aliasx
+        wait 2
+        connectBearer VoLTE_SIP on DEFAULT_aliasx as streamVoLTE_SIP1x
+        startApplication App_SIP [ streamVoLTE_SIP1x] as myApp_SIP1x
+        wait 2
+        connectBearer VoLTE_RTP as streamVoLTE_RTP1x
+        startApplication App_RTP2 [ streamVoLTE_RTP1x ] as myApp_RTP2x &
+	execCommand LmtsPhyChannelModelConfig 2 (30)
+	simulation select shannonNack
+        wait applicationsFinish [ myApp_SIP1x ]
+        wait applicationsFinish [ myApp_RTP2x ]
+
+####################################################################################
+#
+#		SERVICE REQUEST
+#	   (UE State Transitions)
+#
+####################################################################################
+#  484 UE Initiated Attach BHCA on the primary eNB
+#
+#  calculation of AppSR duration:
+#  this "component" will require 414,57 [ UE ] in RRC_CONNECTED ( 484 - 38,11 /inter-eNB HO/ - 13,28 /TAU/ - 10,24 /Dedicated/ - 7,8 /ATTACH=PDN )
+#  to achieve this, the total RRC_CONNECTED time per UE needs to be 320,73 [ sec ] ( 414,57 [ UE ] * 1 [ sec ] / 1,293 (attach rate) [ UE ] ) :
+#  - 10 [ sec ] takes the UE to go idle before detaching
+#
+#  - Sum of SR: 31.022 /s; 31.022 = 0.518 attach/s * iterations => iterations = 24
+#  - there are 24 iterations of Service Request component, so each iteration needs to have a UE for 13.198[ sec ] in RRC_CONNECTED ( 320,73 [ sec ] / 24 = 13,363)
+#
+#  UEs RRC_CONN = 24 [iterations]*(10+4)[sec]*1,293 (attach_rate)=434,308
+#  UEs Idle = (12+24*10)[go to idle]*1,293(attach_rate)=325,731
+#  UEs Sending traffic = 24*4*1,293 = 124,088
+###################################################################################
+application SR [bearerPDN]
+        startTransfer TransferDL on bearerPDN as sampleTransferPDNDLx
+        startTransfer TransferUL on bearerPDN as sampleTransferPDNULx
+        wait 1
+        startTransfer TransferDLudp on bearerPDN as sampleTransferPDNDLux
+        startTransfer TransferULudp on bearerPDN as sampleTransferPDNULux
+        simulation select shannonNack
+        wait 0.25
+        stopTransfer sampleTransferPDNDLx
+        stopTransfer sampleTransferPDNULx
+        wait 1
+        stopTransfer sampleTransferPDNDLux
+        stopTransfer sampleTransferPDNULux
+	10x
+		wait 11
+	        startTransfer TransferDL on bearerPDN as sampleTransferPDNDLa
+	        startTransfer TransferUL on bearerPDN as sampleTransferPDNULa
+	        wait 1
+	        startTransfer TransferDLudp on bearerPDN as sampleTransferPDNDLua
+	        startTransfer TransferULudp on bearerPDN as sampleTransferPDNULua
+		wait 1
+		stopTransfer sampleTransferPDNDLa
+	        stopTransfer sampleTransferPDNULa
+	        wait 1
+	        stopTransfer sampleTransferPDNDLua
+	        stopTransfer sampleTransferPDNULua
+
+
+mobileSession testSessionSR
+        connectBearer DEFAULT as stream1
+        startApplication SR [ stream1 ] as myAppPDNx &
+        simulation select shannonNack
+        execCommand LmtsPhyChannelModelConfig 2 (30)
+        wait applicationsFinish [ myAppPDNx ]
+        releaseBearer stream1
+
+	
+###################################################################################
+#
+#		PDN==ATTACH/DETACH
+#
+###################################################################################
+#  0,078 attach / s 
+#  No of UEs in RRC_CONNECTED : 100 * 0.078[ UEs ] / 1 [ sec ] = 7.8 UEs
+#  OK
+###################################################################################
+
+
+application AppPDN [ bearerPDN ]
+	startTransfer TransferDL on bearerPDN as sampleTransferPDNDL
+	startTransfer TransferUL on bearerPDN as sampleTransferPDNUL
+	wait 1
+	startTransfer TransferDLudp on bearerPDN as sampleTransferPDNDLu
+        startTransfer TransferULudp on bearerPDN as sampleTransferPDNULu
+	simulation select shannonNack
+	4x	
+		wait 0.5
+		handover to 11
+		wait 0.5
+		handover to 1
+	wait 0.25
+	stopTransfer sampleTransferPDNDL
+	stopTransfer sampleTransferPDNUL	
+	wait 1
+	stopTransfer sampleTransferPDNDLu
+        stopTransfer sampleTransferPDNULu
+	redirect  utra csfb
+	wait 0.25
+	tau
+
+application AppNormal [ bearerPDN ]
+	startTransfer TransferDLN on bearerPDN as sampleTransferPDNDL
+        startTransfer TransferULN on bearerPDN as sampleTransferPDNUL
+	wait 1
+	#startTransfer TransferDLNudp on bearerPDN as sampleTransferPDNDLu
+        #startTransfer TransferULNudp on bearerPDN as sampleTransferPDNULu
+        wait 4
+        stopTransfer sampleTransferPDNDL
+        stopTransfer sampleTransferPDNUL
+	wait 1
+	#stopTransfer sampleTransferPDNDLu
+        #stopTransfer sampleTransferPDNULu
+	redirect utra csfb
+	wait 0.25
+	tau
+
+application AppPDNPing [ bearerPDNPing ]
+	startTransfer TransferDLPing on bearerPDNPing as sampleTransferPDNDLPing
+	startTransfer TransferULPing on bearerPDNPing as sampleTransferPDNULPing
+	wait 100
+	stopTransfer sampleTransferPDNDLPing
+	stopTransfer sampleTransferPDNULPing
+
+mobileSession testSessionPDN1
+	connectBearer DEFAULT as stream1
+	startApplication AppPDN [ stream1 ] as myAppPDN1 &
+	simulation select shannonNack
+	execCommand LmtsPhyChannelModelConfig 2 (30)	
+	wait applicationsFinish [ myAppPDN1 ]
+	releaseBearer stream1
+
+mobileSession testSessionPDN1Ping
+	connectBearer DEFAULT as stream1Ping
+	startApplication AppPDNPing [ stream1Ping ] as myAppPDN1Ping &
+	wait applicationsFinish [ myAppPDN1Ping ]
+	releaseBearer stream1Ping
+
+mobileSession testSessionNormal
+	connectBearer DEFAULT as stream1
+        startApplication AppNormal [ stream1 ] as myAppPDNx &
+	simulation select shannonNack
+	execCommand LmtsPhyChannelModelConfig 2 (30)
+        wait applicationsFinish [ myAppPDNx ]
+        releaseBearer stream1
+
+###################################################################################
+#
+#		INTER-ENB HO	
+#
+###################################################################################
+#  2.041/s inter-eNB (src) HOs / s  = 2.041/s - 0 (intra-eNB HO) - 0.0117 (dedicated bearers) = 1.9789 /s
+#  1.979/s = 10 iterations x 0.1979 attaches/s
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] * 3 [ sec ] ) * 0.1979 [ UEs ] / 1 [ sec ] = 5,936 UEs
+###################################################################################
+
+
+	
+##################################################################################################################
+#
+#		TRACKING AREA UPDATE
+#
+##################################################################################################################
+#  7.12 TAU / s 
+#  7.12/s = 10 iterations x 0.4982 attaches/s
+#  63 / 7 + 1 = 10 [ iterations ]
+#  UEs connected = 30 iteration * 0,5s (T_NAS_DELAY) * 0.8853 attaches/s = 13.28
+#  UEs idle = 12s+12s+(205-30iteration*0,5)s*0.8853 attaches/s=214*0.3542s=192.21 UEs idle
+##################################################################################################################
+
+
+#################################################################################################################
+#		Dedicated Bearers 
+#	   (Bearer Addition/Release)
+#  per cell
+#  0.624 Dedicated Bearers / s = 10 iterations x 0.0117 attaches/s
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] + 1) x 4 [ sec ] * 0.0117 UEs ] / 1 [ sec ] = 2.745
+#  UEs idle = 0
+#################################################################################################################
+	
+
+
+#################################################################################################################
+#    
+#		VoLTE transfer definition
+#
+#################################################################################################################	
+####################################################################################
+#  
+#		Traffic Model scenario
+#		   30% of UE with Traffic
+#		   70% of UE with Ping
+#
+####################################################################################
+
+testScenario
+  testSessionPDN1
+	rate 4/s
+	cells[1]
+	delayToStart 3.0 s
+	ueCapabilities csfb_and_hrpdFullReg
+
+  testSessionVoLTE1
+	rate 1/s
+	cells[1]
+	ueCapabilities simple1
+
+# testSessionVoLTE2
+#	rate 0.1/s
+#        cells[1]
+#        ueCapabilities simple1
+
+ testSessionNormal
+	rate 4/s
+	cells[1]
+	ueCapabilities csfb_and_hrpdFullReg
+
+ testSessionSR
+	rate 0.025/s
+	cells[1]
+	ueCapabilities simple1	
+	
+
+	
+  
+

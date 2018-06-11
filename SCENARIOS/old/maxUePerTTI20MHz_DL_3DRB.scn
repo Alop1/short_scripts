@@ -1,0 +1,101 @@
+#UE category 1: max DL=10Mbps on 20MHz
+	
+	
+transfer sampleTransferDescriptionDL
+	type udp
+	packetSize 1450
+	#packetRate 810.0
+	packetRate 607.5
+	#packetRate 535.0
+	dir downlink
+
+transfer sampleTransferDescriptionDL2
+	type udp
+	packetSize 1450
+	#packetRate 135.0
+	packetRate 101.25
+	#packetRate 89.5
+	dir downlink
+
+transfer sampleTransferDescriptionUL
+        type udp
+        packetSize 64
+        packetRate 1.0
+        dir uplink
+
+
+	
+bearerQoS QCI1
+    qci 1
+    mbr_uplink 31
+    mbr_downlink 31
+    gbr_uplink 31
+    gbr_downlink 31
+#   network_initiated TRUE
+
+bearerQoS QCI5
+    qci 5
+#   network_initiated TRUE
+
+bearerQoS QCI7
+    qci 7
+#   network_initiated TRUE
+
+bearerQoS QCI8
+    qci 8
+#   network_initiated TRUE
+	
+	
+application AppDL [ bearer ]
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+	startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer11
+	wait 3600
+	stopTransfer sampleTransfer1 
+	stopTransfer sampleTransfer11
+	wait 11
+
+application AppDL2 [ bearer ]
+	startTransfer sampleTransferDescriptionDL2 on bearer as sampleTransfer2 
+	wait 3600
+	stopTransfer sampleTransfer2
+	wait 11
+	
+	
+	
+mobileSession testSessionDL
+	connectBearer DEFAULT as stream
+    connectBearer QCI7 as F
+    connectBearer QCI8 as G	
+	startApplication AppDL [ stream F G ] as myApp
+	wait applicationsFinish [ myApp ]	
+    releaseBearer F
+    releaseBearer G
+	releaseBearer stream
+
+mobileSession testSessionDL2
+	connectBearer DEFAULT as stream2
+    connectBearer QCI7 as H
+    connectBearer QCI8 as I	
+	startApplication AppDL2 [ stream2 ] as myApp2 &
+	startApplication AppDL2 [ H ] as myApp3 &
+ 	startApplication AppDL2 [ I ] as myApp4 &
+	wait applicationsFinish [ myApp2 ]
+	wait applicationsFinish [ myApp3 ]
+	wait applicationsFinish [ myApp4 ]	
+    releaseBearer H
+    releaseBearer I
+	releaseBearer stream2
+
+	
+	
+testScenario
+  testSessionDL
+	rate 6/s
+	cells[1 2 3]
+	activityIntervalLength 3.9 s
+
+  testSessionDL2
+	rate 6/s
+	cells[1 2 3]
+	ueCapabilities cat1
+	activityIntervalLength 5.9 s

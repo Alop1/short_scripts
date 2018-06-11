@@ -1,0 +1,687 @@
+#***********************BEGIN_COPYRIGHT_HEADER******************
+#                       COPYRIGHT(C)NOKIA 2017
+#                         ALL RIGHTS RESERVED
+#                   NOKIA Confidential Proprietary
+#
+#**************************BEGIN_SCRIPT_HEADER******************
+####################################################################################
+# Ping transfer defintion, used for C_Plane sessions to prevent UE going to idle   
+####################################################################################
+transfer TransferDLPing
+	type udp
+	packetSize 64
+	dir downlink
+	packetRate 1.0
+
+transfer TransferULPing
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 1.0
+
+bearerQoS DED
+	qci 6
+	
+bearerQoS DED1
+	qci 8
+
+
+####################################################################################
+#  ??? RRC Connected UEs - no more strict requirement for this, calculations can be outdated 
+#
+#  RRC_CONNECTED UEs = 1505.8 ( 1150 /SR/ + 85.44 /inter-eNB HO/ + 2.6 /TAU/ + 17.6 /Dedicated/ + 50 /ATTACH=PDN + 50.16 /INTRA-eNB-HO/ +150 /UPLANE/)
+#  - 10 [ sec ] takes the UE to go idle before detaching
+#
+###################################################################################
+# CPLANE requirments
+# --- UE state transitions: 211 / sec
+# --- TA Updates: 91 / sec
+# --- Paging at S1: 106 / sec
+# --- Attach/Detach: 1 / sec
+# --- HOs 76 / sec.
+# --- Bearer Addition / Release: 16 / sec
+####################################################################################
+#
+#  Background User Plane data transfer with 50 UEs per cell
+#  DL = 117 Mbps /cell  (40% 70B, 10% 1280B, 50% 1460B)
+#  UL = 32 Mbps / cell  (96% 70B, 4% 1460B)
+# 
+#  117 000 000 = 50 * 8 * [70*4*x +1280*x + 1460*5*x]	=> x = 33.014/s
+#   32 000 000 = 50 * 8 * [70*24*x + 1460*x] => x = 25.478/s
+#
+###################################################################################
+
+transfer TransferDL_70
+    type udp
+    packetSize 42	# +28B header
+    dir downlink
+	packetRate 132.054
+
+transfer TransferDL_1280
+    type udp
+    packetSize 1252
+    dir downlink
+	packetRate 33.014
+	
+transfer TransferDL_1460
+    type udp
+    packetSize 1432
+    dir downlink
+	packetRate 165.068
+
+
+transfer TransferUL_70
+	type udp
+	packetSize 42
+	dir uplink
+	packetRate 611.472
+
+transfer TransferUL_1460
+	type udp
+	packetSize 1432
+	dir uplink
+	packetRate 25.478	
+
+	
+	
+application AppUPLANEing [ bearerPDNUplane ]
+	startTransfer TransferDL_70 on bearerPDNUplane as sampleTransferPDNDLPing_70
+	startTransfer TransferDL_1280 on bearerPDNUplane as sampleTransferPDNDLPing_1280
+	startTransfer TransferDL_1460 on bearerPDNUplane as sampleTransferPDNDLPing_1460	
+	startTransfer TransferUL_70 on bearerPDNUplane as sampleTransferPDNULPing_70
+	startTransfer TransferUL_1460 on bearerPDNUplane as sampleTransferPDNULPing_1460	
+	wait 100000
+	stopTransfer sampleTransferPDNDLPing_70
+	stopTransfer sampleTransferPDNDLPing_1280
+	stopTransfer sampleTransferPDNDLPing_1460	
+	stopTransfer sampleTransferPDNULPing_70
+	stopTransfer sampleTransferPDNULPing_1460	
+
+mobileSession testSessionUPLANE1
+	connectBearer DEFAULT as stream1Tput
+	startApplication AppUPLANEing [ stream1Tput ] as myAppPDN1Ping &
+	wait applicationsFinish [ myAppPDN1Ping ]
+	releaseBearer stream1Tput
+
+mobileSession testSessionUPLANE2
+	connectBearer DEFAULT as stream2Tput
+	startApplication AppUPLANEing [ stream2Tput ] as myAppPDN2Ping &
+	wait applicationsFinish [ myAppPDN2Ping ]
+	releaseBearer stream2Tput
+
+mobileSession testSessionUPLANE3
+	connectBearer DEFAULT as stream3Tput
+	startApplication AppUPLANEing [ stream3Tput ] as myAppPDN3Ping &
+	wait applicationsFinish [ myAppPDN3Ping ]
+	releaseBearer stream3Tput	
+
+
+###################################################################################
+#
+#		 state transitions
+#
+###################################################################################
+#  105.5 Service Requests / s 
+#  Number of iterations: = 300/12.5=24
+#  105.5 Service Requests / s =  24 iterations x 4.39 attaches/s												## 105.1 from simulation, need to change attach rate from 4,39 to 4.407/s => 105,6
+#  numb of UEs in RRC_CONNECTED : 24 [iterations] * 10 [idle] * 4.39 [ UEs ] / 1 [ sec ] = 1053.6 UEs			## 1144 UEs from simulation, after rate change is 1150
+###################################################################################	
+transfer sampleTransferDescriptionDL
+	type udp
+	packetSize 64
+	dir downlink
+	packetRate 0.08		# every 12.5s new packet will arrive to UE, generating also S1 Paging message
+    
+application AppDL1 [ bearer ]
+	wait 12
+	idleHandover to 1	
+	wait 1
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+	wait 300
+	stopTransfer sampleTransfer1
+	wait 12
+	idleHandover to 11
+
+    
+application AppDL2 [ bearer ]
+	wait 12
+	idleHandover to 2
+	wait 1
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+	wait 300
+	stopTransfer sampleTransfer1
+	wait 12
+	idleHandover to 11
+
+	
+
+application AppDL3 [ bearer ]
+	wait 12
+	idleHandover to 3
+	wait 1
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+	wait 300
+	stopTransfer sampleTransfer1
+	wait 12
+	idleHandover to 11
+
+
+    
+mobileSession testSessionSR1Ping
+	connectBearer DEFAULT as stream
+	startApplication AppDL1 [ stream ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer stream
+
+mobileSession testSessionSR2Ping
+	connectBearer DEFAULT as stream
+	startApplication AppDL2 [ stream ] as myApp
+	wait applicationsFinish [ myApp ]
+	releaseBearer stream
+
+mobileSession testSessionSR3Ping
+	connectBearer DEFAULT as stream
+	startApplication AppDL3 [ stream ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer stream  
+
+
+###################################################################################
+#
+#		ATTACH/DETACH
+#
+###################################################################################
+#  0.5 attach / s 
+#  numb of UEs in RRC_CONNECTED : 100 * 0.5 [ UEs ] / 1 [ sec ] = 50.0 UEs
+###################################################################################
+
+
+application AppPDNPing [ bearerPDNPing ]
+	startTransfer TransferDLPing on bearerPDNPing as sampleTransferPDNDLPing
+	startTransfer TransferULPing on bearerPDNPing as sampleTransferPDNULPing
+	wait 100
+	stopTransfer sampleTransferPDNDLPing
+	stopTransfer sampleTransferPDNULPing
+
+mobileSession testSessionPDN1Ping
+	connectBearer DEFAULT as stream1Ping
+	startApplication AppPDNPing [ stream1Ping ] as myAppPDN1Ping &
+	wait applicationsFinish [ myAppPDN1Ping ]
+	releaseBearer stream1Ping
+
+mobileSession testSessionPDN2Ping
+	connectBearer DEFAULT as stream2Ping
+	startApplication AppPDNPing [ stream2Ping ] as myAppPDN2Ping &
+	wait applicationsFinish [ myAppPDN2Ping ]
+	releaseBearer stream2Ping
+
+mobileSession testSessionPDN3Ping
+	connectBearer DEFAULT as stream3Ping
+	startApplication AppPDNPing [ stream3Ping ] as myAppPDN3Ping &
+	wait applicationsFinish [ myAppPDN3Ping ]
+	releaseBearer stream3Ping	
+	
+	
+	
+###################################################################################
+#
+#		INTRA-ENB HO
+#
+###################################################################################
+#  20%*76=15.2 Intra-eNB HOs / s = 10 iterations x 1.52 attaches/s
+#  10 iterations of intra-eNB HO in which 40% are from/to cell to UEs is doing intra HO
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] + 1) x (3) [ sec ] * 1.52 [ UEs ] / 1 [ sec ] = 50.16
+###################################################################################
+
+
+application AppIntraHO1Ping [ bearerIntraHO1Ping ]
+	startTransfer TransferDLPing on bearerIntraHO1Ping as sampleTransferIntraHODL1Ping
+	startTransfer TransferULPing on bearerIntraHO1Ping as sampleTransferIntraHOUL1Ping
+	wait 3
+	handover to 1
+	1x	
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 1
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+	wait 3
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL1Ping
+	stopTransfer sampleTransferIntraHOUL1Ping	
+
+	
+	
+mobileSession testSessionIntraHO1Ping
+	connectBearer DEFAULT as streamIntraHO1Ping
+	startApplication AppIntraHO1Ping [ streamIntraHO1Ping ] as myAppIntraHO1Ping
+	wait applicationsFinish [ myAppIntraHO1Ping ]
+	releaseBearer streamIntraHO1Ping
+	
+	
+application AppIntraHO2Ping [ bearerIntraHO2Ping ]
+	startTransfer TransferDLPing on bearerIntraHO2Ping as sampleTransferIntraHODL2Ping
+	startTransfer TransferULPing on bearerIntraHO2Ping as sampleTransferIntraHOUL2Ping
+	wait 3
+	handover to 2
+	1x
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 2
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+	wait 3
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL2Ping
+	stopTransfer sampleTransferIntraHOUL2Ping
+
+mobileSession testSessionIntraHO2Ping
+	connectBearer DEFAULT as streamIntraHO2Ping
+	startApplication AppIntraHO2Ping [ streamIntraHO2Ping ] as myAppIntraHO2Ping
+	wait applicationsFinish [ myAppIntraHO2Ping ]
+	releaseBearer streamIntraHO2Ping
+
+	
+application AppIntraHO3Ping [ bearerIntraHO3Ping ]
+	startTransfer TransferDLPing on bearerIntraHO3Ping as sampleTransferIntraHODL3Ping
+	startTransfer TransferULPing on bearerIntraHO3Ping as sampleTransferIntraHOUL3Ping
+	wait 3
+	handover to 3
+	1x	
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 3
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+	wait 3
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL3Ping
+	stopTransfer sampleTransferIntraHOUL3Ping
+
+mobileSession testSessionIntraHO3Ping
+	connectBearer DEFAULT as streamIntraHO3Ping
+	startApplication AppIntraHO3Ping [ streamIntraHO3Ping ] as myAppIntraHO3Ping
+	wait applicationsFinish [ myAppIntraHO3Ping ]
+	releaseBearer streamIntraHO3Ping
+
+
+	
+###################################################################################
+#
+#		INTER-ENB HO	
+#
+###################################################################################
+#  80*%76=60.8 inter-eNB HOs / s / 2 (src + tgt) = 30.4/s - 1.52 (intra-eNB HO) - 0.4 (dedicated bearers) = 28.48 s
+#  28.48 /s = 20 iterations x 1.424 attaches/s
+#  no of UEs in RRC_CONNECTED : (20  [ iterations ] * (3) [ sec ] ) *  1.424 [ UEs ] / 1 [ sec ] = 85.44 UEs
+###################################################################################
+
+	
+application AppInterHO1Ping [ bearerInterHO1Ping ]
+	startTransfer TransferDLPing on bearerInterHO1Ping as TransferInterHO1DLPing
+	startTransfer TransferULPing on bearerInterHO1Ping as TransferInterHO1ULPing
+	20x
+		wait 3
+		handover to 1
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO1DLPing
+	stopTransfer TransferInterHO1ULPing
+	
+mobileSession testSessionInterHO1Ping
+	connectBearer DEFAULT as streamInterHO1Ping
+	startApplication AppInterHO1Ping [ streamInterHO1Ping ] as myAppInterHO1Ping
+	wait applicationsFinish [ myAppInterHO1Ping ]
+	releaseBearer streamInterHO1Ping
+
+application AppInterHO2Ping [ bearerInterHO2Ping ]
+	startTransfer TransferDLPing on bearerInterHO2Ping as TransferInterHO2DLPing
+	startTransfer TransferULPing on bearerInterHO2Ping as TransferInterHO2ULPing
+	20x
+		wait 3
+		handover to 2
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO2DLPing
+	stopTransfer TransferInterHO2ULPing
+
+mobileSession testSessionInterHO2Ping
+	connectBearer DEFAULT as streamInterHO2Ping
+	startApplication AppInterHO2Ping [ streamInterHO2Ping ] as myAppInterHO2Ping
+	wait applicationsFinish [ myAppInterHO2Ping ]
+	releaseBearer streamInterHO2Ping
+
+
+application AppInterHO3Ping [ bearerInterHO3Ping ]
+	startTransfer TransferDLPing on bearerInterHO3Ping as TransferInterHO3DLPing
+	startTransfer TransferULPing on bearerInterHO3Ping as TransferInterHO3ULPing
+	20x
+		wait 3
+		handover to 3				
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO3DLPing
+	stopTransfer TransferInterHO3ULPing
+	
+mobileSession testSessionInterHO3Ping
+	connectBearer DEFAULT as streamInterHO3Ping
+	startApplication AppInterHO3Ping [ streamInterHO3Ping ] as myAppInterHO3Ping
+	wait applicationsFinish [ myAppInterHO3Ping ]
+	releaseBearer streamInterHO3Ping
+	
+##################################################################################################################
+#
+#		TRACKING AREA UPDATE
+#
+##################################################################################################################
+#  91.0 TAU / s 
+#  91.0/s = 50 iterations x 1.82 attaches/s
+#  247 / 5 + 1 = 50 [ iterations ]
+#  UEs connected = 50 iteration * ??s (T_NAS_DELIVERY) * 1.82 attaches/s = ??
+#  UEs connected from simulation is ~2,6 UE/s
+##################################################################################################################
+
+mobileSession testSessionTAU1
+	wait 15
+	idleHandover to 1
+	wait 12
+	every 5.0 s tau as periodicTau
+	wait 247
+	cancel periodicTau
+	wait 12
+	idleHandover to 11
+
+mobileSession testSessionTAU2
+	wait 15
+	idleHandover to 2
+	wait 12
+	every 5.0 s tau as periodicTau
+	wait 247
+	cancel periodicTau
+	wait 12
+	idleHandover to 11
+
+mobileSession testSessionTAU3
+	wait 15
+	idleHandover to 3
+	wait 12
+	every 5.0 s tau as periodicTau
+	wait 247
+	cancel periodicTau
+	wait 12
+	idleHandover to 11
+
+	
+#################################################################################################################
+#
+#		Dedicated Bearers 
+#
+##################################################################################################################
+#  8.0 Dedicated Bearers / s 
+#  8.0 = 10 iterations x 2 bearers (qci 1,qci 5) x 0.4 attaches/s
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] + 1) x 4 [ sec ] * 0.4 [ UEs ] / 1 [ sec ] = 17.6
+#################################################################################################################
+	
+
+
+application App_DEDPing [ bearerDEDPing ]
+	startTransfer TransferDLPing on bearerDEDPing as sampleTransferDLDEDPing
+	startTransfer TransferULPing on bearerDEDPing as sampleTransferULDEDPing
+	wait 60
+	stopTransfer sampleTransferDLDEDPing	
+	stopTransfer sampleTransferULDEDPing	
+
+	
+
+mobileSession testSessionDED1Ping
+	connectBearer DEFAULT as D1Ping
+	startApplication App_DEDPing [ D1Ping ] as myApp_DEFAULT1Ping &
+	wait 4
+	handover to 1
+	10x
+		connectBearer DED on D1Ping as streamDED1Ping
+		connectBearer DED1 on D1Ping as streamDED11Ping		
+		wait 4
+		releaseBearer streamDED1Ping
+		releaseBearer streamDED11Ping		
+	wait 4
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1Ping ]
+	releaseBearer D1Ping
+
+
+mobileSession testSessionDED2Ping
+	connectBearer DEFAULT as D2Ping
+	startApplication App_DEDPing [ D2Ping ] as myApp_DEFAULT2Ping &
+	wait 4
+	handover to 2
+	10x
+		connectBearer DED on D2Ping as streamDED2Ping
+		connectBearer DED1 on D2Ping as streamDED21Ping		
+		wait 4
+		releaseBearer streamDED2Ping
+		releaseBearer streamDED21Ping		
+	wait 4
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT2Ping ]
+	releaseBearer D2Ping
+	
+mobileSession testSessionDED3Ping
+	connectBearer DEFAULT as D3Ping
+	startApplication App_DEDPing [ D3Ping ] as myApp_DEFAULT3Ping &
+	wait 4
+	handover to 3
+	10x
+		connectBearer DED on D3Ping as streamDED3Ping
+		connectBearer DED1 on D3Ping as streamDED31Ping		
+		wait 4
+		releaseBearer streamDED3Ping
+		releaseBearer streamDED31Ping		
+	wait 4
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT3Ping ]
+	releaseBearer D3Ping
+
+	
+	
+####################################################################################
+#  
+#        test scenario part
+#
+####################################################################################
+
+testScenario
+  testSessionSR1Ping
+	rate 1.469/s
+	cells[11]
+	delayToStart 2.0 s
+	ueCapabilities example1
+
+ testSessionSR2Ping
+	rate 1.469/s
+	cells[11]
+	delayToStart 4.0 s
+	ueCapabilities example1
+ 
+ testSessionSR3Ping
+	rate 1.469/s
+	cells[11]
+	delayToStart 6.0 s
+	ueCapabilities example1	
+
+	
+
+ testSessionUPLANE1
+	rate 2.0/s
+	cells[1]
+	delayToStart 100.0 s	
+	ueCapabilities example1	
+	activityIntervalLength 24.9 s
+
+ testSessionUPLANE2
+	rate 2.0/s
+	cells[2]
+	delayToStart 100.0 s
+	ueCapabilities example1	
+	activityIntervalLength 24.9 s
+	
+ testSessionUPLANE3
+	rate 2.0/s
+	cells[3]
+	delayToStart 100.0 s	
+	ueCapabilities example1	
+	activityIntervalLength 24.9 s
+	
+	
+	
+ testSessionPDN1Ping
+	rate 0.167/s
+	cells[1]
+	delayToStart 6.0 s	
+	
+ testSessionPDN2Ping
+	rate 0.167/s
+	cells[2]
+	delayToStart 7.0 s
+	ueCapabilities example1	
+
+ testSessionPDN3Ping
+	rate 0.167/s
+	cells[3]
+	delayToStart 8.0 s	
+	ueCapabilities example1		
+	
+	
+ 
+ testSessionIntraHO1Ping
+	rate 0.507/s
+	cells[11]
+	delayToStart 8.0 s
+	ueCapabilities example1
+
+ testSessionIntraHO2Ping
+	rate 0.507/s
+	cells[11]
+	delayToStart 10.0 s
+	ueCapabilities example1
+
+ testSessionIntraHO3Ping
+	rate 0.507/s
+	cells[11]
+	delayToStart 12.0 s
+	ueCapabilities example1	
+	
+	
+		
+	
+ testSessionInterHO1Ping
+	rate 0.475/s
+	cells[11]
+	delayToStart 15.0 s
+	ueCapabilities example1
+
+
+ testSessionInterHO2Ping
+	rate 0.475/s
+	cells[11]
+	delayToStart 17.0 s
+	ueCapabilities example1
+
+ testSessionInterHO3Ping
+	rate 0.475/s
+	cells[11]
+	delayToStart 19.0 s
+	ueCapabilities example1
+
+	
+	
+	
+	
+	
+ testSessionTAU1
+	rate 0.6067/s
+	cells[11]
+	delayToStart 25.0 s
+	ueCapabilities example1
+
+ testSessionTAU2
+	rate 0.6067/s
+	cells[11]
+	delayToStart 26.0 s
+	ueCapabilities example1
+	
+ testSessionTAU3
+	rate 0.6067/s
+	cells[11]
+	delayToStart 27.0 s
+	ueCapabilities example1
+	
+	
+
+
+ testSessionDED1Ping
+	rate 0.1334/s
+	cells[11]
+	delayToStart 37.0 s
+	ueCapabilities example1
+	
+
+ testSessionDED2Ping
+	rate 0.1334/s
+	cells[11]
+	delayToStart 38.0 s
+	ueCapabilities example1
+
+testSessionDED3Ping
+	rate 0.1334/s
+	cells[11]
+	delayToStart 39.0 s
+	ueCapabilities example1

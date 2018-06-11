@@ -1,0 +1,46 @@
+transfer ue_traffic_tr1_default_bearer_ul
+	type udp
+	packetSize 1400
+	dir uplink
+	packetRate 6825.65
+	#packetRate 182.65
+	#packetRate 32.65
+
+transfer ue_traffic_tr1_default_bearer_dl
+	type udp
+	packetSize 1400
+	dir downlink
+	#packetRate 7489.83
+	#packetRate 26000 #290mbits
+	packetRate 1 # 310mbits
+
+application app_ue_traffic[ DEFAULT ]
+	startTransfer ue_traffic_tr1_default_bearer_ul on DEFAULT as ue_traffic_tr1_default_bearer_ul_alias
+	startTransfer ue_traffic_tr1_default_bearer_dl on DEFAULT as ue_traffic_tr1_default_bearer_dl_alias
+	wait 600
+	stopTransfer ue_traffic_tr1_default_bearer_ul_alias
+	stopTransfer ue_traffic_tr1_default_bearer_dl_alias
+
+
+application app_ue_traffic_handover[ DEFAULT ]
+	wait 5
+	#handover to 11
+	wait 5
+	handover to 1
+	wait 30
+
+mobileSession ue_traffic
+	connectBearer DEFAULT as DEFAULT_alias
+#	11x
+		startApplication app_ue_traffic[ DEFAULT_alias  ] as app_ue_traffic_alias &
+#		startApplication app_ue_traffic_handover[ DEFAULT_alias  ] as app_ue_traffic_handover_alias &
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+testScenario
+	ue_traffic
+		cells[ 1 ]
+		rate 1/s
+		activityIntervalLength 0.80 s
+		ueCapabilities cat8
+

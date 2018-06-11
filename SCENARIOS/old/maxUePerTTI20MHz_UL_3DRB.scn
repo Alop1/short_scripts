@@ -1,0 +1,84 @@
+#UE category 1: max UL=5Mbps on 20MHz
+
+
+transfer sampleTransferDescriptionUL
+	type udp
+	packetSize 1400
+	packetRate 450
+    dir uplink
+		
+transfer sampleTransferDescriptionUL2
+	type udp
+	packetSize 1400
+	packetRate 225
+    dir uplink		
+		
+bearerQoS QCI1
+    qci 1
+    mbr_uplink 31
+    mbr_downlink 31
+    gbr_uplink 31
+    gbr_downlink 31
+#   network_initiated TRUE
+
+bearerQoS QCI5
+    qci 5
+#   network_initiated TRUE
+
+bearerQoS QCI7
+    qci 7
+#   network_initiated TRUE
+
+bearerQoS QCI8
+    qci 8
+#   network_initiated TRUE
+		
+
+application AppUL [ bearer ]
+	startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer1 
+	wait 3600
+	stopTransfer sampleTransfer1 
+	wait 11
+
+application AppUL2 [ bearer ]
+	startTransfer sampleTransferDescriptionUL2 on bearer as sampleTransfer2 
+	wait 3600
+	stopTransfer sampleTransfer2
+	wait 11	
+	
+	
+		
+mobileSession testSessionUL
+	connectBearer DEFAULT as stream
+    connectBearer QCI7 as F
+    connectBearer QCI8 as G		
+	startApplication AppUL [ stream F G ] as myApp
+	wait applicationsFinish [ myApp ]
+	releaseBearer F
+    releaseBearer G
+	releaseBearer stream
+
+	
+mobileSession testSessionUL2
+	connectBearer DEFAULT as stream2
+    connectBearer QCI7 as H
+    connectBearer QCI8 as I		
+	startApplication AppUL2 [ stream2 H I ] as myApp2
+	wait applicationsFinish [ myApp2 ]	
+    releaseBearer H
+    releaseBearer I
+	releaseBearer stream2
+
+	
+		
+testScenario
+  testSessionUL
+	rate 6/s
+	cells[1 2 3]
+	activityIntervalLength 3.9 s
+	
+  testSessionUL2
+	rate 6/s
+	cells[1 2 3]
+	ueCapabilities cat1
+	activityIntervalLength 5.9 s

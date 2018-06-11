@@ -1,0 +1,57 @@
+#200UEs
+#UL = 30Mbps
+#DL = 100Mbps
+#HO rate = 90
+
+transfer TransferDL
+    type udp
+    packetSize 1400
+    dir downlink
+    packetRate 44.65
+
+transfer TransferUL
+    type udp
+    packetSize 1400 
+    dir uplink
+    packetRate 13.40
+
+application AppInterHO1 [ bearerInterHO1 ]
+startTransfer TransferDL on bearerInterHO1 as TransferInterHO1DL
+startTransfer TransferUL on bearerInterHO1 as TransferInterHO1UL
+wait 12
+999x
+	handover to 2 
+	wait 2.2
+	handover to 3 
+	wait 2.2
+	handover to 1 
+	wait 2.2
+stopTransfer TransferInterHO1DL
+stopTransfer TransferInterHO1UL
+#    wait 2
+
+mobileSession testSessionInterHO1
+    connectBearer DEFAULT as streamInterHO1
+    startApplication AppInterHO1 [ streamInterHO1 ] as myAppInterHO1
+    wait applicationsFinish [ myAppInterHO1 ]
+    releaseBearer streamInterHO1
+
+
+testScenario
+  testSessionInterHO1
+    rate 5.0/sec
+    cells[1]
+    activityIntervalLength 39.9 s
+	
+
+	
+    # rate 5.0/sec
+    # cells[1]
+    # activityIntervalLength 9.9 s
+	
+    # rate 5.0/sec
+    # cells[1]
+    # activityIntervalLength 9.9 s
+
+
+

@@ -1,0 +1,79 @@
+#############################################################
+# 200 UE per eNB - 100 per cell - TCP
+#
+# Default per eNB  DL: 17.6 Mbit/s    UL: 7.2 Mbit/s
+# ===========================================================
+# TOTAL: 	       DL: 17.6 Mbit/s    UL: 7.2 Mbit/s
+#
+#
+# Step 1
+# 100 users attach and detach every 10sec (1st carrier))
+# Step 2
+# 100 users attach and detach every 10sec (2nd carrier)
+#############################################################
+
+transfer TransferDL
+	type tcp
+	packetSize 220
+	dir downlink
+	packetRate 100.0
+
+transfer TransferUL
+	type tcp
+	packetSize 90
+	dir uplink
+	packetRate 100.0
+	
+	
+application AppTransfer [ bearerPDN ] 
+	startTransfer TransferDL on bearerPDN as sampleTransferPDNDL 
+	startTransfer TransferUL on bearerPDN as sampleTransferPDNUL 
+	wait 86400
+	stopTransfer sampleTransferPDNDL 
+	stopTransfer sampleTransferPDNUL 
+	
+application AppTransferShort [ bearerPDN ] 
+	startTransfer TransferDL on bearerPDN as sampleTransferShortPDNDL 
+	startTransfer TransferUL on bearerPDN as sampleTransferShortPDNUL 
+	wait 10
+	stopTransfer sampleTransferShortPDNDL 
+	stopTransfer sampleTransferShortPDNUL
+	
+
+	
+mobileSession testSessionStep_1
+	connectBearer DEFAULT as stream5 
+	startApplication AppTransferShort [ stream5 ] as myAppTransferShort5 &
+	wait applicationsFinish [ myAppTransferShort5 ]
+	releaseBearer stream5
+	
+	
+mobileSession testSessionStep_2
+	connectBearer DEFAULT as stream6
+	startApplication AppTransferShort [ stream6 ] as myAppTransferShort6 &
+	wait applicationsFinish [ myAppTransferShort6 ]
+	releaseBearer stream6
+		
+testScenario
+	
+	#######################################################################################
+	# Step 1
+	# 100 users attach and detach every 10sec (1st carrier))
+	#######################################################################################	
+	testSessionStep_1
+		rate 3/min
+		cells[1]
+		ueCapabilities cat5
+		multiply 100
+		
+	#######################################################################################
+	# Step 2
+	# 100 users attach and detach every 10sec (2nd carrier)
+	#######################################################################################	
+	testSessionStep_2
+		rate 3/min
+		cells[2]
+		ueCapabilities cat5
+		delayToStart 5 s
+		multiply 100
+		

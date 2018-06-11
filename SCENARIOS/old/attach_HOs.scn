@@ -1,0 +1,59 @@
+transfer sampleTransferDescriptionDL
+    type udp
+    packetSize 100
+    dir downlink
+    packetRate 1.0
+
+transfer sampleTransferDescriptionUL
+    type udp
+    packetSize 100
+    dir uplink
+    packetRate 1.0
+
+application AppAttach [ bearer ]
+    startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1
+    startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer2
+    wait 100000
+    stopTransfer sampleTransfer1
+    stopTransfer sampleTransfer2
+    wait 10
+
+application AppHO [ bearer ]
+    startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1
+    startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer2
+    10x
+        handover to 1
+        wait 1
+        handover to 2
+        wait 1
+        handover to 3
+        wait 1
+        handover to 11
+        wait 1
+    stopTransfer sampleTransfer1
+    stopTransfer sampleTransfer2
+
+mobileSession testSessionAttach
+    connectBearer DEFAULT as stream
+    startApplication AppAttach [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+mobileSession testSessionHO
+    connectBearer DEFAULT as stream
+    startApplication AppHO [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+
+
+testScenario
+    testSessionAttach
+        rate 3/s
+        cells[1 2 3]
+        activityIntervalLength 0.9 s
+
+    testSessionHO
+        rate 1/s
+        cells[11]
+        activityIntervalLength 0.9 s

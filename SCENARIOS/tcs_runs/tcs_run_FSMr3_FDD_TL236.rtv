@@ -1,0 +1,223 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 0;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'Trunk_CRT\GRnD\PET\CRT2';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL130';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'Test Cases\FD-LTE WMP\Automation test cases';
+
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'NO'; # RTPM set to YES is disabling COLLECT_PMSTATS | Disable collecting RTPMstats
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COPY_SCENARIO_FILE}              = 'NO';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-COLLECT_TTI}{-COPY_PARSER_FILES}                 = 'YES';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-COLLECT_TTI}{-TTI_SCRIPT_DIR}	 = '/home/lmts/tti/';	# Used default one
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-PRECHECK_UE_SIM_ENV}{-RTG}{-FEATURE}{-CHECK_ATTACH}{-SCENARIO}   = 'attach';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-PRECHECK_UE_SIM_ENV}{-RTG}{-FEATURE}{-CHECK_ATTACH}{-COPY_SCENARIO_FILE}= 'NO';
+
+my $sw_version = 'FL00_FSM3_9999_170409_036577'; ##must be on EMSS 
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+
+{-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version,}},
+];
+ $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-COLLECT_TTI}{-TTI_SCRIPT_DIR}	 = '/home/lmts/tti/';	# Used default one
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'YES';
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "software_update",
+
+#your test execution
+##Call Modele, manual Commisioning
+#	"Automated_eNB_Capacity__Traffic_profile_high_FSMF_FBBC_BW_20_688_events_4h"
+#	"Automated_eNB_Capacity__Traffic_profile_normal_FSMF_FBBC_BW_20_299_events_4h"
+#	"Automated_eNB_Capacity__Traffic_profile_high_FSMF_FBBC_BW_20_688_events_30min"
+
+
+			##################### 5 MHz  #######################
+			
+#	"Commissioning_5MHz",
+#		"Automated_eNB_Capacity__User_amount_with_FSMF__BW-5__UE-1440",
+#		"Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF__BW-5__UE-1440",
+#		"Automated_eNB_Capacity__Attach_detach_events_per_second_with_FSMF__BW-5__RATE-210",
+#		"Capacity_Dimensioning_capacity_480",
+#	"Commissioning_5MHz_volte",
+#		"Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF__BW-5__UE-600",
+#	"Commissioning_5MHz_tput_standalone_FRGP_to480UE_DL",
+#		"Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_480_FSMF__BW-5",
+#	"Commissioning_5MHz_tput_standalone_FRGP_to480UE_UL",
+#		"Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_480_FSMF__BW-5",
+#
+#		
+#		##################### 10 MHz  ######################
+#
+	"Commissioning_10MHz",
+		"Automated_eNB_Capacity__User_amount_with_FSMF__BW-10__UE-1800",
+		"Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF__BW-10__UE-1800",
+		"Automated_eNB_Capacity__Attach_detach_events_per_second_with_FSMF__BW-10__RATE-210",
+		"Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF__BW-10__UE-1200",
+		"Capacity_Dimensioning_capacity_600",
+	"Commissioning_10MHz_tput_standalone_FRGP_to600UE_DL",
+		"Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_600_FSMF__BW-10",
+	"Commissioning_10MHz_tput_standalone_FRGP_to600UE_UL",
+		"Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_600_FSMF__BW-10",
+
+#		##################### 15 MHz  ######################
+#
+#	"Commissioning_15MHz",
+#		"Automated_eNB_Capacity__User_amount_with_FSMF__BW-15__UE-2160",
+#		"Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF__BW-15__UE-2160",
+#		"Automated_eNB_Capacity__Attach_detach_events_per_second_with_FSMF__BW-15__RATE-210",
+#		"Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF__BW-15__UE-1500",
+#		"Capacity_Dimensioning_capacity_720",
+#	"Commissioning_15MHz_tput_standalone_FRGP",
+#		"Automated_eNB_Capacity__Throughput_simultaneous_DL_UL_UDP_with_FSMF__BW-15",
+#	"Commissioning_15MHz_tput_standalone_FRGP_to720UE_DL",
+#		"Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_720_FSMF__BW-15",
+#	"Commissioning_15MHz_tput_standalone_FRGP_to720UE_UL",
+#		"Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_720_FSMF__BW-15",
+#
+#		##################### 20 MHz  #####################
+#
+#	"Commissioning_20MHz",
+#		"Automated_eNB_Capacity__User_amount_with_FSMF__BW-20__UE-2520",
+		"Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF__BW-20__UE-2520",
+#		"Automated_eNB_Capacity__Attach_detach_events_per_second_with_FSMF__BW-20__RATE-210",
+#		"Capacity_Dimensioning_capacity_840",
+#		"Capacity_Dimensioning_capacity_8DRB_HOs",
+#	"Commissioning_20MHz_VoLTE",
+#		"Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF__BW-20__UE-1800",
+#	"Commissioning_20MHz_noSRS_standalone_FRGP",
+#		"Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_DL_with_FSMF_20UE_28TB__BW-20",
+#		"Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_20UE_20TB__BW-20",
+#		"Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF__BW-20__RATE-150",
+#		"Automated_eNB_Capacity__Maximum_DRB_amount_with_FSMF_actHighRrc=False__BW-20__DRBSum-7560",
+#		"Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF__BW-20__RATE-90",
+#	"Commissioning_20MHz_tput_standalone_FRGP",
+#		"Automated_eNB_Capacity__Throughput_simultaneous_DL_UL_UDP_with_FSMF__BW-20",
+#	"Commissioning_20MHz_tput_standalone_FRGP_to840UE_DL",
+#		"Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_840_FSMF__BW-20",
+#	"Commissioning_20MHz_tput_standalone_FRGP_to840UE_UL",
+#		"Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_840_FSMF__BW-20",
+
+
+		##################### 5 MHz Shared #######################
+		
+#	"Commissioning_5MHz_shared",
+#		"Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_DL_with_FSMF_shared_BB_pool_7UE_14TB__BW-5",
+#		"Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_shared_BB_pool_7UE_7TB__BW-5",
+#	"Commissioning_5MHz_shared_Tput",
+#		"Automated_eNB_Capacity__Throughput_simultaneous_DL_UL_UDP_with_FSMF_shared_BB_pool__BW-5",
+		
+		
+		##################### 10 MHz Shared ######################			
+		
+#	"Commissioning_10MHz_shared_Tput",
+#	 	"Automated_eNB_Capacity__Throughput_simultaneous_DL_UL_UDP_with_FSMF_shared_BB_pool__BW-10",
+#	"Commissioning_10MHz_shared",
+#	 	"Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF_shared_BB_pool__BW-10__RATE-150",
+#		"Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF_shared_BB_pool__BW-10__RATE-90",
+		
+		
+		#####################Some kind of sh#######################
+
+#		##################### 5 MHz  #####################                                                                   
+#
+#	"Commissioning_BTS_5MHz_3cell_noSRS_FRGP",
+#		"Automated_eNB_Capacity__Maximum_DRB_amount_with_FSMF_actHighRrc=False__BW-5__DRBSum-4320",
+#
+#	
+#	"Commissioning_BTS_5MHz_3cell_tput_FRGP",
+#		"Automated_eNB_Capacity__Throughput_DL_UDP_with_FSMF__BW-5",
+#		"Automated_eNB_Capacity__Throughput_UL_UDP_with_FSMF__BW-5",
+#
+#	"Commissioning_BTS_5MHz_3cell_noSRS_DRX_FRGP",
+#		"Automated_eNB_Capacity__VoLTE_DRX_user_amount_with_FSMF__BW-5__UE-600",
+#
+#	"Commissioning_BTS_5MHz_4cell",
+#		"Automated_eNB_Capacity__User_amount_with_FSMF_shared_BB_pool__BW-5__UE-1260",
+#		"Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF_shared_BB_pool__BW-5__UE-1260",
+#		"Automated_eNB_Capacity__Actively_scheduled_users_full_UL_UDP_with_FSMF_shared_BB_pool__BW-5__UE-1260",
+#		"Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF _shared_BB_pool__BW-5__RATE-150",
+#
+#	"Commissioning_BTS_5MHz_4cell_tput",
+#		"Automated_eNB_Capacity__Throughput_UL_UDP_with_FSMF_shared_BB_pool__BW-5",
+#		"Automated_eNB_Capacity__Throughput_DL_UDP_with_FSMF_shared_BB_pool__BW-5",
+#
+#		##################### 10 MHz  #####################                                                                  
+#
+#	"Commissioning_BTS_10MHz_3cell_noSRS_FRGP",
+#		"Automated_eNB_Capacity__Maximum_DRB_amount_with_FSMF_actHighRrc=False__BW-10__DRBSum-5400",
+#		"Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_DL_with_FSMF_14UE_28TB__BW-10",
+#		"Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_14UE_14TB__BW-10",
+#
+#	"Commissioning_BTS_10MHz_3cell_tput_FRGP",
+#		"Automated_eNB_Capacity__Throughput_DL_UDP_with_FSMF__BW-10",
+#		"Automated_eNB_Capacity__Throughput_UL_UDP_with_FSMF__BW-10",
+#
+#	"Commissioning_BTS_10MHz_3cell_noSRS_DRX_FRGP",
+#		"Automated_eNB_Capacity__VoLTE_DRX_user_amount_with_FSMF__BW-10__UE-1200",
+#
+#	"Commissioning_BTS_10MHz_4cell",
+#		"Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF_shared_BB_pool__BW-10__UE-1260",
+#		"Automated_eNB_Capacity__Actively_scheduled_users_full_UL_UDP_with_FSMF_shared_BB_pool__BW-10__UE-1260",
+#		"Automated_eNB_Capacity__User_amount_with_FSMF_shared_BB_pool__BW-10__UE-1260",
+#
+#
+#		##################### 15 MHz  #####################                                                                  
+#	"Commissioning_BTS_15MHz_3cell_noSRS_FRGP",
+#		"Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF__BW-15__RATE-150",
+#		"Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_DL_with_FSMF_17UE_28TB__BW-15",
+#		"Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_17UE_17TB__BW-15",
+#
+#	"Commissioning_BTS_15MHz_3cell_noSRS_FRGP_for_DRB",
+#		"Automated_eNB_Capacity__Maximum_DRB_amount_with_FSMF_actHighRrc=False__BW-15__DRBSum-7560",
+#
+#	"Commissioning_BTS_15MHz_3cell_tput_FRGP",
+#		"Automated_eNB_Capacity__Throughput_DL_UDP_with_FSMF__BW-15",
+#		"Automated_eNB_Capacity__Throughput_UL_UDP_with_FSMF__BW-15",
+#	"Commissioning_BTS_15MHz_3cell_noSRS_DRX_FRGP",
+#		"Automated_eNB_Capacity__VoLTE_DRX_user_amount_with_FSMF__BW-15__UE-1500",
+#
+#
+#
+#		#################### 20 MHz  #####################                                                                  
+#
+#	"Commissioning_BTS_20MHz_3cell_noSRS_FRGP",
+#		"Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_UL_UDP_FSMF_BW-20",
+#		"Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_3_DRBs_UL_FSMF_BW-20",
+#
+#	"Commissioning_BTS_20MHz_3cell_noSRS_FRGP_celltrace",
+#		"Automated_eNB_Capacity__Cell_trace_attach_detach_events_per_second_with_FSMF__BW-20__RATE-270",
+#
+#	"Commissioning_BTS_20MHz_3cell_tput_FRGP",
+#		"Automated_eNB_Capacity__Throughput_DL_UDP_with_FSMF__BW-20",
+#		"Automated_eNB_Capacity__Throughput_UL_UDP_with_FSMF__BW-20",
+#
+#	"Commissioning_BTS_20MHz_3cell_noSRS_FRGP_TTI_UL",
+#		"Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_UL_UDP_FSMF_BW-20",
+#		"Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_3_DRBs_UL_FSMF_BW-20",
+#
+#	"Commissioning_BTS_20MHz_3cell_noSRS_DRX_FRGP",
+#		"Automated_eNB_Capacity__VoLTE_DRX_user_amount_with_FSMF__BW-20__UE-1500",
+#
+#	"Commissioning_IAV_KRA_TL026_BTS_20151006_new_feature_2023",
+#		"Automated_eNB_Capacity_User_plane_overload_handling_Quality_based_trigger",
+
+
+];
+
+

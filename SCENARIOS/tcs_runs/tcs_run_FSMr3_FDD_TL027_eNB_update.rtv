@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "Software_update", -TP => 'FLEXI_SW_UPDATE', -EXECUTION_PARAMS => {-TARGET => '/home/emssim/LOADS/FSM3_Trunk_Candidate_latest/ENB_release_BTSSM_downloadable_wo_images.zip',}},
+{-TC => "Reconfigure_EPCSIM", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './configs/epc.cfg', -EPCSIM=>  'EPCSIM', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-ARCHIVE_SESSION}{-REMOVE_DIR}                   = 'NO'; 
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-ARCHIVE_SESSION}{-REMOVE_LOCAL_ARCHIVE}         = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}                                = 'NO'; 
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}                                   = 'NO';
+
+$::RTV{LAUNCHER}->{TCS} = [
+'Commissionning_for_Traffic_model_688_events',
+'Reconfigure_EPCSIM',
+'Software_update',
+];
+
+

@@ -1,0 +1,25 @@
+transfer ue_ho_tr1_bearer_default_dl
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 6553.6
+
+application app_ue_ho [ bearer  ]
+	startTransfer ue_ho_tr1_bearer_default_dl on bearer as default_dl
+	wait 50.0
+	wait 3550.0
+	stopTransfer default_dl
+
+mobileSession ue_ho
+	connectBearer DEFAULT  as default
+	#startApplication app_ue_ho [ default  ] as default &
+	#wait applicationsFinish [ default ]
+	wait 1.0
+	releaseBearer default
+
+testScenario
+	ue_ho
+		rate 1/h
+		cells[ 1]
+		ueCapabilities simple1
+		activityIntervalLength 1.5 s

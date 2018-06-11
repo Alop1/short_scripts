@@ -1,0 +1,83 @@
+transfer ue_traffic_ue_transfer_default_bearer_ul
+	type udp
+	packetSize 1400
+	dir uplink
+	#packetRate 1.4
+	packetRate 0.8
+
+transfer ue_traffic_ue_transfer_default_bearer_dl
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 10.92
+	#packetRate 13.65
+
+transfer ue_traffic_ue_transfer_qci7_bearer_ul
+	type udp
+	packetSize 1400
+	dir uplink
+	#packetRate 1.4
+	packetRate 1.0
+
+transfer ue_traffic_ue_transfer_qci7_bearer_dl
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 10.92
+	#packetRate 13.65
+
+bearerQoS ue_traffic_ue_transfer_qci7
+	qci 7
+	network_initiated FALSE
+
+transfer ue_traffic_ue_transfer_qci8_bearer_ul
+	type udp
+	packetSize 1400
+	dir uplink
+	#packetRate 1.4
+	packetRate 1.0
+
+transfer ue_traffic_ue_transfer_qci8_bearer_dl
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 10.92
+	#packetRate 13.65
+
+bearerQoS ue_traffic_ue_transfer_qci8
+	qci 8
+	network_initiated FALSE
+
+application app_ue_traffic[ ue_traffic_ue_transfer_qci7 DEFAULT ue_traffic_ue_transfer_qci8 ]
+	startTransfer ue_traffic_ue_transfer_default_bearer_ul on DEFAULT as ue_traffic_ue_transfer_default_bearer_ul_alias
+	startTransfer ue_traffic_ue_transfer_qci7_bearer_ul on ue_traffic_ue_transfer_qci7 as ue_traffic_ue_transfer_qci7_bearer_ul_alias
+	startTransfer ue_traffic_ue_transfer_qci8_bearer_ul on ue_traffic_ue_transfer_qci8 as ue_traffic_ue_transfer_qci8_bearer_ul_alias
+	startTransfer ue_traffic_ue_transfer_default_bearer_dl on DEFAULT as ue_traffic_ue_transfer_default_bearer_dl_alias
+	startTransfer ue_traffic_ue_transfer_qci7_bearer_dl on ue_traffic_ue_transfer_qci7 as ue_traffic_ue_transfer_qci7_bearer_dl_alias
+	startTransfer ue_traffic_ue_transfer_qci8_bearer_dl on ue_traffic_ue_transfer_qci8 as ue_traffic_ue_transfer_qci8_bearer_dl_alias
+	wait 86400.0
+	stopTransfer ue_traffic_ue_transfer_default_bearer_ul_alias
+	stopTransfer ue_traffic_ue_transfer_qci7_bearer_ul_alias
+	stopTransfer ue_traffic_ue_transfer_qci8_bearer_ul_alias
+	stopTransfer ue_traffic_ue_transfer_default_bearer_dl_alias
+	stopTransfer ue_traffic_ue_transfer_qci7_bearer_dl_alias
+	stopTransfer ue_traffic_ue_transfer_qci8_bearer_dl_alias
+
+
+mobileSession ue_traffic
+	connectBearer DEFAULT as DEFAULT_alias
+	connectBearer ue_traffic_ue_transfer_qci7 as ue_traffic_ue_transfer_qci7_alias
+	connectBearer ue_traffic_ue_transfer_qci8 as ue_traffic_ue_transfer_qci8_alias
+	startApplication app_ue_traffic[ ue_traffic_ue_transfer_qci7_alias DEFAULT_alias ue_traffic_ue_transfer_qci8_alias  ] as app_ue_traffic_alias &
+	wait 86400.0
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+testScenario
+	ue_traffic
+		cells[ 1 ]
+		rate 10/s
+		activityIntervalLength 25.55 s
+		#activityIntervalLength 159.6 s
+		ueCapabilities simple1
+

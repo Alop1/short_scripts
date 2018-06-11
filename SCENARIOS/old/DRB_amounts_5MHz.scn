@@ -1,0 +1,116 @@
+bearerQoS QCI1
+	qci 1
+	mbr_uplink 64
+	mbr_downlink 64
+	gbr_uplink 31
+	gbr_downlink 31
+
+bearerQoS QCI5
+	qci 5
+
+bearerQoS QCI7
+	qci 7
+
+bearerQoS QCI8
+	qci 8
+
+transfer sampleTransferDescriptionDL
+	type udp
+	packetSize 64
+	dir downlink
+	packetRate 0.2
+
+transfer sampleTransferDescriptionUL
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 0.2
+
+transfer sampleTransferDescription
+	type rtp
+	packetSize 41
+	dir twoway
+	packetRate 50
+
+transfer sampleTransferDescriptionComfortNoise
+	type rtp
+	packetSize 41
+	dir twoway
+	packetRate 6
+
+transfer sampleTransferDescriptionB
+	type udp
+	packetSize 50
+	dir twoway
+	packetRate 0.01
+
+application simpleAppB [ bearer ]
+	startTransfer sampleTransferDescriptionB on bearer as sampleTransferB
+	wait 5
+	stopTransfer sampleTransferB
+
+application simpleApp [ bearer ]
+	startTransfer sampleTransferDescription on bearer as sampleTransfer
+	wait 3600
+	stopTransfer sampleTransfer
+
+application simpleAppComfortNoise [ bearer ]
+	startTransfer sampleTransferDescriptionComfortNoise on bearer as sampleTransferComfortNoise
+	wait 3600
+	stopTransfer sampleTransferComfortNoise
+
+application App [ bearer ]
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransferDL 
+	startTransfer sampleTransferDescriptionUL on bearer as sampleTransferUL 
+	wait 3600
+	stopTransfer sampleTransferDL 
+	stopTransfer sampleTransferUL 
+
+# this is a simple session scenario
+mobileSession simpleSession
+	connectBearer QCI1 as B
+	connectBearer QCI5 as C
+	connectBearer QCI7 as F
+	connectBearer QCI8 as G
+	connectBearer DEFAULT as A
+	startApplication simpleApp [ B ] as mySimpleApp &
+	startApplication simpleAppB [ C ] as mySimpleAppC &
+	startApplication App [ F ] as mySimpleAppF &
+	startApplication App [ G ] as mySimpleAppG &
+	startApplication App [ A ] as mySimpleAppA &
+	wait applicationsFinish [ mySimpleApp mySimpleAppC mySimpleAppF mySimpleAppG mySimpleAppA]
+
+	releaseBearer B
+	releaseBearer C
+	releaseBearer F
+	releaseBearer G
+
+mobileSession comfortNoise
+	connectBearer QCI1 as D
+	connectBearer QCI5 as E
+	connectBearer QCI7 as H
+	connectBearer QCI8 as I
+	connectBearer DEFAULT as J
+	startApplication simpleAppComfortNoise [ D ] as mySimpleAppComfortNoise &
+	startApplication simpleAppB [ E ] as mySimpleAppE &
+	startApplication App [ H ] as mySimpleAppH &
+	startApplication App [ I ] as mySimpleAppI &
+	startApplication App [ J ] as mySimpleAppJ &
+	wait applicationsFinish [ mySimpleAppComfortNoise mySimpleAppE mySimpleAppH mySimpleAppI mySimpleAppJ]
+
+	releaseBearer D
+	releaseBearer E
+	releaseBearer H
+	releaseBearer I
+
+testScenario
+  simpleSession
+		rate 3.0/s
+		cells[1 2 3]
+		delayToStart 120 s
+		activityIntervalLength 179.8 s
+
+  comfortNoise
+		rate 3.0/s
+		cells[1 2 3]
+		activityIntervalLength 119.8 s

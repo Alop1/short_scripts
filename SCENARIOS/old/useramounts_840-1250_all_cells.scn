@@ -1,0 +1,55 @@
+transfer sampleTransferDescriptionUL
+    type tcp
+    transferSize 1024000000
+    dir uplink
+	
+transfer sampleTransferDescriptionDL
+    type tcp
+    transferSize 1024000000
+    dir downlink
+
+application App [ bearer ]
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransferDL 
+	startTransfer sampleTransferDescriptionUL on bearer as sampleTransferUL 
+	wait 43600
+	stopTransfer sampleTransferDL 
+	stopTransfer sampleTransferUL 
+	wait 4
+
+mobileSession testSession5
+        connectBearer DEFAULT as stream
+        startApplication App [ stream ] as myApp
+        wait applicationsFinish [ myApp ]
+        wait 1
+        releaseBearer stream
+		
+mobileSession testSession10
+        connectBearer DEFAULT as stream
+        startApplication App [ stream ] as myApp
+        wait applicationsFinish [ myApp ]
+        wait 1
+        releaseBearer stream
+		
+mobileSession testSession15
+        connectBearer DEFAULT as stream
+        startApplication App [ stream ] as myApp
+        wait applicationsFinish [ myApp ]
+        wait 1
+        releaseBearer stream
+
+
+testScenario
+  testSession5
+        rate 12.0/s
+        cells[1]
+        activityIntervalLength 70.4 s
+		
+  testSession10
+        rate 12.0/s
+        cells[2]
+        activityIntervalLength 90.8 s
+		
+  testSession15
+        rate 12.0/s
+        cells[3]
+        activityIntervalLength 106.15 s

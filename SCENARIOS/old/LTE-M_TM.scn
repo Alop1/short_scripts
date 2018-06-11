@@ -1,0 +1,131 @@
+#############################################################
+# Mobile Autonomous Reporting (MAR) [Mobile Origination]
+# 20 UE CAT-M  
+# 3 s interval 
+# 5.4 MAR/s (after 4 s ramping up) 
+############################################################
+
+transfer mar_tr1_default_bearer_ul
+	type udp
+	packetSize 50
+	dir uplink
+	packetRate 1
+
+transfer mar_tr1_default_bearer_dl
+	type udp
+	packetSize 1
+	dir downlink
+	packetRate 1
+
+application app_mar[ DEFAULT ]
+	999999x
+		startTransfer mar_tr1_default_bearer_ul on DEFAULT as mar_tr1_default_bearer_ul_alias
+		wait 0.8
+		stopTransfer mar_tr1_default_bearer_ul_alias
+		wait 2.2
+		startTransfer mar_tr1_default_bearer_ul on DEFAULT as mar_tr1_default_bearer_ul_alias
+		wait 0.4
+		startTransfer mar_tr1_default_bearer_dl on DEFAULT as mar_tr1_default_bearer_dl_alias
+		wait 0.4
+		stopTransfer mar_tr1_default_bearer_ul_alias
+		stopTransfer mar_tr1_default_bearer_dl_alias
+		wait 2.2
+
+mobileSession mar
+	connectBearer DEFAULT as DEFAULT_alias
+	startApplication app_mar[ DEFAULT_alias  ] as app_mar_alias &
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+#############################################################
+# Network Command (NC) [Mobile Termination]
+# 4UE CAT-M  
+# 1.4 NC/sec
+############################################################
+
+transfer nc_tr1_default_bearer_ul
+	type udp
+	packetSize 50
+	dir uplink
+	packetRate 1
+
+transfer nc_tr1_default_bearer_dl
+	type udp
+	packetSize 20
+	dir downlink
+	packetRate 1
+	forceResume false
+
+application app_nc[ DEFAULT ]
+	wait 3
+	999999x
+		startTransfer nc_tr1_default_bearer_dl on DEFAULT as nc_tr1_default_bearer_dl_alias
+		wait 1
+		stopTransfer nc_tr1_default_bearer_dl_alias
+		wait 29
+		startTransfer nc_tr1_default_bearer_dl on DEFAULT as nc_tr1_default_bearer_dl_alias
+		wait 3
+		startTransfer nc_tr1_default_bearer_ul on DEFAULT as nc_tr1_default_bearer_ul_alias
+		wait 1
+		stopTransfer nc_tr1_default_bearer_dl_alias
+		stopTransfer nc_tr1_default_bearer_ul_alias
+		wait 26
+
+mobileSession nc
+	connectBearer DEFAULT as DEFAULT_alias
+	startApplication app_nc[ DEFAULT_alias  ] as app_nc_alias &
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+	
+#############################################################
+# S/W upgrade (SW) [Mobile Termination]
+# 1UE CAT-M  
+#
+############################################################
+
+transfer sw_tr1_default_bearer_dl
+	type udp
+	packetSize 700
+	dir downlink
+	packetRate 1
+	forceResume false
+
+application app_sw[ DEFAULT ]
+	wait 11
+	999999x
+		startTransfer sw_tr1_default_bearer_dl on DEFAULT as sw_tr1_default_bearer_dl_alias
+		wait 1
+		stopTransfer sw_tr1_default_bearer_dl_alias
+		wait 299
+		startTransfer sw_tr1_default_bearer_dl on DEFAULT as sw_tr1_default_bearer_dl_alias
+		wait 1
+		stopTransfer sw_tr1_default_bearer_dl_alias
+		wait 299
+
+mobileSession sw
+	connectBearer DEFAULT as DEFAULT_alias
+	startApplication app_sw[ DEFAULT_alias  ] as app_sw_alias &
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+	
+testScenario
+    # MAR
+	mar
+		cells[ 1 ]
+		rate 5.0/s
+		activityIntervalLength 3.99 s
+		ueCapabilities catM
+		
+	# NC
+	nc
+		cells[ 1 ]
+		rate 1.4/s
+		activityIntervalLength 29.9 s
+		ueCapabilities catM
+		
+	# SW Update
+	sw
+		cells[ 1 ]
+		rate 1/s
+		activityIntervalLength 0.9 s
+		ueCapabilities catM

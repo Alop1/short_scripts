@@ -1,0 +1,171 @@
+#Handover-->
+transfer TransferDL
+    type udp
+    packetSize 1400
+    dir downlink
+    packetRate 25
+
+transfer TransferUL
+    type udp
+    packetSize 1400
+    dir uplink
+    packetRate 16
+#<--handover
+
+#Handover
+application AppInterHO1 [ bearerInterHO1 ]
+    startTransfer TransferDL on bearerInterHO1 as TransferInterHO1DL
+    startTransfer TransferUL on bearerInterHO1 as TransferInterHO1UL
+    wait 1
+    handover to 2
+    wait 2
+    handover to 3
+    wait 1
+    stopTransfer TransferInterHO1DL
+    stopTransfer TransferInterHO1UL
+
+mobileSession testSessionInterHO1
+    connectBearer DEFAULT as streamInterHO1
+    startApplication AppInterHO1 [ streamInterHO1 ] as myAppInterHO1
+    wait applicationsFinish [ myAppInterHO1 ]
+    releaseBearer streamInterHO1
+
+application AppInterHO2 [ bearerInterHO2 ]
+    startTransfer TransferDL on bearerInterHO2 as TransferInterHO2DL
+    startTransfer TransferUL on bearerInterHO2 as TransferInterHO2UL
+    wait 1
+    handover to 3
+    wait 2
+    handover to 1
+    wait 1
+    stopTransfer TransferInterHO2DL
+    stopTransfer TransferInterHO2UL
+
+mobileSession testSessionInterHO2
+    connectBearer DEFAULT as streamInterHO2
+    startApplication AppInterHO2 [ streamInterHO2 ] as myAppInterHO2
+    wait applicationsFinish [ myAppInterHO2 ]
+    releaseBearer streamInterHO2
+
+application AppInterHO3 [ bearerInterHO3 ]
+    startTransfer TransferDL on bearerInterHO3 as TransferInterHO3DL
+    startTransfer TransferUL on bearerInterHO3 as TransferInterHO3UL
+    wait 1
+    handover to 1
+    wait 2
+    handover to 2
+    wait 1
+    stopTransfer TransferInterHO3DL
+    stopTransfer TransferInterHO3UL
+
+mobileSession testSessionInterHO3
+    connectBearer DEFAULT as streamInterHO3
+    startApplication AppInterHO3 [ streamInterHO3 ] as myAppInterHO3
+    wait applicationsFinish [ myAppInterHO3 ]
+    releaseBearer streamInterHO3
+    #releaseBearer streamInterHO3
+
+	
+application AppInterHO4 [ bearerInterHO4 ]
+    startTransfer TransferDL on bearerInterHO4 as TransferInterHO4DL
+    startTransfer TransferUL on bearerInterHO4 as TransferInterHO4UL
+    wait 1
+    handover to 5
+    wait 2
+    handover to 6
+    wait 1
+    stopTransfer TransferInterHO4DL    
+	stopTransfer TransferInterHO4UL
+
+mobileSession testSessionInterHO4
+    connectBearer DEFAULT as streamInterHO4
+    startApplication AppInterHO4 [ streamInterHO4 ] as myAppInterHO4
+    wait applicationsFinish [ myAppInterHO4 ]
+    releaseBearer streamInterHO4
+
+application AppInterHO5 [ bearerInterHO5 ]
+    startTransfer TransferDL on bearerInterHO5 as TransferInterHO5DL
+    startTransfer TransferUL on bearerInterHO5 as TransferInterHO5UL
+    wait 1
+    handover to 6
+    wait 2
+    handover to 4
+    wait 1
+    stopTransfer TransferInterHO5DL
+    stopTransfer TransferInterHO5UL
+
+mobileSession testSessionInterHO5
+    connectBearer DEFAULT as streamInterHO5
+    startApplication AppInterHO5 [ streamInterHO5 ] as myAppInterHO5
+    wait applicationsFinish [ myAppInterHO5 ]
+    releaseBearer streamInterHO5
+
+application AppInterHO6 [ bearerInterHO6 ]
+    startTransfer TransferDL on bearerInterHO6 as TransferInterHO6DL
+    startTransfer TransferUL on bearerInterHO6 as TransferInterHO6UL
+    wait 1
+    handover to 4
+    wait 2
+    handover to 5
+    wait 1
+    stopTransfer TransferInterHO6DL
+    stopTransfer TransferInterHO6UL
+
+mobileSession testSessionInterHO6
+    connectBearer DEFAULT as streamInterHO6
+    startApplication AppInterHO6 [ streamInterHO6 ] as myAppInterHO6
+    wait applicationsFinish [ myAppInterHO6 ]
+    releaseBearer streamInterHO6
+
+#attach-detach
+
+application MyWaitApplication
+    wait 4
+
+mobileSession testAttachDetachSession
+    startApplication MyWaitApplication as app
+
+application stateTransitionApp
+    wait 8
+
+mobileSession stateTransition
+    startApplication stateTransitionApp as app
+
+#handover
+testScenario
+  testSessionInterHO1
+      rate 7.5/sec
+      cells[1]
+
+  testSessionInterHO2
+      rate 7.5/sec
+      cells[2]
+
+  testSessionInterHO3
+      rate 7.5/sec
+      cells[3]
+
+  testSessionInterHO4
+      rate 7.5/sec
+      cells[4]
+	  
+  testSessionInterHO5
+      rate 7.5/sec
+      cells[5]
+
+  testSessionInterHO6
+      rate 7.5/sec
+      cells[6]
+
+#attach-detach  
+  testAttachDetachSession
+      rate 26.0/s
+      #delayToStart 3600 s
+      cells [1 2 3 4 5 6]
+
+  stateTransition
+      rate 6.0/s
+      #delayToStart 3600 s
+          cells [1 2 3 4 5 6]
+
+

@@ -1,0 +1,155 @@
+transfer TransferSmallPackets
+	type udp
+	packetSize 40
+	dir twoway
+	packetRate 0.2 # prev was 0.1
+
+transfer TransferMediumPackets
+	type udp
+	packetSize 570
+	dir twoway
+	packetRate 0.2 # prev was 0.1
+
+transfer TransferLongPacketsDL
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 18.60
+	
+transfer TransferLongPacketsUL
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 0.7 
+ 
+application AppSmall [ bearer ]
+	startTransfer TransferSmallPackets on bearer as sampleTransferSmallPackets
+	wait 50400
+	stopTransfer sampleTransferSmallPackets
+
+application AppMedium [ bearer ]
+	startTransfer TransferMediumPackets on bearer as sampleTransferMediumPackets
+	wait 50400
+	stopTransfer sampleTransferMediumPackets
+
+application AppLong [ bearer ]
+	startTransfer TransferSmallPackets on bearer as sampleTransferSmallPackets
+        wait 17
+	startTransfer TransferLongPacketsDL on bearer as sampleTransferLongPacketsDL
+        wait 2
+	startTransfer TransferLongPacketsUL on bearer as sampleTransferLongPacketsUL
+	wait 50400
+	stopTransfer sampleTransferLongPacketsDL
+        wait 2
+	stopTransfer sampleTransferLongPacketsUL
+
+bearerQoS Bearer1
+	qci		1
+	mbr_uplink	20
+	mbr_downlink	10
+	gbr_uplink      20
+	gbr_downlink    10
+	network_initiated FALSE
+
+bearerQoS Bearer2
+	qci             2
+	mbr_uplink      20
+	mbr_downlink    10
+	gbr_uplink      20
+	gbr_downlink    10
+	network_initiated FALSE
+
+bearerQoS Bearer3
+	qci             3
+	mbr_uplink      20
+	mbr_downlink    10
+	gbr_uplink      20
+	gbr_downlink    10
+	network_initiated FALSE
+
+bearerQoS Bearer4
+	qci             4
+	mbr_uplink      20
+	mbr_downlink    10
+	gbr_uplink      20
+	gbr_downlink    10
+	network_initiated FALSE
+
+bearerQoS Bearer5
+	qci             5
+	
+
+bearerQoS Bearer6
+	qci             6
+	
+
+bearerQoS Bearer7
+	qci             7
+	
+
+bearerQoS Bearer8
+	qci		8
+
+mobileSession testSession1
+	connectBearer DEFAULT as streamSmall
+	startApplication AppSmall [ streamSmall ] as myAppSmall &
+	wait 2
+	connectBearer Bearer5 as streamSmallDRB1
+	startApplication AppSmall [ streamSmallDRB1 ] as myAppSmallDRB1 &	
+	wait 2
+	connectBearer Bearer6 as streamSmallDRB2
+	startApplication AppSmall [ streamSmallDRB2 ] as myAppSmallDRB2 &	
+	wait allApplicationsFinish
+	releaseBearer streamSmall
+	wait 2
+	releaseBearer streamSmallDRB1
+	wait 2
+	releaseBearer streamSmallDRB2
+	
+
+mobileSession testSession2
+	connectBearer DEFAULT as streamMedium
+	startApplication AppMedium [ streamMedium ] as myAppMedium &
+	wait allApplicationsFinish
+	releaseBearer streamMedium
+
+mobileSession testSession3
+	connectBearer DEFAULT as streamLong
+	startApplication AppLong [ streamLong ] as myAppLong &
+	wait 2
+	connectBearer Bearer5 as streamLongDRB1
+	startApplication AppSmall [ streamLongDRB1 ] as myAppLongDRB1 &	
+	wait 2
+	connectBearer Bearer6 as streamLongDRB2
+	startApplication AppSmall [ streamLongDRB2 ] as myAppLongDRB2 &	
+	wait allApplicationsFinish
+	releaseBearer streamLong
+	wait 2
+	releaseBearer streamLongDRB1
+	wait 2
+	releaseBearer streamLongDRB2
+	
+
+
+testScenario
+  testSession1
+    rate 5.0/s
+    activityIntervalLength 266.3 s
+    cells[1]
+
+ testSession1
+    rate 5.0/s
+    activityIntervalLength 266.3 s
+    cells[2]
+
+ testSession1
+    rate 5.0/s
+    activityIntervalLength 266.3 s
+    cells[3]
+
+  testSession3
+    rate 10.0/s
+    activityIntervalLength 50.39 s
+    cells[1 2 3]
+    delayToStart 270.0 s 
+    delayToStart 90.0 s

@@ -1,0 +1,36 @@
+# Num. of UEs:		25 UEs / cell
+# Direction:		UL & DL
+# Packet rate:		1800 pps / UE
+
+transfer sampleTransferDescription1
+	type udp
+      	packetSize 222 
+        dir uplink
+	packetRate 320.0
+
+transfer sampleTransferDescription2
+	type udp
+	packetSize 772
+	dir downlink
+	packetRate 425.5
+
+application App [ bearer ]
+	startTransfer sampleTransferDescription1 on bearer as sampleTransfer1 
+	wait 5
+	startTransfer sampleTransferDescription2 on bearer as sampleTransfer2 
+	wait 436000000
+	stopTransfer sampleTransfer1 
+	stopTransfer sampleTransfer2 
+	wait 11
+	
+mobileSession testSession
+	connectBearer DEFAULT as stream
+	startApplication App [ stream ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer stream
+
+testScenario
+  testSession
+	rate 1.0/s
+	cells[1]
+	activityIntervalLength 9.9 s

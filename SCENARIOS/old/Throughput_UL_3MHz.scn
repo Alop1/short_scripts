@@ -1,0 +1,34 @@
+#Test case 5, Uplink throughput with 1 cell and 50 UEs. Expected result 5.84 Mbit/s
+
+
+transfer sampleTransferDescriptionUL
+    type udp
+    packetSize 1500
+    packetRate 15.0
+    dir uplink #twoway
+
+
+application AppUL [ bearer ]
+    startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer1
+    wait 2700
+    stopTransfer sampleTransfer1
+    wait 11
+
+mobileSession testSessionUL
+    connectBearer DEFAULT as stream
+    startApplication AppUL [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+testScenario
+
+   testSessionUL
+    #rate 3.0/s #how many phones /s
+    #cells[1]
+    #activityIntervalLength 16.9 s
+
+
+
+    rate 3.0/s #how many phones /s
+    cells[1 2 3]
+    activityIntervalLength 49.9 s

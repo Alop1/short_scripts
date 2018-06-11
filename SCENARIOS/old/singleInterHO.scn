@@ -1,0 +1,37 @@
+transfer TransferDL
+	type udp
+	packetSize 472 
+	dir downlink
+	packetRate 1.0
+
+application AppInterHO1 [ bearerInterHO1 ]
+	startTransfer TransferDL on bearerInterHO1 as TransferInterHO1DL
+	1x
+		wait 2
+		handover to 101
+		wait 2
+		handover to 102
+                wait 2
+                handover to 103
+                wait 2
+                handover to 104
+                wait 2
+                handover to 105
+                wait 2
+                handover to 106
+		wait 2
+		handover to 11
+	stopTransfer TransferInterHO1DL
+
+mobileSession testSessionInterHO1
+	connectBearer DEFAULT as streamInterHO1
+	startApplication AppInterHO1 [ streamInterHO1 ] as myAppInterHO1
+	wait applicationsFinish [ myAppInterHO1 ]
+	releaseBearer streamInterHO1
+
+testScenario	
+testSessionInterHO1
+	rate 1.0/s
+	cells[11]
+	activityIntervalLength 0.99 s
+

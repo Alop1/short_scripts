@@ -1,0 +1,564 @@
+#***********************BEGIN_COPYRIGHT_HEADER****************** 
+#						COPYRIGHT(C)Nokia 2015 
+#						  ALL RIGHTS RESERVED 
+#					Nokia Confidential Proprietary 
+# 
+#**************************BEGIN_SCRIPT_HEADER****************** 
+# 
+#	 LMTS scenario
+#	 Last modification: lskoczyl - 2016-01-04 
+######################################################## 
+
+
+#################################################################################### 
+# 
+#		 CMRI - FZM TDD 1Cell - Traffic model 
+# 
+#################################################################################### 
+
+
+transfer TransferDLPing
+	type udp
+	packetSize 64
+	dir downlink
+	packetRate 0.5
+
+transfer TransferULPing
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 0.5
+
+####################################################################################
+# 
+#		 Measurement report
+# 
+####################################################################################
+
+configMeas conf1 
+
+	reportMeas report1 
+	amount	  1 
+	interval	1 
+	servingCell rsrpMin=10 rsrpMax=10 rsrqMin=20 rsrqMax=20 
+	#neighCell	 rsrpMin=50 rsrpMax=50 rsrqMin=20 rsrqMax=20 
+	events 2 
+	skipNeigh 
+
+
+
+
+####################################################################################
+# 
+#		 PDN==ATTACH/DETACH
+#		 5/s  = 2,5 attach + 2,5 detach
+#		 80 UE RRC connected
+# 
+####################################################################################
+
+
+application AppPDNPing1 [ bearerPDNPing ] 
+	startTransfer TransferDLPing on bearerPDNPing as sampleTransferPDNDLPing 
+	#startTransfer TransferULPing on bearerPDNPing as sampleTransferPDNULPing 
+	wait 32
+	stopTransfer sampleTransferPDNDLPing 
+	#stopTransfer sampleTransferPDNULPing 
+
+
+mobileSession testSessionPDNPing_1
+	connectBearer DEFAULT as stream1Ping 
+	startApplication AppPDNPing1 [ stream1Ping ] as myAppPDN1Ping &
+	wait applicationsFinish [ myAppPDN1Ping ] 
+	releaseBearer stream1Ping 
+
+
+####################################################################################
+# 
+#		 INTER-ENB HO
+#		5 HO/s = 2,5 serving HO + 2,5 targeting 
+#		120 UE RRC connected on main cell
+# 
+####################################################################################
+
+application AppInterHOPing_1 [ bearerInterHO1Ping ] 
+	startTransfer TransferDLPing on bearerInterHO1Ping as TransferInterHO1DLPing 
+	#startTransfer TransferULPing on bearerInterHO1Ping as TransferInterHO1ULPing 
+	1x 
+		wait 1
+		startReporting conf1 report1 
+		stopReporting 
+		wait 1 
+		handover to 1 
+		wait 46
+		startReporting conf1 report1 
+		stopReporting 
+		wait 1 
+		handover to 11
+	wait 1 
+	stopTransfer TransferInterHO1DLPing 
+	#stopTransfer TransferInterHO1ULPing 
+
+mobileSession testSessionInterHOPing_1
+	connectBearer DEFAULT as streamInterHO1Ping 
+	startApplication AppInterHOPing_1 [ streamInterHO1Ping ] as myAppInterHO1Ping 
+	wait applicationsFinish [ myAppInterHO1Ping ] 
+	releaseBearer streamInterHO1Ping 
+
+
+## ********************************************************************************
+#			U-Plane model
+#			200 UE
+## ********************************************************************************
+
+####################################################################################
+# 
+#		 VoLTE
+#		 20 UE
+# 
+####################################################################################
+
+transfer TransferDL_SIP 
+	type udp 
+	packetSize 955 
+	dir downlink 
+	packetRate 10.0 
+
+transfer TransferUL_SIP 
+	type udp 
+	packetSize 868 
+	dir uplink 
+	packetRate 10.0 
+
+trafficProfile TransferDL_RTP_prof 
+	downlink 
+	packetSize 45 
+	packetRate 50.0 
+	uplink 
+	packetSize 20 
+	packetRate 6.25 
+
+trafficProfile TransferUL_RTP_prof 
+	uplink 
+	packetSize 45 
+	packetRate 50.0 
+	downlink 
+	packetSize 20 
+	packetRate 6.25 
+
+transfer TransferDL_RTP 
+	type rtp 
+	profile TransferDL_RTP_prof 
+
+transfer TransferUL_RTP 
+	type rtp 
+	profile TransferUL_RTP_prof 
+
+trafficProfile RTP_MV_prof 
+	timeQuantum 10000 
+	state1 TransferDL_RTP 
+	state2 TransferUL_RTP 
+	[ state2 state1 0.5 ] 
+	[ state2 state2 0.5 ] 
+	[ state1 state2 0.5 ] 
+	[ state1 state1 0.5 ] 
+
+transfer Transfer_RTP 
+	type rtp 
+	profile RTP_MV_prof 
+
+application App_SIP [ bearerSIP ] 
+	startTransfer TransferDL_SIP on bearerSIP as sampleTransferVoLTEDL_SIP1
+	startTransfer TransferUL_SIP on bearerSIP as sampleTransferVoLTEUL_SIP1
+	wait 1 
+	stopTransfer sampleTransferVoLTEDL_SIP1
+	stopTransfer sampleTransferVoLTEUL_SIP1
+
+application App_RTP [ bearerRTP ] 
+	startTransfer Transfer_RTP on bearerRTP as sampleTransferVoLTEDL_RTP 
+	wait 43200
+	stopTransfer sampleTransferVoLTEDL_RTP 
+
+bearerQoS VoLTE_RTP 
+	qci 1 
+	mbr_uplink 31 
+	mbr_downlink 31 
+	gbr_uplink 31 
+	gbr_downlink 31 
+	network_initiated FALSE 
+
+bearerQoS VoLTE_SIP 
+	qci 5 
+	network_initiated FALSE 
+
+bearerQoS Data_Stream 
+	qci 7 
+	network_initiated FALSE 
+
+mobileSession testSessionVoLTE_1
+	wait 12 
+	idleHandover to 1
+	connectBearer DEFAULT as DEFAULT_alias 
+	wait 2 
+	connectBearer VoLTE_SIP on DEFAULT_alias as streamVoLTE_SIP1
+	wait 2 
+	startApplication App_SIP [ streamVoLTE_SIP1 ] as myApp_SIP1
+	wait applicationsFinish [ myApp_SIP1 ] 
+	connectBearer VoLTE_RTP on DEFAULT_alias as streamVoLTE_RTP1
+	startApplication App_RTP [ streamVoLTE_RTP1 ] as myApp_RTP1 &
+	# 4x 
+		# wait 62.5625 
+		# startReporting conf1 report1 
+		# stopReporting 
+		# wait 1 
+		# handover to 11
+	wait 43200
+		# startReporting conf1 report1 
+		# stopReporting 
+		# wait 1 
+		# handover to 1
+	wait applicationsFinish [ myApp_RTP1 ] 
+	releaseBearer streamVoLTE_RTP1 
+
+	startApplication App_SIP [ streamVoLTE_SIP1 ] as myApp_SIP2 
+	wait applicationsFinish [ myApp_SIP2 ] 
+	releaseBearer streamVoLTE_SIP1 
+	wait 61 
+	idleHandover to 11
+	wait 1 
+	releaseBearer DEFAULT_alias 
+	
+####################################################################################
+# 
+#        FTP 
+#		 108 UE
+# 
+####################################################################################
+transfer TransferDL_FTP
+	type tcp
+	packetSize 1024
+	dir downlink
+	packetRate 8.84
+
+transfer TransferUL_FTP
+	type tcp
+	packetSize 70
+	dir uplink
+	packetRate 7.94
+	
+application AppFTP [ bearerFTP ] 
+	wait 12 
+	idleHandover to 1
+	startTransfer TransferDL_FTP on bearerFTP as sampleDLFTP
+	startTransfer TransferUL_FTP on bearerFTP as sampleULFTP
+	wait 43200 
+	stopTransfer sampleDLFTP
+	stopTransfer sampleULFTP
+	wait 12 
+	idleHandover to 11
+
+mobileSession testSessionFTP
+	connectBearer DEFAULT as streamFTP
+	startApplication AppFTP [ streamFTP ] as myAppFTP 
+	wait applicationsFinish [ myAppFTP ] 
+	releaseBearer streamFTP
+	
+####################################################################################
+# 
+#		 CA - FTP down
+#		 20 UE
+#		DL 10 Mb/s
+# 
+####################################################################################
+
+transfer TransferDL_CAFTP
+	type tcp
+	packetSize 500
+	dir downlink
+	packetRate 125
+
+
+application AppCAFTP [ bearerCAFTP ] 
+	wait 12 
+	idleHandover to 1
+	startTransfer TransferDL_CAFTP on bearerCAFTP as sampleTransferCAFTP
+	wait 43200 
+	stopTransfer sampleTransferCAFTP
+	wait 12 
+	idleHandover to 11
+
+mobileSession testSessionCAFTP
+	connectBearer DEFAULT as streamCAFTP
+	startApplication AppCAFTP [ streamCAFTP ] as myAppInterCAFTP 
+	wait applicationsFinish [ myAppInterCAFTP ] 
+	releaseBearer streamCAFTP	
+
+####################################################################################
+# 
+#		 GBR UDP --- QCI 3
+#		 10 UE
+#		 DL 1Mb/s  UL 100kb/s
+# 
+####################################################################################
+
+transfer TransferDL_DED
+	type udp
+	packetSize 70
+	dir downlink
+	packetRate 178.57
+
+transfer TransferUL_DED
+	type udp
+	packetSize 70
+	dir uplink
+	packetRate 17.86
+
+bearerQoS DED 
+	qci 3 
+	mbr_uplink 31 
+	mbr_downlink 31 
+	gbr_uplink 31 
+	gbr_downlink 31 
+	network_initiated FALSE
+
+application App_DED [ bearerDED ] 
+	startTransfer TransferDL_DED on bearerDED as sampleTransferDLDED 
+	startTransfer TransferUL_DED on bearerDED as sampleTransferULDED 
+	wait 43200
+	stopTransfer sampleTransferDLDED 
+	stopTransfer sampleTransferULDED 
+
+mobileSession testSessionDED
+	wait 12 
+	idleHandover to 1
+	connectBearer DEFAULT as D1
+	startApplication App_DED [ D1 ] as myApp_DEFAULT1 & 
+	wait applicationsFinish [ myApp_DEFAULT1 ]
+	wait 12 
+	idleHandover to 1
+	releaseBearer D1
+####################################################################################
+# 
+#		 GBR UDP --- QCI 3
+#		 10 UE
+#		 DL 0,5 Mb/s  UL 100kb/s
+# 
+####################################################################################
+
+transfer TransferDL_DED2
+	type udp
+	packetSize 70
+	dir downlink
+	packetRate 89.29
+
+transfer TransferUL_DED2
+	type udp
+	packetSize 70
+	dir uplink
+	packetRate 17.86
+
+bearerQoS DED2
+	qci 3 
+	mbr_uplink 31 
+	mbr_downlink 31 
+	gbr_uplink 31 
+	gbr_downlink 31 
+	network_initiated FALSE
+
+application App_DED2 [ bearerDED2 ] 
+	startTransfer TransferDL_DED2 on bearerDED2 as sampleTransferDLDED2 
+	startTransfer TransferUL_DED2 on bearerDED2 as sampleTransferULDED2 
+	wait 43200
+	stopTransfer sampleTransferDLDED2 
+	stopTransfer sampleTransferULDED2 
+
+mobileSession testSessionDED2
+	wait 12 
+	idleHandover to 1
+	connectBearer DEFAULT as D2
+	startApplication App_DED2 [ D2 ] as myApp_DEFAULT2 & 
+	wait applicationsFinish [ myApp_DEFAULT2 ]
+	wait 12 
+	idleHandover to 1
+	releaseBearer D2
+	
+####################################################################################
+# 
+#		 GBR UDP --- QCI 3
+#		 12 UE
+#		 DL 0,5 Mb/s  UL 100kb/s
+# 
+####################################################################################
+
+transfer TransferDL_DED3
+	type udp
+	packetSize 70
+	dir downlink
+	packetRate 74.40
+
+transfer TransferUL_DED3
+	type udp
+	packetSize 70
+	dir uplink
+	packetRate 17.85
+
+bearerQoS DED3
+	qci 3 
+	mbr_uplink 31 
+	mbr_downlink 31 
+	gbr_uplink 31 
+	gbr_downlink 31 
+	network_initiated FALSE
+
+application App_DED3 [ bearerDED3 ] 
+	startTransfer TransferDL_DED3 on bearerDED3 as sampleTransferDLDED3 
+	startTransfer TransferUL_DED3 on bearerDED3 as sampleTransferULDED3 
+	wait 43200
+	stopTransfer sampleTransferDLDED3 
+	stopTransfer sampleTransferULDED3 
+
+mobileSession testSessionDED3
+	wait 12 
+	idleHandover to 1
+	connectBearer DEFAULT as D3
+	startApplication App_DED3 [ D3 ] as myApp_DEFAULT3 & 
+	wait applicationsFinish [ myApp_DEFAULT3 ]
+	wait 12 
+	idleHandover to 1
+	releaseBearer D3
+
+
+####################################################################################
+# 
+#		 UDP
+#		 20 UE
+#		 DL 10 Mb/s	 UL 2Mb/s
+# 
+####################################################################################
+
+transfer TransferDL_UDPNormalTraffic
+	type udp
+	packetSize 1024
+	dir downlink
+	packetRate 61.04
+
+transfer TransferUL_UDPNormalTraffic
+	type udp
+	packetSize 1024
+	dir uplink
+	packetRate 12.21
+	
+application AppUDPNormalTraffic [ bearerUDPNormalTraffic ] 
+	wait 12 
+	idleHandover to 1
+	startTransfer TransferDL_UDPNormalTraffic on bearerUDPNormalTraffic as sampleTransferDLUDPNormalTraffic
+	startTransfer TransferUL_UDPNormalTraffic on bearerUDPNormalTraffic as sampleTransferULUDPNormalTraffic
+	wait 43200 
+	stopTransfer sampleTransferDLUDPNormalTraffic
+	stopTransfer sampleTransferULUDPNormalTraffic
+	wait 12 
+	idleHandover to 11
+
+mobileSession testSessionUDPNormalTraffic
+	connectBearer DEFAULT as streamUDPNormalTraffic
+	startApplication AppUDPNormalTraffic [ streamUDPNormalTraffic ] as myAppInterUDPNormalTraffic 
+	wait applicationsFinish [ myAppInterUDPNormalTraffic ] 
+	releaseBearer streamUDPNormalTraffic	
+
+
+
+####################################################################################
+####################################################################################
+####################################################################################
+#
+#		Traffic Model scenario 
+#		   C-pane model (200UE)
+#		   100% of UE with Ping 
+# 
+#################################################################################### 
+
+testScenario
+	## Handover Inter eNB
+	testSessionInterHOPing_1
+		rate 2.5/s
+		cells[11]
+		delayToStart 5 min
+		ueCapabilities simple1
+		
+	## Attach/Detach
+	testSessionPDNPing_1
+		rate 2.5/s
+		cells[1]
+		delayToStart 5 min
+		ueCapabilities simple1
+
+
+####################################################################################
+#
+#		
+#		   U-pane model (200UE)
+#		   100% of UE with t-put
+# 
+#################################################################################### 
+
+
+	## VoLTE Session
+	## 20 UE
+	testSessionVoLTE_1
+		rate 1/s
+		cells[11]
+		delayToStart 0.0 s
+		activityIntervalLength 19.99 s
+		ueCapabilities simple1
+		
+	## UDP normal traffic Session
+	## 20 UE
+	testSessionUDPNormalTraffic
+		rate 1/s
+		cells[11]
+		delayToStart 1.0 s
+		activityIntervalLength 19.99 s
+		ueCapabilities simple1
+		
+	## GBR UDP QCI3 Session
+	## 10 UE
+	testSessionDED
+		rate 1/s
+		cells[11]
+		delayToStart 1.0 s
+		activityIntervalLength 9.99 s
+		ueCapabilities simple1
+		
+	## GBR UDP QCI3 Session
+	## 10 UE
+	testSessionDED2
+		rate 1/s
+		cells[11]
+		delayToStart 2.0 s
+		activityIntervalLength 9.99 s
+		ueCapabilities simple1
+		
+	## GBR UDP QCI3 Session
+	## 12 UE
+	testSessionDED3
+		rate 1/s
+		cells[11]
+		delayToStart 3.0 s
+		activityIntervalLength 11.99 s
+		
+	## CA FTP down Session
+	## 20 UE
+	testSessionCAFTP
+		rate 1/s
+		cells[11]
+		delayToStart 4.0 s
+		activityIntervalLength 19.99 s
+		ueCapabilities simple1
+		
+	# ## FTP  Session
+	##  108 UE
+	testSessionFTP
+		rate 1/s
+		cells[11]
+		delayToStart 5.0 s
+		activityIntervalLength 107.99 s
+		ueCapabilities simple1

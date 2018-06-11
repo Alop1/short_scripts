@@ -1,0 +1,3836 @@
+#***********************BEGIN_COPYRIGHT_HEADER******************
+#                       COPYRIGHT(C)NOKIA 2015
+#                         ALL RIGHTS RESERVED
+#                   NOKIA Confidential Proprietary
+#
+#**************************BEGIN_SCRIPT_HEADER******************
+####################################################################################
+#
+#		T-PUT Calculation
+#
+#####################################################################################
+#  No of UEs sending t-put= 1210.1: 15/attach/ + 1126.74/SR/ + 10.12/dedicated/ + 68/Inter-eNB HO/ + 39.87/Intra-eNB HO/ = 1259.73
+#  Data distribution is: 25% of packet size 1280 (1252+28); 50% of ping + 25% of heavy packets 1460B (1432+28)
+#  DL = 400.0 Mbps /eNB
+#  UL = 80.0 Mbps /eNB
+#  
+####################################################################################
+# LTE1819 changes
+# SR sessions
+# wait 12    --> wait 22
+#
+# TAU sessions:
+# wait 12/15 --> wait 22
+
+
+transfer TransferDL
+    type udp
+    packetSize 1252
+    dir downlink
+	#packetRate 58.54			
+    packetRate 52.81
+
+transfer TransferUL
+	type udp
+	packetSize 1252
+	dir uplink
+	#packetRate 11.6
+	packetRate 13.73
+		
+transfer TransferDL_1500
+    type udp
+    packetSize 1432
+    dir downlink
+	#packetRate 58.54				
+	packetRate 52.81
+
+
+transfer TransferUL_1500
+	type udp
+	packetSize 1432
+	dir uplink
+	#packetRate 11.6
+	packetRate 13.73
+	
+transfer TransferDLPing
+	type udp
+	packetSize 42
+	dir downlink
+	packetRate 1.76
+
+transfer TransferULPing
+	type udp
+	packetSize 42
+	dir uplink
+	packetRate 2.28
+
+bearerQoS DED
+	qci 6
+#	mbr_uplink 31
+#	mbr_downlink 31
+#	gbr_uplink 31
+#	gbr_downlink 31
+	network_initiated FALSE
+	
+bearerQoS DED1
+	qci 8
+#	mbr_uplink 40
+#	mbr_downlink 40
+#	gbr_uplink 40
+#	gbr_downlink 40
+	network_initiated FALSE
+
+configMeas conf1
+
+reportMeas report1
+        amount      5 
+        interval    1
+        servingCell rsrpMin=10 rsrpMax=10 rsrqMin=20 rsrqMax=20
+        neighCell   rsrpMin=95 rsrpMax=97 rsrqMin=33 rsrqMax=34
+        events 2
+	skipNeigh	
+	
+####################################################################################
+#
+#		IDLE SESSION
+#
+####################################################################################
+#  Total UEs (idle+connected)=2000
+#  Total UEs in idle=2000-345(rrc connected)=1655
+#
+#  This component will require 1504.028 UEs in idle: 1655- 57.642/SR/ - 93.33/TAU/=1504.028
+#  to achieve this, the total idle time per UE needs to be 250.67 [ sec ] ( 1504.028 [ UE ] * 1 [ sec ] / 6.0 (attach rate) [ UE ] )  
+####################################################################################
+
+
+application AppIDLE1 [ bearerSR ]
+	wait 12
+	idleHandover to 101
+	wait 100000000000
+	idleHandover to 11
+
+mobileSession testSessionIDLE1
+	connectBearer DEFAULT as stream1
+	startApplication AppIDLE1 [ stream1 ] as myAppSR1
+	wait applicationsFinish [ myAppSR1 ]
+	releaseBearer stream1	
+	
+application AppIDLE2 [ bearerSR ]
+	wait 12
+	idleHandover to 102
+	wait 100000000000
+	idleHandover to 11
+
+mobileSession testSessionIDLE2
+	connectBearer DEFAULT as stream1
+	startApplication AppIDLE2 [ stream1 ] as myAppSR1
+	wait applicationsFinish [ myAppSR1 ]
+	releaseBearer stream1
+
+application AppIDLE3 [ bearerSR ]
+	wait 12
+	idleHandover to 103
+	wait 100000000000
+	idleHandover to 11
+
+mobileSession testSessionIDLE3
+	connectBearer DEFAULT as stream1
+	startApplication AppIDLE3 [ stream1 ] as myAppSR1
+	wait applicationsFinish [ myAppSR1 ]
+	releaseBearer stream1	
+	
+####################################################################################
+#
+#		SERVICE REQUEST
+#
+####################################################################################
+#  1920 RRC Connected UEs
+#
+#  calculation of AppSR duration:
+#  this "component" will require 1759.91 [ UE ] in RRC_CONNECTED ( 1920 - 68 /inter-eNB HO/ - 27.1 /TAU/ - 10.12 /Dedicated/ -15 /ATTACH=PDN -39.87/INTRA-eNB-HO/)
+#  to achieve this, the total RRC_CONNECTED time per UE needs to be 139.01 [ sec ] ( 1759.91 [ UE ] * 1 [ sec ] / 12.66 (attach rate) [ UE ] ) :
+#  - 10 [ sec ] takes the UE to go idle before detaching
+#
+#  - Sum of SR: 126.6/2 s; 63.3 = 12.66 attach/s * iterations => iterations = 5
+#  - there are 5 iterations of Service Request component, so each iteration needs to have a UE for 27.8 [ sec ] in RRC_CONNECTED ( 139.01 [ sec ] / 5 =~ 27.8)
+#  - Inactivity timer = 10s, so 27.8-10[inactivity] = 17.8
+#
+#  UEs RRC_CONN = 5 [iterations]*(10+17.8)[sec]*12.66 (attach_rate)=1759.74
+#  UEs Idle = 12+5*(12-10)[go to idle]*12.66(attach_rate)=161.92
+#  T-put UEs = 5 [iteration]*17.8*12.66(attach_rate)=1126.74
+###################################################################################
+#
+# SR sessions
+# wait 12 --> wait 22
+###################################################################################
+
+application AppSR1 [ bearerSR ]
+	wait 22
+	idleHandover to 101
+	5x
+		wait 22
+		startTransfer TransferDL on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 11
+	
+application AppSR1Ping [ bearerSRPing ]
+	wait 22	
+	idleHandover to 101
+	5x
+		wait 22
+		startTransfer TransferDLPing on bearerSRPing as sampleTransferSRDLPing
+		startTransfer TransferULPing on bearerSRPing as sampleTransferSRULPing
+		wait 17.8
+		stopTransfer sampleTransferSRDLPing
+		stopTransfer sampleTransferSRULPing
+	wait 22
+	idleHandover to 11
+
+application AppSR1_1500 [ bearerSR ]
+	wait 22
+	idleHandover to 101
+	5x
+		wait 22
+		startTransfer TransferDL_1500 on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL_1500 on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 11	
+	
+mobileSession testSession1
+	connectBearer DEFAULT as stream1
+	#connectBearer DED on stream1 as streamPDNDED1
+	#connectBearer DED1 on stream1 as streamPDNDED11	
+	startApplication AppSR1 [ stream1 ] as myAppSR1
+	wait applicationsFinish [ myAppSR1 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream1
+
+mobileSession testSession1Ping
+	connectBearer DEFAULT as stream1Ping
+	#connectBearer DED on stream1Ping as streamPDNDED1
+	#connectBearer DED1 on stream1Ping as streamPDNDED11
+	startApplication AppSR1Ping [ stream1Ping ] as myAppSR1Ping
+	wait applicationsFinish [ myAppSR1Ping ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11	
+	releaseBearer stream1Ping
+	
+mobileSession testSession1_1500
+	connectBearer DEFAULT as stream1_1500
+	#connectBearer DED on stream1_1500 as streamPDNDED1
+	#connectBearer DED1 on stream1_1500 as streamPDNDED11	
+	startApplication AppSR1_1500 [ stream1_1500 ] as myAppSR1
+	wait applicationsFinish [ myAppSR1 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream1_1500	
+
+
+
+
+
+	
+application AppSR2 [ bearerSR ]
+	wait 22
+	idleHandover to 102
+	5x
+		wait 22
+		startTransfer TransferDL on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 11
+	
+application AppSR2Ping [ bearerSRPing ]
+	wait 22	
+	idleHandover to 102
+	5x
+		wait 22
+		startTransfer TransferDLPing on bearerSRPing as sampleTransferSRDLPing
+		startTransfer TransferULPing on bearerSRPing as sampleTransferSRULPing
+		wait 17.8
+		stopTransfer sampleTransferSRDLPing
+		stopTransfer sampleTransferSRULPing
+	wait 22
+	idleHandover to 11
+
+application AppSR2_1500 [ bearerSR ]
+	wait 22
+	idleHandover to 102
+	5x
+		wait 22
+		startTransfer TransferDL_1500 on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL_1500 on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 11	
+	
+mobileSession testSession2
+	connectBearer DEFAULT as stream2
+	#connectBearer DED on stream2 as streamPDNDED1
+	#connectBearer DED1 on stream2 as streamPDNDED11
+	startApplication AppSR2 [ stream2 ] as myAppSR2
+	wait applicationsFinish [ myAppSR2 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11	
+	releaseBearer stream2
+
+mobileSession testSession2Ping
+	connectBearer DEFAULT as stream2Ping
+	#connectBearer DED on stream2Ping as streamPDNDED1
+	#connectBearer DED1 on stream2Ping as streamPDNDED11
+	startApplication AppSR2Ping [ stream2Ping ] as myAppSR2Ping
+	wait applicationsFinish [ myAppSR2Ping ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream2Ping
+
+mobileSession testSession2_1500
+	connectBearer DEFAULT as stream2_1500
+	#connectBearer DED on stream2_1500 as streamPDNDED1
+	#connectBearer DED1 on stream2_1500 as streamPDNDED11
+	startApplication AppSR2_1500 [ stream2_1500 ] as myAppSR2
+	wait applicationsFinish [ myAppSR2 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11	
+	releaseBearer stream2_1500	
+
+
+	
+	
+	
+	
+	
+application AppSR3 [ bearerSR ]
+	wait 22
+	idleHandover to 103
+	5x
+		wait 22
+		startTransfer TransferDL on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 11
+	
+application AppSR3Ping [ bearerSRPing ]
+	wait 22	
+	idleHandover to 103
+	5x
+		wait 22
+		startTransfer TransferDLPing on bearerSRPing as sampleTransferSRDLPing
+		startTransfer TransferULPing on bearerSRPing as sampleTransferSRULPing
+		wait 17.8
+		stopTransfer sampleTransferSRDLPing
+		stopTransfer sampleTransferSRULPing
+	wait 22
+	idleHandover to 11
+
+application AppSR3_1500 [ bearerSR ]
+	wait 22
+	idleHandover to 103
+	5x
+		wait 22
+		startTransfer TransferDL_1500  on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL_1500  on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 11
+	
+mobileSession testSession3
+	connectBearer DEFAULT as stream3
+	#connectBearer DED on stream3 as streamPDNDED1
+	#connectBearer DED1 on stream3 as streamPDNDED11
+	startApplication AppSR3 [ stream3 ] as myAppSR3
+	wait applicationsFinish [ myAppSR3 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream3
+
+mobileSession testSession3Ping
+	connectBearer DEFAULT as stream3Ping
+	#connectBearer DED on stream3Ping as streamPDNDED1
+	#connectBearer DED1 on stream3Ping as streamPDNDED11
+	startApplication AppSR3Ping [ stream3Ping ] as myAppSR3Ping
+	wait applicationsFinish [ myAppSR3Ping ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11	
+	releaseBearer stream3Ping	
+	
+mobileSession testSession3_1500
+	connectBearer DEFAULT as stream3_1500
+	#connectBearer DED on stream3_1500 as streamPDNDED1
+	#connectBearer DED1 on stream3_1500 as streamPDNDED11
+	startApplication AppSR3_1500 [ stream3_1500 ] as myAppSR3
+	wait applicationsFinish [ myAppSR3 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream3_1500
+	
+	
+	
+
+#===Added to support 6 cells===
+application AppSR4 [ bearerSR ]
+	wait 22
+	idleHandover to 104
+	5x
+		wait 22
+		startTransfer TransferDL on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 12
+	
+application AppSR4Ping [ bearerSRPing ]
+	wait 22	
+	idleHandover to 104
+	5x
+		wait 22
+		startTransfer TransferDLPing on bearerSRPing as sampleTransferSRDLPing
+		startTransfer TransferULPing on bearerSRPing as sampleTransferSRULPing
+		wait 17.8
+		stopTransfer sampleTransferSRDLPing
+		stopTransfer sampleTransferSRULPing
+	wait 22
+	idleHandover to 12
+
+application AppSR4_1500 [ bearerSR ]
+	wait 22
+	idleHandover to 104
+	5x
+		wait 22
+		startTransfer TransferDL_1500  on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL_1500  on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 12
+	
+mobileSession testSession4
+	connectBearer DEFAULT as stream4
+	#connectBearer DED on stream4 as streamPDNDED1
+	#connectBearer DED1 on stream4 as streamPDNDED11
+	startApplication AppSR4 [ stream4 ] as myAppSR4
+	wait applicationsFinish [ myAppSR4 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream4
+
+mobileSession testSession4Ping
+	connectBearer DEFAULT as stream4Ping
+	#connectBearer DED on stream4Ping as streamPDNDED1
+	#connectBearer DED1 on stream4Ping as streamPDNDED11
+	startApplication AppSR4Ping [ stream4Ping ] as myAppSR4Ping
+	wait applicationsFinish [ myAppSR4Ping ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11	
+	releaseBearer stream4Ping	
+	
+mobileSession testSession4_1500
+	connectBearer DEFAULT as stream4_1500
+	#connectBearer DED on stream4_1500 as streamPDNDED1
+	#connectBearer DED1 on stream4_1500 as streamPDNDED11
+	startApplication AppSR4_1500 [ stream4_1500 ] as myAppSR4
+	wait applicationsFinish [ myAppSR4 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream4_1500
+	
+	
+		
+application AppSR5 [ bearerSR ]
+	wait 22
+	idleHandover to 105
+	5x
+		wait 22
+		startTransfer TransferDL on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 12
+	
+application AppSR5Ping [ bearerSRPing ]
+	wait 22	
+	idleHandover to 105
+	5x
+		wait 22
+		startTransfer TransferDLPing on bearerSRPing as sampleTransferSRDLPing
+		startTransfer TransferULPing on bearerSRPing as sampleTransferSRULPing
+		wait 17.8
+		stopTransfer sampleTransferSRDLPing
+		stopTransfer sampleTransferSRULPing
+	wait 22
+	idleHandover to 12
+
+application AppSR5_1500 [ bearerSR ]
+	wait 22
+	idleHandover to 105
+	5x
+		wait 22
+		startTransfer TransferDL_1500  on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL_1500  on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 12
+	
+mobileSession testSession5
+	connectBearer DEFAULT as stream5
+	#connectBearer DED on stream5 as streamPDNDED1
+	#connectBearer DED1 on stream5 as streamPDNDED11
+	startApplication AppSR5 [ stream5 ] as myAppSR5
+	wait applicationsFinish [ myAppSR5 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream5
+
+mobileSession testSession5Ping
+	connectBearer DEFAULT as stream5Ping
+	#connectBearer DED on stream5Ping as streamPDNDED1
+	#connectBearer DED1 on stream5Ping as streamPDNDED11
+	startApplication AppSR5Ping [ stream5Ping ] as myAppSR5Ping
+	wait applicationsFinish [ myAppSR5Ping ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11	
+	releaseBearer stream5Ping	
+	
+mobileSession testSession5_1500
+	connectBearer DEFAULT as stream5_1500
+	#connectBearer DED on stream5_1500 as streamPDNDED1
+	#connectBearer DED1 on stream5_1500 as streamPDNDED11
+	startApplication AppSR5_1500 [ stream5_1500 ] as myAppSR5
+	wait applicationsFinish [ myAppSR5 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream5_1500
+
+	
+
+application AppSR6 [ bearerSR ]
+	wait 22
+	idleHandover to 106
+	5x
+		wait 22
+		startTransfer TransferDL on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 12
+	
+application AppSR6Ping [ bearerSRPing ]
+	wait 22	
+	idleHandover to 106
+	5x
+		wait 22
+		startTransfer TransferDLPing on bearerSRPing as sampleTransferSRDLPing
+		startTransfer TransferULPing on bearerSRPing as sampleTransferSRULPing
+		wait 17.8
+		stopTransfer sampleTransferSRDLPing
+		stopTransfer sampleTransferSRULPing
+	wait 22
+	idleHandover to 12
+
+application AppSR6_1500 [ bearerSR ]
+	wait 22
+	idleHandover to 106
+	5x
+		wait 22
+		startTransfer TransferDL_1500  on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL_1500  on bearerSR as sampleTransferSRUL
+		wait 17.8
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 22
+	idleHandover to 12
+	
+mobileSession testSession6
+	connectBearer DEFAULT as stream6
+	#connectBearer DED on stream6 as streamPDNDED1
+	#connectBearer DED1 on stream6 as streamPDNDED11
+	startApplication AppSR6 [ stream6 ] as myAppSR6
+	wait applicationsFinish [ myAppSR6 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream6
+
+mobileSession testSession6Ping
+	connectBearer DEFAULT as stream6Ping
+	#connectBearer DED on stream6Ping as streamPDNDED1
+	#connectBearer DED1 on stream6Ping as streamPDNDED11
+	startApplication AppSR6Ping [ stream6Ping ] as myAppSR6Ping
+	wait applicationsFinish [ myAppSR6Ping ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11	
+	releaseBearer stream6Ping	
+	
+mobileSession testSession6_1500
+	connectBearer DEFAULT as stream6_1500
+	#connectBearer DED on stream6_1500 as streamPDNDED1
+	#connectBearer DED1 on stream6_1500 as streamPDNDED11
+	startApplication AppSR6_1500 [ stream6_1500 ] as myAppSR6
+	wait applicationsFinish [ myAppSR6 ]
+	#releaseBearer streamPDNDED1	
+	#releaseBearer streamPDNDED11
+	releaseBearer stream6_1500	
+
+
+###################################################################################
+#
+#		PDN==ATTACH/DETACH
+#
+###################################################################################
+#  0.15 attach / s 
+#  numb of UEs in RRC_CONNECTED : 100 * 0.15[ UEs ] / 1 [ sec ] = 15.0 UEs
+#  this session includes dedicated bearers addition with rate equal to attach rate
+###################################################################################
+
+application AppPDN [ bearerPDN ]
+	startTransfer TransferDL on bearerPDN as sampleTransferPDNDL
+	startTransfer TransferUL on bearerPDN as sampleTransferPDNUL
+	wait 100
+	stopTransfer sampleTransferPDNDL
+	stopTransfer sampleTransferPDNUL
+
+application AppPDNPing [ bearerPDNPing ]
+	startTransfer TransferDLPing on bearerPDNPing as sampleTransferPDNDLPing
+	startTransfer TransferULPing on bearerPDNPing as sampleTransferPDNULPing
+	wait 100
+	stopTransfer sampleTransferPDNDLPing
+	stopTransfer sampleTransferPDNULPing
+
+	
+application AppPDN_1500 [ bearerPDN ]
+	startTransfer TransferDL_1500 on bearerPDN as sampleTransferPDNDL
+	startTransfer TransferUL_1500 on bearerPDN as sampleTransferPDNUL
+	wait 100
+	stopTransfer sampleTransferPDNDL
+	stopTransfer sampleTransferPDNUL	
+	
+mobileSession testSessionPDN1
+	connectBearer DEFAULT as stream1
+	connectBearer DED on stream1 as streamPDNDED1
+	connectBearer DED1 on stream1 as streamPDNDED11
+	startApplication AppPDN [ stream1 ] as myAppPDN1 &
+	wait applicationsFinish [ myAppPDN1 ]
+	releaseBearer streamPDNDED1	
+	releaseBearer streamPDNDED11	
+	releaseBearer stream1
+
+mobileSession testSessionPDN1Ping
+	connectBearer DEFAULT as stream1Ping
+	connectBearer DED on stream1Ping as streamPDNDED1Ping
+	connectBearer DED1 on stream1Ping as streamPDNDED11Ping	
+	startApplication AppPDNPing [ stream1Ping ] as myAppPDN1Ping &
+	wait applicationsFinish [ myAppPDN1Ping ]
+	releaseBearer streamPDNDED1Ping	
+	releaseBearer streamPDNDED11Ping	
+	releaseBearer stream1Ping
+
+mobileSession testSessionPDN1_1500
+	connectBearer DEFAULT as stream1_1500
+	connectBearer DED on stream1_1500 as streamPDNDED1
+	connectBearer DED1 on stream1_1500 as streamPDNDED11
+	startApplication AppPDN_1500 [ stream1_1500 ] as myAppPDN1 &
+	wait applicationsFinish [ myAppPDN1 ]
+	releaseBearer streamPDNDED1	
+	releaseBearer streamPDNDED11	
+	releaseBearer stream1_1500	
+	
+mobileSession testSessionPDN2
+	connectBearer DEFAULT as stream2
+	connectBearer DED on stream2 as streamPDNDED2
+	connectBearer DED1 on stream2 as streamPDNDED21
+	startApplication AppPDN [ stream2 ] as myAppPDN2 &
+	wait applicationsFinish [ myAppPDN2 ]
+	releaseBearer streamPDNDED2	
+	releaseBearer streamPDNDED21	
+	releaseBearer stream2
+
+mobileSession testSessionPDN2Ping
+	connectBearer DEFAULT as stream2Ping
+	connectBearer DED on stream2Ping as streamPDNDED2Ping
+	connectBearer DED1 on stream2Ping as streamPDNDED21Ping	
+	startApplication AppPDNPing [ stream2Ping ] as myAppPDN2Ping &
+	wait applicationsFinish [ myAppPDN2Ping ]
+	releaseBearer streamPDNDED2Ping	
+	releaseBearer streamPDNDED21Ping	
+	releaseBearer stream2Ping
+
+mobileSession testSessionPDN2_1500 
+	connectBearer DEFAULT as stream2_1500 
+	connectBearer DED on stream2_1500  as streamPDNDED2
+	connectBearer DED1 on stream2_1500  as streamPDNDED21
+	startApplication AppPDN_1500 [ stream2_1500  ] as myAppPDN2 &
+	wait applicationsFinish [ myAppPDN2 ]
+	releaseBearer streamPDNDED2	
+	releaseBearer streamPDNDED21	
+	releaseBearer stream2_1500 
+	
+mobileSession testSessionPDN3
+	connectBearer DEFAULT as stream3
+	connectBearer DED on stream3 as streamPDNDED3
+	connectBearer DED1 on stream3 as streamPDNDED31
+	startApplication AppPDN [ stream3 ] as myAppPDN3 &
+	wait applicationsFinish [ myAppPDN3 ]
+	releaseBearer streamPDNDED3	
+	releaseBearer streamPDNDED31	
+	releaseBearer stream3
+	
+mobileSession testSessionPDN3_1500 
+	connectBearer DEFAULT as stream3_1500 
+	connectBearer DED on stream3_1500  as streamPDNDED3
+	connectBearer DED1 on stream3_1500  as streamPDNDED31
+	startApplication AppPDN_1500 [ stream3_1500  ] as myAppPDN3 &
+	wait applicationsFinish [ myAppPDN3 ]
+	releaseBearer streamPDNDED3	
+	releaseBearer streamPDNDED31	
+	releaseBearer stream3_1500 	
+
+mobileSession testSessionPDN3Ping
+	connectBearer DEFAULT as stream3Ping
+	connectBearer DED on stream3Ping as streamPDNDED3Ping
+	connectBearer DED1 on stream3Ping as streamPDNDED31Ping	
+	startApplication AppPDNPing [ stream3Ping ] as myAppPDN3Ping &
+	wait applicationsFinish [ myAppPDN3Ping ]
+	releaseBearer streamPDNDED3Ping	
+	releaseBearer streamPDNDED31Ping	
+	releaseBearer stream3Ping	
+	
+	
+	
+	
+#===Added to support 6 cells===
+mobileSession testSessionPDN4
+	connectBearer DEFAULT as stream4
+	connectBearer DED on stream4 as streamPDNDED4
+	connectBearer DED1 on stream4 as streamPDNDED41
+	startApplication AppPDN [ stream4 ] as myAppPDN4 &
+	wait applicationsFinish [ myAppPDN4 ]
+	releaseBearer streamPDNDED4	
+	releaseBearer streamPDNDED41	
+	releaseBearer stream4
+	
+mobileSession testSessionPDN4_1500 
+	connectBearer DEFAULT as stream4_1500 
+	connectBearer DED on stream4_1500  as streamPDNDED4
+	connectBearer DED1 on stream4_1500  as streamPDNDED41
+	startApplication AppPDN_1500 [ stream4_1500  ] as myAppPDN4 &
+	wait applicationsFinish [ myAppPDN4 ]
+	releaseBearer streamPDNDED4	
+	releaseBearer streamPDNDED41	
+	releaseBearer stream4_1500 	
+
+mobileSession testSessionPDN4Ping
+	connectBearer DEFAULT as stream4Ping
+	connectBearer DED on stream4Ping as streamPDNDED4Ping
+	connectBearer DED1 on stream4Ping as streamPDNDED41Ping	
+	startApplication AppPDNPing [ stream4Ping ] as myAppPDN4Ping &
+	wait applicationsFinish [ myAppPDN4Ping ]
+	releaseBearer streamPDNDED4Ping	
+	releaseBearer streamPDNDED41Ping	
+	releaseBearer stream4Ping		
+	
+	
+mobileSession testSessionPDN5
+	connectBearer DEFAULT as stream5
+	connectBearer DED on stream5 as streamPDNDED5
+	connectBearer DED1 on stream5 as streamPDNDED51
+	startApplication AppPDN [ stream5 ] as myAppPDN5 &
+	wait applicationsFinish [ myAppPDN5 ]
+	releaseBearer streamPDNDED5	
+	releaseBearer streamPDNDED51	
+	releaseBearer stream5
+	
+mobileSession testSessionPDN5_1500 
+	connectBearer DEFAULT as stream5_1500 
+	connectBearer DED on stream5_1500  as streamPDNDED5
+	connectBearer DED1 on stream5_1500  as streamPDNDED51
+	startApplication AppPDN_1500 [ stream5_1500  ] as myAppPDN5 &
+	wait applicationsFinish [ myAppPDN5 ]
+	releaseBearer streamPDNDED5	
+	releaseBearer streamPDNDED51	
+	releaseBearer stream5_1500 	
+
+mobileSession testSessionPDN5Ping
+	connectBearer DEFAULT as stream5Ping
+	connectBearer DED on stream5Ping as streamPDNDED5Ping
+	connectBearer DED1 on stream5Ping as streamPDNDED51Ping	
+	startApplication AppPDNPing [ stream5Ping ] as myAppPDN5Ping &
+	wait applicationsFinish [ myAppPDN5Ping ]
+	releaseBearer streamPDNDED5Ping	
+	releaseBearer streamPDNDED51Ping	
+	releaseBearer stream5Ping	
+
+
+mobileSession testSessionPDN6
+	connectBearer DEFAULT as stream6
+	connectBearer DED on stream6 as streamPDNDED6
+	connectBearer DED1 on stream6 as streamPDNDED61
+	startApplication AppPDN [ stream6 ] as myAppPDN6 &
+	wait applicationsFinish [ myAppPDN6 ]
+	releaseBearer streamPDNDED6	
+	releaseBearer streamPDNDED61	
+	releaseBearer stream6
+	
+mobileSession testSessionPDN6_1500 
+	connectBearer DEFAULT as stream6_1500 
+	connectBearer DED on stream6_1500  as streamPDNDED6
+	connectBearer DED1 on stream6_1500  as streamPDNDED61
+	startApplication AppPDN_1500 [ stream6_1500  ] as myAppPDN6 &
+	wait applicationsFinish [ myAppPDN6 ]
+	releaseBearer streamPDNDED6	
+	releaseBearer streamPDNDED61	
+	releaseBearer stream6_1500 	
+
+mobileSession testSessionPDN6Ping
+	connectBearer DEFAULT as stream6Ping
+	connectBearer DED on stream6Ping as streamPDNDED6Ping
+	connectBearer DED1 on stream6Ping as streamPDNDED61Ping	
+	startApplication AppPDNPing [ stream6Ping ] as myAppPDN6Ping &
+	wait applicationsFinish [ myAppPDN6Ping ]
+	releaseBearer streamPDNDED6Ping	
+	releaseBearer streamPDNDED61Ping	
+	releaseBearer stream6Ping
+
+
+
+
+
+	
+###################################################################################
+#
+#		INTRA-ENB HO
+#
+###################################################################################
+#  9.06 Intra-eNB HOs / s = 10 iterations x 0.906 attaches/s
+#  10 iterations of intra-eNB HO in which 40% are from/to cell to UEs is doing intra HO
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] + 1) x (3+1) [ sec ] * 0.906 [ UEs ] / 1 [ sec ] = 39.87
+#  OK
+###################################################################################
+
+application AppIntraHO1 [ bearerIntraHO1 ]
+	startTransfer TransferDL on bearerIntraHO1 as sampleTransferIntraHODL1
+	startTransfer TransferUL on bearerIntraHO1 as sampleTransferIntraHOUL1
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 101
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		#stopReporting
+		wait 1
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting					
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		#stopReporting
+		wait 1		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL1
+	stopTransfer sampleTransferIntraHOUL1
+	
+application AppIntraHO1Ping [ bearerIntraHO1Ping ]
+	startTransfer TransferDLPing on bearerIntraHO1Ping as sampleTransferIntraHODL1Ping
+	startTransfer TransferULPing on bearerIntraHO1Ping as sampleTransferIntraHOUL1Ping
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 101
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		#stopReporting
+		wait 1
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting					
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		#stopReporting
+		wait 1		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL1Ping
+	stopTransfer sampleTransferIntraHOUL1Ping	
+
+	
+application AppIntraHO1_1500 [ bearerIntraHO1 ]
+	startTransfer TransferDL_1500 on bearerIntraHO1 as sampleTransferIntraHODL1
+	startTransfer TransferUL_1500 on bearerIntraHO1 as sampleTransferIntraHOUL1
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 101
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		#stopReporting
+		wait 1
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting					
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		#stopReporting
+		wait 1		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL1
+	stopTransfer sampleTransferIntraHOUL1
+
+	
+mobileSession testSessionIntraHO1
+	connectBearer DEFAULT as streamIntraHO1
+	connectBearer DED on streamIntraHO1 as streamDED1
+	connectBearer DED1 on streamIntraHO1 as streamDED2	
+	startApplication AppIntraHO1 [ streamIntraHO1 ] as myAppIntraHO1
+	wait applicationsFinish [ myAppIntraHO1 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2	
+	releaseBearer streamIntraHO1
+	
+mobileSession testSessionIntraHO1Ping
+	connectBearer DEFAULT as streamIntraHO1Ping
+	connectBearer DED on streamIntraHO1Ping as streamDED1
+	connectBearer DED1 on streamIntraHO1Ping as streamDED2		
+	startApplication AppIntraHO1Ping [ streamIntraHO1Ping ] as myAppIntraHO1Ping
+	wait applicationsFinish [ myAppIntraHO1Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2	
+	releaseBearer streamIntraHO1Ping
+	
+mobileSession testSessionIntraHO1_1500 
+	connectBearer DEFAULT as streamIntraHO1_1500 
+	connectBearer DED on streamIntraHO1_1500  as streamDED1
+	connectBearer DED1 on streamIntraHO1_1500  as streamDED2	
+	startApplication AppIntraHO1_1500 [ streamIntraHO1_1500  ] as myAppIntraHO1
+	wait applicationsFinish [ myAppIntraHO1 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2	
+	releaseBearer streamIntraHO1_1500 
+
+	
+application AppIntraHO2 [ bearerIntraHO2 ]
+	startTransfer TransferDL on bearerIntraHO2 as sampleTransferIntraHODL2
+	startTransfer TransferUL on bearerIntraHO2 as sampleTransferIntraHOUL2
+	wait 3
+    #startReporting conf1 report1
+    wait 1	
+	handover to 102
+	1x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+	wait 3
+    #startReporting conf1 report1
+    wait 1
+    #stopReporting	
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL2
+	stopTransfer sampleTransferIntraHOUL2
+	
+application AppIntraHO2Ping [ bearerIntraHO2Ping ]
+	startTransfer TransferDLPing on bearerIntraHO2Ping as sampleTransferIntraHODL2Ping
+	startTransfer TransferULPing on bearerIntraHO2Ping as sampleTransferIntraHOUL2Ping
+	wait 3
+    #startReporting conf1 report1
+    wait 1	
+	handover to 102
+	1x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+	wait 3
+    #startReporting conf1 report1
+    wait 1
+    #stopReporting	
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL2Ping
+	stopTransfer sampleTransferIntraHOUL2Ping
+
+application AppIntraHO2_1500 [ bearerIntraHO2 ]
+	startTransfer TransferDL_1500 on bearerIntraHO2 as sampleTransferIntraHODL2
+	startTransfer TransferUL_1500 on bearerIntraHO2 as sampleTransferIntraHOUL2
+	wait 3
+    #startReporting conf1 report1
+    wait 1	
+	handover to 102
+	1x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+	wait 3
+    #startReporting conf1 report1
+    wait 1
+    #stopReporting	
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL2
+	stopTransfer sampleTransferIntraHOUL2
+	
+mobileSession testSessionIntraHO2
+	connectBearer DEFAULT as streamIntraHO2
+	connectBearer DED on streamIntraHO2 as streamDED1
+	connectBearer DED1 on streamIntraHO2 as streamDED2	
+	startApplication AppIntraHO2 [ streamIntraHO2 ] as myAppIntraHO2
+	wait applicationsFinish [ myAppIntraHO2 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO2
+	
+mobileSession testSessionIntraHO2Ping
+	connectBearer DEFAULT as streamIntraHO2Ping
+	connectBearer DED on streamIntraHO2Ping as streamDED1
+	connectBearer DED1 on streamIntraHO2Ping as streamDED2	
+	startApplication AppIntraHO2Ping [ streamIntraHO2Ping ] as myAppIntraHO2Ping
+	wait applicationsFinish [ myAppIntraHO2Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO2Ping
+
+mobileSession testSessionIntraHO2_1500
+	connectBearer DEFAULT as streamIntraHO2_1500
+	connectBearer DED on streamIntraHO2_1500 as streamDED1
+	connectBearer DED1 on streamIntraHO2_1500 as streamDED2	
+	startApplication AppIntraHO2_1500 [ streamIntraHO2_1500 ] as myAppIntraHO2
+	wait applicationsFinish [ myAppIntraHO2 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO2_1500	
+
+	
+	
+application AppIntraHO3 [ bearerIntraHO3 ]
+	startTransfer TransferDL on bearerIntraHO3 as sampleTransferIntraHODL3
+	startTransfer TransferUL on bearerIntraHO3 as sampleTransferIntraHOUL3
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 103
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL3
+	stopTransfer sampleTransferIntraHOUL3
+	
+application AppIntraHO3Ping [ bearerIntraHO3Ping ]
+	startTransfer TransferDLPing on bearerIntraHO3Ping as sampleTransferIntraHODL3Ping
+	startTransfer TransferULPing on bearerIntraHO3Ping as sampleTransferIntraHOUL3Ping
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 103
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL3Ping
+	stopTransfer sampleTransferIntraHOUL3Ping
+
+application AppIntraHO3_1500 [ bearerIntraHO3 ]
+	startTransfer TransferDL_1500 on bearerIntraHO3 as sampleTransferIntraHODL3
+	startTransfer TransferUL_1500 on bearerIntraHO3 as sampleTransferIntraHOUL3
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 103
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 103
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL3
+	stopTransfer sampleTransferIntraHOUL3
+	
+mobileSession testSessionIntraHO3
+	connectBearer DEFAULT as streamIntraHO3
+	connectBearer DED on streamIntraHO3 as streamDED1
+	connectBearer DED1 on streamIntraHO3 as streamDED2	
+	startApplication AppIntraHO3 [ streamIntraHO3 ] as myAppIntraHO3
+	wait applicationsFinish [ myAppIntraHO3 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO3
+	
+mobileSession testSessionIntraHO3Ping
+	connectBearer DEFAULT as streamIntraHO3Ping
+	connectBearer DED on streamIntraHO3Ping as streamDED1
+	connectBearer DED1 on streamIntraHO3Ping as streamDED2	
+	startApplication AppIntraHO3Ping [ streamIntraHO3Ping ] as myAppIntraHO3Ping
+	wait applicationsFinish [ myAppIntraHO3Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO3Ping
+
+
+mobileSession testSessionIntraHO3_1500
+	connectBearer DEFAULT as streamIntraHO3_1500
+	connectBearer DED on streamIntraHO3_1500 as streamDED1
+	connectBearer DED1 on streamIntraHO3_1500 as streamDED2	
+	startApplication AppIntraHO3_1500 [ streamIntraHO3_1500 ] as myAppIntraHO3
+	wait applicationsFinish [ myAppIntraHO3 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO3_1500
+	
+	
+
+#===Added to support 6 cells===	
+
+application AppIntraHO4 [ bearerIntraHO4 ]
+	startTransfer TransferDL on bearerIntraHO4 as sampleTransferIntraHODL4
+	startTransfer TransferUL on bearerIntraHO4 as sampleTransferIntraHOUL4
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 104
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait 3
+	stopTransfer sampleTransferIntraHODL4
+	stopTransfer sampleTransferIntraHOUL4
+	
+application AppIntraHO4Ping [ bearerIntraHO4Ping ]
+	startTransfer TransferDLPing on bearerIntraHO4Ping as sampleTransferIntraHODL4Ping
+	startTransfer TransferULPing on bearerIntraHO4Ping as sampleTransferIntraHOUL4Ping
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 104
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait 3
+	stopTransfer sampleTransferIntraHODL4Ping
+	stopTransfer sampleTransferIntraHOUL4Ping
+
+application AppIntraHO4_1500 [ bearerIntraHO4 ]
+	startTransfer TransferDL_1500 on bearerIntraHO4 as sampleTransferIntraHODL4
+	startTransfer TransferUL_1500 on bearerIntraHO4 as sampleTransferIntraHOUL4
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 104
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait 3
+	stopTransfer sampleTransferIntraHODL4
+	stopTransfer sampleTransferIntraHOUL4
+	
+	
+	
+	
+	
+	
+	
+application AppIntraHO5 [ bearerIntraHO5 ]
+	startTransfer TransferDL on bearerIntraHO5 as sampleTransferIntraHODL5
+	startTransfer TransferUL on bearerIntraHO5 as sampleTransferIntraHOUL5
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 105
+	1x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting				
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 12
+	wait 3
+	stopTransfer sampleTransferIntraHODL5
+	stopTransfer sampleTransferIntraHOUL5
+	
+application AppIntraHO5Ping [ bearerIntraHO5Ping ]
+	startTransfer TransferDLPing on bearerIntraHO5Ping as sampleTransferIntraHODL5Ping
+	startTransfer TransferULPing on bearerIntraHO5Ping as sampleTransferIntraHOUL5Ping
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 105
+	1x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting				
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 12
+	wait 3
+	stopTransfer sampleTransferIntraHODL5Ping
+	stopTransfer sampleTransferIntraHOUL5Ping
+
+application AppIntraHO5_1500 [ bearerIntraHO5 ]
+	startTransfer TransferDL_1500 on bearerIntraHO5 as sampleTransferIntraHODL5
+	startTransfer TransferUL_1500 on bearerIntraHO5 as sampleTransferIntraHOUL5
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 105
+	1x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting				
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 12
+	wait 3
+	stopTransfer sampleTransferIntraHODL5
+	stopTransfer sampleTransferIntraHOUL5
+
+
+
+
+
+
+
+application AppIntraHO6 [ bearerIntraHO6 ]
+	startTransfer TransferDL on bearerIntraHO6 as sampleTransferIntraHODL6
+	startTransfer TransferUL on bearerIntraHO6 as sampleTransferIntraHOUL6
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 106
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait 3
+	stopTransfer sampleTransferIntraHODL6
+	stopTransfer sampleTransferIntraHOUL6
+	
+application AppIntraHO6Ping [ bearerIntraHO6Ping ]
+	startTransfer TransferDLPing on bearerIntraHO6Ping as sampleTransferIntraHODL6Ping
+	startTransfer TransferULPing on bearerIntraHO6Ping as sampleTransferIntraHOUL6Ping
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 106
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait 3
+	stopTransfer sampleTransferIntraHODL6Ping
+	stopTransfer sampleTransferIntraHOUL6Ping
+
+application AppIntraHO6_1500 [ bearerIntraHO6 ]
+	startTransfer TransferDL_1500 on bearerIntraHO6 as sampleTransferIntraHODL6
+	startTransfer TransferUL_1500 on bearerIntraHO6 as sampleTransferIntraHOUL6
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting
+	handover to 106
+	1x	
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 105
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 106
+	wait 3
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait 3
+	stopTransfer sampleTransferIntraHODL6
+	stopTransfer sampleTransferIntraHOUL6
+
+
+
+mobileSession testSessionIntraHO4
+	connectBearer DEFAULT as streamIntraHO4
+	connectBearer DED on streamIntraHO4 as streamDED1
+	connectBearer DED1 on streamIntraHO4 as streamDED2	
+	startApplication AppIntraHO4 [ streamIntraHO4 ] as myAppIntraHO4
+	wait applicationsFinish [ myAppIntraHO4 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO4
+	
+mobileSession testSessionIntraHO4Ping
+	connectBearer DEFAULT as streamIntraHO4Ping
+	connectBearer DED on streamIntraHO4Ping as streamDED1
+	connectBearer DED1 on streamIntraHO4Ping as streamDED2	
+	startApplication AppIntraHO4Ping [ streamIntraHO4Ping ] as myAppIntraHO4Ping
+	wait applicationsFinish [ myAppIntraHO4Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO4Ping
+
+
+mobileSession testSessionIntraHO4_1500
+	connectBearer DEFAULT as streamIntraHO4_1500
+	connectBearer DED on streamIntraHO4_1500 as streamDED1
+	connectBearer DED1 on streamIntraHO4_1500 as streamDED2	
+	startApplication AppIntraHO4_1500 [ streamIntraHO4_1500 ] as myAppIntraHO4
+	wait applicationsFinish [ myAppIntraHO4 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO4_1500
+	
+	
+	
+	
+	
+	
+	
+mobileSession testSessionIntraHO5
+	connectBearer DEFAULT as streamIntraHO5
+	connectBearer DED on streamIntraHO5 as streamDED1
+	connectBearer DED1 on streamIntraHO5 as streamDED2	
+	startApplication AppIntraHO5 [ streamIntraHO5 ] as myAppIntraHO5
+	wait applicationsFinish [ myAppIntraHO5 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO5
+	
+mobileSession testSessionIntraHO5Ping
+	connectBearer DEFAULT as streamIntraHO5Ping
+	connectBearer DED on streamIntraHO5Ping as streamDED1
+	connectBearer DED1 on streamIntraHO5Ping as streamDED2	
+	startApplication AppIntraHO5Ping [ streamIntraHO5Ping ] as myAppIntraHO5Ping
+	wait applicationsFinish [ myAppIntraHO5Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO5Ping
+
+
+mobileSession testSessionIntraHO5_1500
+	connectBearer DEFAULT as streamIntraHO5_1500
+	connectBearer DED on streamIntraHO5_1500 as streamDED1
+	connectBearer DED1 on streamIntraHO5_1500 as streamDED2	
+	startApplication AppIntraHO5_1500 [ streamIntraHO5_1500 ] as myAppIntraHO5
+	wait applicationsFinish [ myAppIntraHO5 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO5_1500
+
+
+
+
+
+
+mobileSession testSessionIntraHO6
+	connectBearer DEFAULT as streamIntraHO6
+	connectBearer DED on streamIntraHO6 as streamDED1
+	connectBearer DED1 on streamIntraHO6 as streamDED2	
+	startApplication AppIntraHO6 [ streamIntraHO6 ] as myAppIntraHO6
+	wait applicationsFinish [ myAppIntraHO6 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO6
+	
+mobileSession testSessionIntraHO6Ping
+	connectBearer DEFAULT as streamIntraHO6Ping
+	connectBearer DED on streamIntraHO6Ping as streamDED1
+	connectBearer DED1 on streamIntraHO6Ping as streamDED2	
+	startApplication AppIntraHO6Ping [ streamIntraHO6Ping ] as myAppIntraHO6Ping
+	wait applicationsFinish [ myAppIntraHO6Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO6Ping
+
+
+mobileSession testSessionIntraHO6_1500
+	connectBearer DEFAULT as streamIntraHO6_1500
+	connectBearer DED on streamIntraHO6_1500 as streamDED1
+	connectBearer DED1 on streamIntraHO6_1500 as streamDED2	
+	startApplication AppIntraHO6_1500 [ streamIntraHO6_1500 ] as myAppIntraHO6
+	wait applicationsFinish [ myAppIntraHO6 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamIntraHO6_1500	
+	
+
+
+
+	
+	
+	
+	
+	
+###################################################################################
+#
+#		INTER-ENB HO	
+#
+###################################################################################
+#  2x18.12 inter-eNB HOs / s / 2 (src + tgt) = 18.12/s - 0.906 (intra-eNB HO) - 0.23 (dedicated bearers) = 16.99 s
+#  16.99 /s = 20 iterations x 0.85 attaches/s
+#  no of UEs in RRC_CONNECTED : (20  [ iterations ] * (3+1) [ sec ] ) *  0.85 [ UEs ] / 1 [ sec ] = 68 UEs
+###################################################################################
+
+application AppInterHO1 [ bearerInterHO1 ]
+	startTransfer TransferDL on bearerInterHO1 as TransferInterHO1DL
+	startTransfer TransferUL on bearerInterHO1 as TransferInterHO1UL
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 11
+	stopTransfer TransferInterHO1DL
+	stopTransfer TransferInterHO1UL
+	
+mobileSession testSessionInterHO1
+	connectBearer DEFAULT as streamInterHO1
+	connectBearer DED on streamInterHO1 as streamDED1
+	connectBearer DED1 on streamInterHO1 as streamDED2
+	startApplication AppInterHO1 [ streamInterHO1 ] as myAppInterHO1
+	wait applicationsFinish [ myAppInterHO1 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO1
+
+	
+application AppInterHO1Ping [ bearerInterHO1Ping ]
+	startTransfer TransferDLPing on bearerInterHO1Ping as TransferInterHO1DLPing
+	startTransfer TransferULPing on bearerInterHO1Ping as TransferInterHO1ULPing
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 11
+	stopTransfer TransferInterHO1DLPing
+	stopTransfer TransferInterHO1ULPing
+	
+mobileSession testSessionInterHO1Ping
+	connectBearer DEFAULT as streamInterHO1Ping
+	connectBearer DED on streamInterHO1Ping as streamDED1
+	connectBearer DED1 on streamInterHO1Ping as streamDED2
+	startApplication AppInterHO1Ping [ streamInterHO1Ping ] as myAppInterHO1Ping
+	wait applicationsFinish [ myAppInterHO1Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO1Ping
+
+application AppInterHO1_1500 [ bearerInterHO1 ]
+	startTransfer TransferDL_1500 on bearerInterHO1 as TransferInterHO1DL
+	startTransfer TransferUL_1500 on bearerInterHO1 as TransferInterHO1UL
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 101
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 11
+	stopTransfer TransferInterHO1DL
+	stopTransfer TransferInterHO1UL
+	
+mobileSession testSessionInterHO1_1500
+	connectBearer DEFAULT as streamInterHO1_1500
+	connectBearer DED on streamInterHO1_1500 as streamDED1
+	connectBearer DED1 on streamInterHO1_1500 as streamDED2
+	startApplication AppInterHO1_1500 [ streamInterHO1_1500 ] as myAppInterHO1
+	wait applicationsFinish [ myAppInterHO1 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO1_1500	
+
+application AppInterHO2 [ bearerInterHO2 ]
+	startTransfer TransferDL on bearerInterHO2 as TransferInterHO2DL
+	startTransfer TransferUL on bearerInterHO2 as TransferInterHO2UL
+	20x
+ 		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+ 		handover to 102
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+ 		handover to 11
+	stopTransfer TransferInterHO2DL
+	stopTransfer TransferInterHO2UL
+
+mobileSession testSessionInterHO2
+	connectBearer DEFAULT as streamInterHO2
+	connectBearer DED on streamInterHO2 as streamDED1
+	connectBearer DED1 on streamInterHO2 as streamDED2
+	startApplication AppInterHO2 [ streamInterHO2 ] as myAppInterHO2
+	wait applicationsFinish [ myAppInterHO2 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO2
+
+
+application AppInterHO2Ping [ bearerInterHO2Ping ]
+	startTransfer TransferDLPing on bearerInterHO2Ping as TransferInterHO2DLPing
+	startTransfer TransferULPing on bearerInterHO2Ping as TransferInterHO2ULPing
+	20x
+ 		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+ 		handover to 102
+ 		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+ 		handover to 11
+	stopTransfer TransferInterHO2DLPing
+	stopTransfer TransferInterHO2ULPing
+
+mobileSession testSessionInterHO2Ping
+	connectBearer DEFAULT as streamInterHO2Ping
+	connectBearer DED on streamInterHO2Ping as streamDED1
+	connectBearer DED1 on streamInterHO2Ping as streamDED2	
+	startApplication AppInterHO2Ping [ streamInterHO2Ping ] as myAppInterHO2Ping
+	wait applicationsFinish [ myAppInterHO2Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO2Ping
+
+
+application AppInterHO2_1500 [ bearerInterHO2 ]
+	startTransfer TransferDL_1500 on bearerInterHO2 as TransferInterHO2DL
+	startTransfer TransferUL_1500 on bearerInterHO2 as TransferInterHO2UL
+	20x
+ 		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+ 		handover to 102
+ 		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+ 		handover to 11
+	stopTransfer TransferInterHO2DL
+	stopTransfer TransferInterHO2UL
+
+mobileSession testSessionInterHO2_1500
+	connectBearer DEFAULT as streamInterHO2_1500
+	connectBearer DED on streamInterHO2_1500 as streamDED1
+	connectBearer DED1 on streamInterHO2_1500 as streamDED2
+	startApplication AppInterHO2_1500 [ streamInterHO2_1500 ] as myAppInterHO2
+	wait applicationsFinish [ myAppInterHO2 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO2_1500	
+	
+application AppInterHO3 [ bearerInterHO3 ]
+	startTransfer TransferDL on bearerInterHO3 as TransferInterHO3DL
+	startTransfer TransferUL on bearerInterHO3 as TransferInterHO3UL
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		# wait 1
+		handover to 103				
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		#wait 1
+		handover to 11
+	stopTransfer TransferInterHO3DL
+	stopTransfer TransferInterHO3UL
+	
+mobileSession testSessionInterHO3
+	connectBearer DEFAULT as streamInterHO3
+	connectBearer DED on streamInterHO3 as streamDED1
+	connectBearer DED1 on streamInterHO3 as streamDED2
+	startApplication AppInterHO3 [ streamInterHO3 ] as myAppInterHO3
+	wait applicationsFinish [ myAppInterHO3 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO3
+
+
+application AppInterHO3Ping [ bearerInterHO3Ping ]
+	startTransfer TransferDLPing on bearerInterHO3Ping as TransferInterHO3DLPing
+	startTransfer TransferULPing on bearerInterHO3Ping as TransferInterHO3ULPing
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		# wait 1
+		handover to 103				
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		#wait 1
+		handover to 11
+	stopTransfer TransferInterHO3DLPing
+	stopTransfer TransferInterHO3ULPing
+	
+mobileSession testSessionInterHO3Ping
+	connectBearer DEFAULT as streamInterHO3Ping
+	connectBearer DED on streamInterHO3Ping as streamDED1
+	connectBearer DED1 on streamInterHO3Ping as streamDED2	
+	startApplication AppInterHO3Ping [ streamInterHO3Ping ] as myAppInterHO3Ping
+	wait applicationsFinish [ myAppInterHO3Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO3Ping
+
+application AppInterHO3_1500 [ bearerInterHO3 ]
+	startTransfer TransferDL_1500 on bearerInterHO3 as TransferInterHO3DL
+	startTransfer TransferUL_1500 on bearerInterHO3 as TransferInterHO3UL
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		# wait 1
+		handover to 103				
+		wait 3
+		#startReporting conf1 report1
+		#stopReporting
+		wait 1
+		handover to 11
+	stopTransfer TransferInterHO3DL
+	stopTransfer TransferInterHO3UL
+	
+mobileSession testSessionInterHO3_1500
+	connectBearer DEFAULT as streamInterHO3_1500
+	connectBearer DED on streamInterHO3_1500 as streamDED1
+	connectBearer DED1 on streamInterHO3_1500 as streamDED2
+	startApplication AppInterHO3_1500 [ streamInterHO3_1500 ] as myAppInterHO3
+	wait applicationsFinish [ myAppInterHO3 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO3_1500
+	
+	
+#===Added to support 6 cells===
+application AppInterHO4 [ bearerInterHO4 ]
+	startTransfer TransferDL on bearerInterHO4 as TransferInterHO4DL
+	startTransfer TransferUL on bearerInterHO4 as TransferInterHO4UL
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 12
+	stopTransfer TransferInterHO4DL
+	stopTransfer TransferInterHO4UL
+	
+mobileSession testSessionInterHO4
+	connectBearer DEFAULT as streamInterHO4
+	connectBearer DED on streamInterHO4 as streamDED1
+	connectBearer DED1 on streamInterHO4 as streamDED2
+	startApplication AppInterHO4 [ streamInterHO4 ] as myAppInterHO4
+	wait applicationsFinish [ myAppInterHO4 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO4
+
+
+application AppInterHO4Ping [ bearerInterHO4Ping ]
+	startTransfer TransferDLPing on bearerInterHO4Ping as TransferInterHO4DLPing
+	startTransfer TransferULPing on bearerInterHO4Ping as TransferInterHO4ULPing
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 12
+	stopTransfer TransferInterHO4DLPing
+	stopTransfer TransferInterHO4ULPing
+	
+mobileSession testSessionInterHO4Ping
+	connectBearer DEFAULT as streamInterHO4Ping
+	connectBearer DED on streamInterHO4Ping as streamDED1
+	connectBearer DED1 on streamInterHO4Ping as streamDED2	
+	startApplication AppInterHO4Ping [ streamInterHO4Ping ] as myAppInterHO4Ping
+	wait applicationsFinish [ myAppInterHO4Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO4Ping
+
+application AppInterHO4_1500 [ bearerInterHO4 ]
+	startTransfer TransferDL_1500 on bearerInterHO4 as TransferInterHO4DL
+	startTransfer TransferUL_1500 on bearerInterHO4 as TransferInterHO4UL
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 104
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting		
+		handover to 12
+	stopTransfer TransferInterHO4DL
+	stopTransfer TransferInterHO4UL
+	
+mobileSession testSessionInterHO4_1500
+	connectBearer DEFAULT as streamInterHO4_1500
+	connectBearer DED on streamInterHO4_1500 as streamDED1
+	connectBearer DED1 on streamInterHO4_1500 as streamDED2
+	startApplication AppInterHO4_1500 [ streamInterHO4_1500 ] as myAppInterHO4
+	wait applicationsFinish [ myAppInterHO4 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO4_1500
+	
+	
+application AppInterHO5 [ bearerInterHO5 ]
+	startTransfer TransferDL on bearerInterHO5 as TransferInterHO5DL
+	startTransfer TransferUL on bearerInterHO5 as TransferInterHO5UL
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		# wait 1
+		handover to 105				
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		#wait 1
+		handover to 12
+	stopTransfer TransferInterHO5DL
+	stopTransfer TransferInterHO5UL
+	
+mobileSession testSessionInterHO5
+	connectBearer DEFAULT as streamInterHO5
+	connectBearer DED on streamInterHO5 as streamDED1
+	connectBearer DED1 on streamInterHO5 as streamDED2
+	startApplication AppInterHO5 [ streamInterHO5 ] as myAppInterHO5
+	wait applicationsFinish [ myAppInterHO5 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO5
+
+
+application AppInterHO5Ping [ bearerInterHO5Ping ]
+	startTransfer TransferDLPing on bearerInterHO5Ping as TransferInterHO5DLPing
+	startTransfer TransferULPing on bearerInterHO5Ping as TransferInterHO5ULPing
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		# wait 1
+		handover to 105				
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		#wait 1
+		handover to 12
+	stopTransfer TransferInterHO5DLPing
+	stopTransfer TransferInterHO5ULPing
+	
+mobileSession testSessionInterHO5Ping
+	connectBearer DEFAULT as streamInterHO5Ping
+	connectBearer DED on streamInterHO5Ping as streamDED1
+	connectBearer DED1 on streamInterHO5Ping as streamDED2	
+	startApplication AppInterHO5Ping [ streamInterHO5Ping ] as myAppInterHO5Ping
+	wait applicationsFinish [ myAppInterHO5Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO5Ping
+
+application AppInterHO5_1500 [ bearerInterHO5 ]
+	startTransfer TransferDL_1500 on bearerInterHO5 as TransferInterHO5DL
+	startTransfer TransferUL_1500 on bearerInterHO5 as TransferInterHO5UL
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		# wait 1
+		handover to 105				
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		#wait 1
+		handover to 12
+	stopTransfer TransferInterHO5DL
+	stopTransfer TransferInterHO5UL
+	
+mobileSession testSessionInterHO5_1500
+	connectBearer DEFAULT as streamInterHO5_1500
+	connectBearer DED on streamInterHO5_1500 as streamDED1
+	connectBearer DED1 on streamInterHO5_1500 as streamDED2
+	startApplication AppInterHO5_1500 [ streamInterHO5_1500 ] as myAppInterHO5
+	wait applicationsFinish [ myAppInterHO5 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO5_1500
+
+
+application AppInterHO6 [ bearerInterHO6 ]
+	startTransfer TransferDL on bearerInterHO6 as TransferInterHO6DL
+	startTransfer TransferUL on bearerInterHO6 as TransferInterHO6UL
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		# wait 1
+		handover to 106				
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		#wait 1
+		handover to 12
+	stopTransfer TransferInterHO6DL
+	stopTransfer TransferInterHO6UL
+	
+mobileSession testSessionInterHO6
+	connectBearer DEFAULT as streamInterHO6
+	connectBearer DED on streamInterHO6 as streamDED1
+	connectBearer DED1 on streamInterHO6 as streamDED2
+	startApplication AppInterHO6 [ streamInterHO6 ] as myAppInterHO6
+	wait applicationsFinish [ myAppInterHO6 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO6
+
+
+application AppInterHO6Ping [ bearerInterHO6Ping ]
+	startTransfer TransferDLPing on bearerInterHO6Ping as TransferInterHO6DLPing
+	startTransfer TransferULPing on bearerInterHO6Ping as TransferInterHO6ULPing
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		# wait 1
+		handover to 106				
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		#wait 1
+		handover to 12
+	stopTransfer TransferInterHO6DLPing
+	stopTransfer TransferInterHO6ULPing
+	
+mobileSession testSessionInterHO6Ping
+	connectBearer DEFAULT as streamInterHO6Ping
+	connectBearer DED on streamInterHO6Ping as streamDED1
+	connectBearer DED1 on streamInterHO6Ping as streamDED2	
+	startApplication AppInterHO6Ping [ streamInterHO6Ping ] as myAppInterHO6Ping
+	wait applicationsFinish [ myAppInterHO6Ping ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO6Ping
+
+application AppInterHO6_1500 [ bearerInterHO6 ]
+	startTransfer TransferDL_1500 on bearerInterHO6 as TransferInterHO6DL
+	startTransfer TransferUL_1500 on bearerInterHO6 as TransferInterHO6UL
+	20x
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		# wait 1
+		handover to 106				
+		wait 3
+		#startReporting conf1 report1
+		wait 1
+		#stopReporting
+		#wait 1
+		handover to 12
+	stopTransfer TransferInterHO6DL
+	stopTransfer TransferInterHO6UL
+	
+mobileSession testSessionInterHO6_1500
+	connectBearer DEFAULT as streamInterHO6_1500
+	connectBearer DED on streamInterHO6_1500 as streamDED1
+	connectBearer DED1 on streamInterHO6_1500 as streamDED2
+	startApplication AppInterHO6_1500 [ streamInterHO6_1500 ] as myAppInterHO6
+	wait applicationsFinish [ myAppInterHO6 ]
+	releaseBearer streamDED1
+	releaseBearer streamDED2
+	releaseBearer streamInterHO6_1500	
+
+	
+##################################################################################################################
+#
+#		TRACKING AREA UPDATE
+#
+##################################################################################################################
+#  54.2 TAU / s 
+#  54.2/s = 50 iterations x 1.084 attaches/s
+#  247 / 5 + 1 = 50 [ iterations ]
+#  UEs connected = 50 iteration * 0,5s (T_NAS_DELIVERY) * 1.084 attaches/s = 27.1
+#  UEs idle = [12s+12s+(247-50iteration*0,5)s]*1.084 attaches/s= 266.66 UEs idle
+##################################################################################################################
+
+mobileSession testSessionTAU1
+	wait 22
+	idleHandover to 101
+	wait 22
+	every 5.0 s tau as periodicTau
+	wait 247
+	cancel periodicTau
+	wait 22
+	idleHandover to 11
+
+mobileSession testSessionTAU2
+	wait 22
+	idleHandover to 102
+	wait 22
+	every 5.0 s tau as periodicTau
+	wait 247
+	cancel periodicTau
+	wait 22
+	idleHandover to 11
+
+mobileSession testSessionTAU3
+	wait 22
+	idleHandover to 103
+	wait 22
+	every 5.0 s tau as periodicTau
+	wait 247
+	cancel periodicTau
+	wait 22
+	idleHandover to 11
+
+#===Added to support 6 cells===
+
+
+mobileSession testSessionTAU4
+	wait 22
+	idleHandover to 104
+	wait 22
+	every 5.0 s tau as periodicTau
+	wait 247
+	cancel periodicTau
+	wait 22
+	idleHandover to 12
+	
+	mobileSession testSessionTAU5
+	wait 22
+	idleHandover to 105
+	wait 22
+	every 5.0 s tau as periodicTau
+	wait 247
+	cancel periodicTau
+	wait 22
+	idleHandover to 12
+	
+	mobileSession testSessionTAU6
+	wait 22
+	idleHandover to 106
+	wait 22
+	every 5.0 s tau as periodicTau
+	wait 247
+	cancel periodicTau
+	wait 22
+	idleHandover to 12
+#################################################################################################################
+#		Dedicated Bearers 
+#
+#  4.75 Dedicated Bearers / s - 0.15 (from attach session) = 4.6 
+#  4.6 = 10 iterations x 2 bearers (qci 1,qci 5) x 0.23 attaches/s
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] + 1) x 4 [ sec ] * 0.23 [ UEs ] / 1 [ sec ] = 10.12
+#  UEs idle = 0
+#################################################################################################################
+		
+application App_DED [ bearerDED ]
+	startTransfer TransferDL on bearerDED as sampleTransferDLDED
+	startTransfer TransferUL on bearerDED as sampleTransferULDED
+	wait 60
+	stopTransfer sampleTransferDLDED
+	stopTransfer sampleTransferULDED		
+	
+
+application App_DEDPing [ bearerDEDPing ]
+	startTransfer TransferDLPing on bearerDEDPing as sampleTransferDLDEDPing
+	startTransfer TransferULPing on bearerDEDPing as sampleTransferULDEDPing
+	wait 60
+	stopTransfer sampleTransferDLDEDPing	
+	stopTransfer sampleTransferULDEDPing	
+
+application App_DED_1500 [ bearerDED ]
+	startTransfer TransferDL_1500 on bearerDED as sampleTransferDLDED
+	startTransfer TransferUL_1500 on bearerDED as sampleTransferULDED
+	wait 60
+	stopTransfer sampleTransferDLDED
+	stopTransfer sampleTransferULDED	
+
+
+	
+mobileSession testSessionDED1
+	connectBearer DEFAULT as D1
+	startApplication App_DED [ D1 ] as myApp_DEFAULT1 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 101
+	10x
+		connectBearer DED on D1 as streamDED1
+		connectBearer DED1 on D1 as streamDED11
+		wait 4
+		releaseBearer streamDED1
+		releaseBearer streamDED11
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1 ]
+	releaseBearer D1
+	
+
+mobileSession testSessionDED1Ping
+	connectBearer DEFAULT as D1Ping
+	startApplication App_DEDPing [ D1Ping ] as myApp_DEFAULT1Ping &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 101
+	10x
+		connectBearer DED on D1Ping as streamDED1Ping
+		connectBearer DED1 on D1Ping as streamDED11Ping		
+		wait 4
+		releaseBearer streamDED1Ping
+		releaseBearer streamDED11Ping		
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1Ping ]
+	releaseBearer D1Ping
+
+mobileSession testSessionDED1_1500
+	connectBearer DEFAULT as D1_1500
+	startApplication App_DED_1500 [ D1_1500 ] as myApp_DEFAULT1 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 101
+	10x
+		connectBearer DED on D1_1500 as streamDED1
+		connectBearer DED1 on D1_1500 as streamDED11
+		wait 4
+		releaseBearer streamDED1
+		releaseBearer streamDED11
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1 ]
+	releaseBearer D1_1500
+	
+	
+mobileSession testSessionDED2
+	connectBearer DEFAULT as D2
+	startApplication App_DED [ D2 ] as myApp_DEFAULT2 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 102
+	10x
+		connectBearer DED on D2 as streamDED2
+		connectBearer DED1 on D2 as streamDED21
+		wait 4
+		releaseBearer streamDED2
+		releaseBearer streamDED21
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT2 ]
+	releaseBearer D2
+	
+
+mobileSession testSessionDED2Ping
+	connectBearer DEFAULT as D2Ping
+	startApplication App_DEDPing [ D2Ping ] as myApp_DEFAULT2Ping &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 102
+	10x
+		connectBearer DED on D2Ping as streamDED2Ping
+		connectBearer DED1 on D2Ping as streamDED21Ping		
+		wait 4
+		releaseBearer streamDED2Ping
+		releaseBearer streamDED21Ping		
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT2Ping ]
+	releaseBearer D2Ping
+		
+mobileSession testSessionDED2_1500
+	connectBearer DEFAULT as D2_1500
+	startApplication App_DED_1500 [ D2_1500 ] as myApp_DEFAULT2 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 102
+	10x
+		connectBearer DED on D2_1500 as streamDED2
+		connectBearer DED1 on D2_1500 as streamDED21
+		wait 4
+		releaseBearer streamDED2
+		releaseBearer streamDED21
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT2 ]
+	releaseBearer D2_1500
+		
+mobileSession testSessionDED3
+	connectBearer DEFAULT as D3
+	startApplication App_DED [ D3 ] as myApp_DEFAULT3 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 103
+	10x
+		connectBearer DED on D3 as streamDED3
+		connectBearer DED1 on D3 as streamDED31
+		wait 4
+		releaseBearer streamDED3
+		releaseBearer streamDED31
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT3 ]
+	releaseBearer D3
+	
+
+mobileSession testSessionDED3Ping
+	connectBearer DEFAULT as D3Ping
+	startApplication App_DEDPing [ D3Ping ] as myApp_DEFAULT3Ping &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 103
+	10x
+		connectBearer DED on D3Ping as streamDED3Ping
+		connectBearer DED1 on D3Ping as streamDED31Ping		
+		wait 4
+		releaseBearer streamDED3Ping
+		releaseBearer streamDED31Ping		
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT3Ping ]
+	releaseBearer D3Ping
+				
+mobileSession testSessionDED3_1500
+	connectBearer DEFAULT as D3_1500
+	startApplication App_DED_1500 [ D3_1500 ] as myApp_DEFAULT3 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 103
+	10x
+		connectBearer DED on D3_1500 as streamDED3
+		connectBearer DED1 on D3_1500 as streamDED31
+		wait 4
+		releaseBearer streamDED3
+		releaseBearer streamDED31
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT3 ]
+	releaseBearer D3_1500
+	
+	
+#===Added to support 6 cells===	
+mobileSession testSessionDED4
+	connectBearer DEFAULT as D4
+	startApplication App_DED [ D4 ] as myApp_DEFAULT4 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 104
+	10x
+		connectBearer DED on D4 as streamDED4
+		connectBearer DED1 on D4 as streamDED41
+		wait 4
+		releaseBearer streamDED4
+		releaseBearer streamDED41
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait applicationsFinish [ myApp_DEFAULT4 ]
+	releaseBearer D4
+	
+
+mobileSession testSessionDED4Ping
+	connectBearer DEFAULT as D4Ping
+	startApplication App_DEDPing [ D4Ping ] as myApp_DEFAULT4Ping &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 104
+	10x
+		connectBearer DED on D4Ping as streamDED4Ping
+		connectBearer DED1 on D4Ping as streamDED41Ping		
+		wait 4
+		releaseBearer streamDED4Ping
+		releaseBearer streamDED41Ping		
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait applicationsFinish [ myApp_DEFAULT4Ping ]
+	releaseBearer D4Ping
+				
+mobileSession testSessionDED4_1500
+	connectBearer DEFAULT as D4_1500
+	startApplication App_DED_1500 [ D4_1500 ] as myApp_DEFAULT4 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 104
+	10x
+		connectBearer DED on D4_1500 as streamDED4
+		connectBearer DED1 on D4_1500 as streamDED41
+		wait 4
+		releaseBearer streamDED4
+		releaseBearer streamDED41
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait applicationsFinish [ myApp_DEFAULT4 ]
+	releaseBearer D4_1500
+	
+	
+mobileSession testSessionDED5
+	connectBearer DEFAULT as D5
+	startApplication App_DED [ D5 ] as myApp_DEFAULT5 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 105
+	10x
+		connectBearer DED on D5 as streamDED5
+		connectBearer DED1 on D5 as streamDED51
+		wait 4
+		releaseBearer streamDED5
+		releaseBearer streamDED51
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait applicationsFinish [ myApp_DEFAULT5 ]
+	releaseBearer D5
+	
+
+mobileSession testSessionDED5Ping
+	connectBearer DEFAULT as D5Ping
+	startApplication App_DEDPing [ D5Ping ] as myApp_DEFAULT5Ping &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 105
+	10x
+		connectBearer DED on D5Ping as streamDED5Ping
+		connectBearer DED1 on D5Ping as streamDED51Ping		
+		wait 4
+		releaseBearer streamDED5Ping
+		releaseBearer streamDED51Ping		
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait applicationsFinish [ myApp_DEFAULT5Ping ]
+	releaseBearer D5Ping
+				
+mobileSession testSessionDED5_1500
+	connectBearer DEFAULT as D5_1500
+	startApplication App_DED_1500 [ D5_1500 ] as myApp_DEFAULT5 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 105
+	10x
+		connectBearer DED on D5_1500 as streamDED5
+		connectBearer DED1 on D5_1500 as streamDED51
+		wait 4
+		releaseBearer streamDED5
+		releaseBearer streamDED51
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait applicationsFinish [ myApp_DEFAULT5 ]
+	releaseBearer D5_1500
+
+
+mobileSession testSessionDED6
+	connectBearer DEFAULT as D6
+	startApplication App_DED [ D6 ] as myApp_DEFAULT6 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 106
+	10x
+		connectBearer DED on D6 as streamDED6
+		connectBearer DED1 on D6 as streamDED61
+		wait 4
+		releaseBearer streamDED6
+		releaseBearer streamDED61
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait applicationsFinish [ myApp_DEFAULT6 ]
+	releaseBearer D6
+	
+
+mobileSession testSessionDED6Ping
+	connectBearer DEFAULT as D6Ping
+	startApplication App_DEDPing [ D6Ping ] as myApp_DEFAULT6Ping &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 106
+	10x
+		connectBearer DED on D6Ping as streamDED6Ping
+		connectBearer DED1 on D6Ping as streamDED61Ping		
+		wait 4
+		releaseBearer streamDED6Ping
+		releaseBearer streamDED61Ping		
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait applicationsFinish [ myApp_DEFAULT6Ping ]
+	releaseBearer D6Ping
+				
+mobileSession testSessionDED6_1500
+	connectBearer DEFAULT as D6_1500
+	startApplication App_DED_1500 [ D6_1500 ] as myApp_DEFAULT6 &
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 106
+	10x
+		connectBearer DED on D6_1500 as streamDED6
+		connectBearer DED1 on D6_1500 as streamDED61
+		wait 4
+		releaseBearer streamDED6
+		releaseBearer streamDED61
+	wait 4
+	#startReporting conf1 report1
+	wait 1
+	#stopReporting	
+	handover to 12
+	wait applicationsFinish [ myApp_DEFAULT6 ]
+	releaseBearer D6_1500	
+
+	
+	
+####################################################################################
+#  
+#        C1 scenario
+#
+####################################################################################
+
+testScenario
+  testSession1
+	rate 0.7385/s
+	cells[11]
+	delayToStart 1.0 s
+	
+ testSession1Ping
+	rate 1.477/s
+	cells[11]
+	delayToStart 2.0 s
+
+  testSession1_1500
+	rate 0.7385/s
+	cells[11]
+	delayToStart 1.0 s
+	
+ testSession2
+	rate 0.7385/s
+	cells[11]
+	delayToStart 3.0 s
+
+ testSession2Ping
+	rate 1.477/s
+	cells[11]
+	delayToStart 4.0 s
+ 
+ testSession2_1500
+	rate 0.7385/s
+	cells[11]
+	delayToStart 3.0 s
+	
+ testSession3
+	rate 0.7385/s
+	cells[11]
+	delayToStart 5.0 s
+
+ testSession3Ping
+	rate 1.477/s
+	cells[11]
+	delayToStart 6.0 s
+
+ testSession3_1500
+	rate 0.7385/s
+	cells[11]
+	delayToStart 5.0 s
+	
+#===Added to support 6 cells===
+  testSession4
+	rate 0.7385/s
+	cells[12]
+	delayToStart 1.0 s
+
+ testSession4Ping
+	rate 1.477/s
+	cells[12]
+	delayToStart 2.0 s
+
+  testSession4_1500
+	rate 0.7385/s
+	cells[12]
+	delayToStart 1.0 s
+	
+ testSession5
+	rate 0.7385/s
+	cells[12]
+	delayToStart 3.0 s
+
+ testSession5Ping
+	rate 1.477/s
+	cells[12]
+	delayToStart 4.0 s
+ 
+ testSession5_1500
+	rate 0.7385/s
+	cells[12]
+	delayToStart 3.0 s
+	
+ testSession6
+	rate 0.7385/s
+	cells[12]
+	delayToStart 5.0 s
+
+ testSession6Ping
+	rate 1.477/s
+	cells[12]
+	delayToStart 6.0 s
+
+ testSession6_1500
+	rate 0.7385/s
+	cells[12]
+	delayToStart 5.0 s
+	
+	
+	
+  testSessionPDN1
+	rate 0.00875/s
+	cells[101]
+	delayToStart 3.0 s
+	
+ testSessionPDN1Ping
+	rate 0.0175/s
+	cells[101]
+	delayToStart 6.0 s	
+
+  testSessionPDN1_1500
+	rate 0.00875/s
+	cells[101]
+	delayToStart 3.0 s
+	
+  testSessionPDN2
+	rate 0.00875/s
+	cells[102]
+	delayToStart 4.0 s
+	
+ testSessionPDN2Ping
+	rate 0.0175/s
+	cells[102]
+	delayToStart 7.0 s
+
+  testSessionPDN2_1500
+	rate 0.00875/s
+	cells[102]
+	delayToStart 4.0 s
+	
+  testSessionPDN3
+	rate 0.00875/s
+	cells[103]
+	delayToStart 5.0 s
+	
+ testSessionPDN3Ping
+	rate 0.0175/s
+	cells[103]
+	delayToStart 8.0 s			
+	
+  testSessionPDN3_1500
+	rate 0.00875/s
+	cells[103]
+	delayToStart 5.0 s
+	
+#===Added to support 6 cells===		
+  testSessionPDN4
+	rate 0.00875/s
+	cells[104]
+	delayToStart 3.0 s
+	
+ testSessionPDN4Ping
+	rate 0.0175/s
+	cells[104]
+	delayToStart 6.0 s	
+
+  testSessionPDN4_1500
+	rate 0.00875/s
+	cells[104]
+	delayToStart 3.0 s
+	
+  testSessionPDN5
+	rate 0.00875/s
+	cells[105]
+	delayToStart 4.0 s
+	
+ testSessionPDN5Ping
+	rate 0.0175/s
+	cells[105]
+	delayToStart 7.0 s
+
+  testSessionPDN5_1500
+	rate 0.00875/s
+	cells[105]
+	delayToStart 4.0 s
+	
+  testSessionPDN6
+	rate 0.00875/s
+	cells[106]
+	delayToStart 5.0 s
+	
+ testSessionPDN6Ping
+	rate 0.0175/s
+	cells[106]
+	delayToStart 8.0 s	
+	
+  testSessionPDN6_1500
+	rate 0.00875/s
+	cells[106]
+	delayToStart 5.0 s
+	
+	
+	
+ testSessionIntraHO1
+	rate 0.05285/s
+	cells[11]
+	delayToStart 7.0 s
+
+ testSessionIntraHO1Ping
+	rate 0.1057/s
+	cells[11]
+	delayToStart 8.0 s
+
+ testSessionIntraHO1_1500
+	rate 0.05285/s
+	cells[11]
+	delayToStart 7.0 s
+	
+ testSessionIntraHO2
+	rate 0.05285/s
+	cells[11]
+	delayToStart 9.0 s
+
+ testSessionIntraHO2Ping
+	rate 0.1057/s
+	cells[11]
+	delayToStart 10.0 s
+
+ testSessionIntraHO2_1500
+	rate 0.05285/s
+	cells[11]
+	delayToStart 9.0 s
+	
+ testSessionIntraHO3
+	rate 0.05285/s
+	cells[11]
+	delayToStart 11.0 s
+
+ testSessionIntraHO3Ping
+	rate 0.1057/s
+	cells[11]
+	delayToStart 12.0 s
+	
+ testSessionIntraHO3_1500
+	rate 0.05285/s
+	cells[11]
+	delayToStart 11.0 s
+	
+#===Added to support 6 cells===	
+ testSessionIntraHO4
+	rate 0.05285/s
+	cells[12]
+	delayToStart 7.0 s
+
+ testSessionIntraHO4Ping
+	rate 0.1057/s
+	cells[12]
+	delayToStart 8.0 s
+
+ testSessionIntraHO4_1500
+	rate 0.05285/s
+	cells[12]
+	delayToStart 7.0 s
+	
+ testSessionIntraHO5
+	rate 0.05285/s
+	cells[12]
+	delayToStart 9.0 s
+
+ testSessionIntraHO5Ping
+	rate 0.1057/s
+	cells[12]
+	delayToStart 10.0 s
+
+ testSessionIntraHO5_1500
+	rate 0.05285/s
+	cells[12]
+	delayToStart 9.0 s
+	
+ testSessionIntraHO6
+	rate 0.05285/s
+	cells[12]
+	delayToStart 11.0 s
+
+ testSessionIntraHO6Ping
+	rate 0.1057/s
+	cells[12]
+	delayToStart 12.0 s
+	
+ testSessionIntraHO6_1500
+	rate 0.05285/s
+	cells[12]
+	delayToStart 11.0 s
+	
+	
+	
+	
+	
+	
+ testSessionInterHO1
+	rate 0.049588/s
+	cells[11]
+	delayToStart 14.0 s
+
+ testSessionInterHO1Ping
+	rate 0.099162/s
+	cells[11]
+	delayToStart 15.0 s
+
+ testSessionInterHO1_1500
+	rate 0.049588/s
+	cells[11]
+	delayToStart 14.0 s
+
+ testSessionInterHO2
+	rate 0.049588/s
+	cells[11]
+	delayToStart 16.0 s
+
+ testSessionInterHO2Ping
+	rate 0.099162/s
+	cells[11]
+	delayToStart 17.0 s
+
+ testSessionInterHO2_1500
+	rate 0.049588/s
+	cells[11]
+	delayToStart 16.0 s
+
+ testSessionInterHO3
+	rate 0.049588/s
+	cells[11]
+	delayToStart 18.0 s
+
+ testSessionInterHO3Ping
+	rate 0.099162/s
+	cells[11]
+	delayToStart 19.0 s
+
+ testSessionInterHO3_1500
+	rate 0.049588/s
+	cells[11]
+	delayToStart 18.0 s
+	
+#===Added to support 6 cells===	
+ testSessionInterHO4
+	rate 0.049588/s
+	cells[12]
+	delayToStart 14.0 s
+
+ testSessionInterHO4Ping
+	rate 0.099162/s
+	cells[12]
+	delayToStart 15.0 s
+
+ testSessionInterHO4_1500
+	rate 0.049588/s
+	cells[12]
+	delayToStart 14.0 s
+
+ testSessionInterHO5
+	rate 0.049588/s
+	cells[12]
+	delayToStart 16.0 s
+
+ testSessionInterHO5Ping
+	rate 0.099162/s
+	cells[12]
+	delayToStart 17.0 s
+
+ testSessionInterHO5_1500
+	rate 0.049588/s
+	cells[12]
+	delayToStart 16.0 s
+
+ testSessionInterHO6
+	rate 0.049588/s
+	cells[12]
+	delayToStart 18.0 s
+
+ testSessionInterHO6Ping
+	rate 0.099162/s
+	cells[12]
+	delayToStart 19.0 s
+
+ testSessionInterHO6_1500
+	rate 0.049588/s
+	cells[12]
+	delayToStart 18.0 s
+	
+	
+	
+	
+	
+ testSessionTAU1
+	rate 0.252938/s
+	cells[11]
+	delayToStart 25.0 s
+
+ testSessionTAU2
+	rate 0.252938/s
+	cells[11]
+	delayToStart 26.0 s
+	
+ testSessionTAU3
+	rate 0.252938/s
+	cells[11]
+	delayToStart 27.0 s
+	
+#===Added to support 6 cells===	
+ testSessionTAU4
+	rate 0.252938/s
+	cells[12]
+	delayToStart 25.0 s
+
+ testSessionTAU5
+	rate 0.252938/s
+	cells[12]
+	delayToStart 26.0 s
+	
+ testSessionTAU6
+	rate 0.252938/s
+	cells[12]
+	delayToStart 27.0 s
+	
+	
+	
+
+
+testSessionDED1
+	rate 0.0134162/s
+	cells[11]
+	delayToStart 34.0 s
+
+ testSessionDED1Ping
+	rate 0.026838/s
+	cells[11]
+	delayToStart 37.0 s
+	
+ testSessionDED1_1500
+	rate 0.0134162/s
+	cells[11]
+	delayToStart 34.0 s
+	
+ testSessionDED2
+	rate 0.0134162/s
+	cells[11]
+	delayToStart 35.0 s
+
+ testSessionDED2Ping
+	rate 0.026838/s
+	cells[11]
+	delayToStart 38.0 s
+
+ testSessionDED2_1500
+	rate 0.0134162/s
+	cells[11]
+	delayToStart 35.0 s
+	
+ testSessionDED3
+	rate 0.0134162/s
+	cells[11]
+	delayToStart 36.0 s
+
+ testSessionDED3Ping
+	rate 0.026838/s
+	cells[11]
+	delayToStart 39.0 s
+
+ testSessionDED3_1500
+	rate 0.0134162/s
+	cells[11]
+	delayToStart 36.0 s
+	
+	
+#===Added to support 6 cells===	
+ testSessionDED4
+	rate 0.0134162/s
+	cells[12]
+	delayToStart 36.0 s
+
+ testSessionDED4Ping
+	rate 0.026838/s
+	cells[12]
+	delayToStart 39.0 s
+
+ testSessionDED4_1500
+	rate 0.0134162/s
+	cells[12]
+	delayToStart 36.0 s
+
+
+
+ testSessionDED5
+	rate 0.0134162/s
+	cells[12]
+	delayToStart 36.0 s
+
+ testSessionDED5Ping
+	rate 0.026838/s
+	cells[12]
+	delayToStart 39.0 s
+
+ testSessionDED5_1500
+	rate 0.0134162/s
+	cells[12]
+	delayToStart 36.0 s
+
+
+
+ testSessionDED6
+	rate 0.0134162/s
+	cells[12]
+	delayToStart 36.0 s
+
+ testSessionDED6Ping
+	rate 0.026838/s
+	cells[12]
+	delayToStart 39.0 s
+
+ testSessionDED6_1500
+	rate 0.0134162/s
+	cells[12]
+	delayToStart 36.0 s

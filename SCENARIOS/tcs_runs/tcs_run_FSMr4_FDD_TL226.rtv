@@ -1,0 +1,62 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'Trunk_CRT\GRnD\PET\CIT';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CI_PET Flexi Rel4';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+
+my $sw_version = 'FL00_FSM4_9999_170222_0134567'; ##must be on EMSS
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+
+{-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version,}},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'YES';
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "software_update",
+
+#############################################################
+# 1xABIA 1cells 1xFRHA 2x2 configuration                    #
+#############################################################
+      "Commisioning_CI_PET_with_IPHY_xml_change",
+      #"Attach_latency_FSMr4",
+      #"Sr_latency_FSMr4",
+      #"Call_stability_FSMr4",
+      #"Commisioning_CI_PET_with_IPHY_xml_change",
+      #"Capacity_FSMr4",
+      #"Commisioning_CI_PET_with_IPHY_xml_change",
+      #"Call_model_FSMr4",
+      #"Commisioning_CI_PET_with_IPHY_xml_change",
+      #"Call_stability_long_FSMr4",
+
+############################
+      #'Commisioning__PCMD_CellTrace',
+      #'PCMD_CellTrace',
+      #'Commisioning__PCMD_noCellTrace',
+      #'PCMD_noCellTrace',
+      #'Commisioning__noPCMD_CellTrace',
+      #'noPCMD_CellTrace',
+      #'Commisioning__noPCMD_noCellTrace',
+      #'noPCMD_noCellTrace',
+         
+
+];
+
+

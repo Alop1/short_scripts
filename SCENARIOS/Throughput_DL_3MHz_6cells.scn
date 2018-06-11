@@ -1,0 +1,27 @@
+#Test case 4, Downlink throughput with 1 cell and 50 UEs. Expected result 17.24 Mbit/s
+
+transfer sampleTransferDescriptionDL
+    type udp
+    packetSize 1100
+    packetRate 23.0 #how many packets send / s
+    dir downlink
+
+
+application AppDL [ bearer ]
+    startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+    wait 2700
+    stopTransfer sampleTransfer1 
+    wait 11
+    
+mobileSession testSessionDL
+    connectBearer DEFAULT as stream
+    startApplication AppDL [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+testScenario
+  testSessionDL
+    rate 6.0/s #how many phones /s
+    cells[1 2 3 4 5 6]
+    activityIntervalLength 49.7 s
+#	uePool SIM

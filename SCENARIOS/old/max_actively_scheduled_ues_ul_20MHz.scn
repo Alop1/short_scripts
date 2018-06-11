@@ -1,0 +1,73 @@
+# Num. of UEs:		200 UEs UL + 200 UEs DL / cell
+# Direction:		UL & DL
+# Packet rate:		pps / UE
+
+bearerQoS QCI5
+    qci 5
+
+bearerQoS QCI7
+    qci 7
+    
+transfer sampleTransferDescriptionDLPing
+	type udp
+	packetSize 64
+	packetRate 1
+	dir downlink
+
+transfer sampleTransferDescription70UL
+    type udp
+    packetSize 70
+    packetRate 11.29
+    dir uplink
+
+transfer sampleTransferDescription1280UL
+    type udp
+    packetSize 576
+    packetRate 1.20
+    dir uplink
+
+transfer sampleTransferDescription1460UL
+    type udp
+    packetSize 1460
+    packetRate 2.83
+    dir uplink
+application AppUL [ bearer ]
+    startTransfer sampleTransferDescription70UL on bearer as sampleTransfer4 
+    startTransfer sampleTransferDescription1460UL on bearer as sampleTransfer6
+	startTransfer sampleTransferDescriptionDLPing on bearer as sampleTransfer7
+    wait 2700
+    stopTransfer sampleTransfer4
+    stopTransfer sampleTransfer6
+	stopTransfer sampleTransfer7
+    wait 11
+	
+	
+mobileSession testSessionUL
+
+    connectBearer QCI5 as B
+    connectBearer QCI7 as C
+    connectBearer DEFAULT as stream
+    startApplication AppUL [ stream ] as myApp
+    wait applicationsFinish [ myApp ]    
+    releaseBearer stream
+    releaseBearer B
+    releaseBearer C
+    
+mobileSession testSession
+	connectBearer DEFAULT as stream  
+	wait 8                                
+	releaseBearer stream            
+
+testScenario
+  testSessionUL
+	rate 30/s
+	cells[1 2 3]
+	activityIntervalLength 83.13 s 
+  
+  testSession
+	rate 0.01/s
+	cells[1 2 3]
+	delayToStart 180.0 s
+
+
+

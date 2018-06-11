@@ -1,0 +1,30 @@
+trafficProfile TransferDL_UL_CA
+        downlink
+        packetSize 1400
+        packetRate 1250
+        uplink
+        packetSize 1400
+		packetRate 180 #UE cat8
+
+transfer TransferDL_UL_CA
+        type udp
+        profile TransferDL_UL_CA
+
+application AppCA [ bearer ]
+        startTransfer TransferDL_UL_CA on bearer as sampleTransfer
+        wait 50000
+        stopTransfer sampleTransfer
+
+mobileSession testSessionCA
+    connectBearer DEFAULT as stream
+    startApplication AppCA [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+testScenario
+    testSessionCA
+        rate 2.0/s
+        cells[1]
+        ueCapabilities cat8
+        activityIntervalLength 24.9 s
+

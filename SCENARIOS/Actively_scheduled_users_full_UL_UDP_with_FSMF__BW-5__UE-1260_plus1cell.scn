@@ -1,0 +1,50 @@
+# 23.52Mbps per cell
+transfer sampleTransferDescriptionUL
+	type udp
+	packetSize 1400
+	packetRate 5.0
+	dir uplink
+
+
+transfer sampleTransferDescriptionDL
+        type udp
+        packetSize 60
+        packetRate 1
+        dir downlink
+
+
+
+application AppUL [ bearer ]
+	startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer1
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer2 
+	wait 2700
+	stopTransfer sampleTransfer1 
+	stopTransfer sampleTransfer2
+	wait 11
+	
+mobileSession testSessionUL
+	connectBearer DEFAULT as stream
+	startApplication AppUL [ stream ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer stream
+
+testScenario
+  testSessionUL
+        rate 5/s
+        cells[1]
+        activityIntervalLength 83.96 s
+
+  testSessionUL
+        rate 5/s
+        cells[2]
+        activityIntervalLength 83.96 s
+
+  testSessionUL
+        rate 5/s
+        cells[3]
+        activityIntervalLength 83.96 s
+  
+  testSessionUL
+        rate 5/s
+        cells[4]
+        activityIntervalLength 83.96 s

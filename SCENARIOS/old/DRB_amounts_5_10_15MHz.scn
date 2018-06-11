@@ -1,0 +1,416 @@
+bearerQoS QCI1
+        qci 1
+        mbr_uplink 64
+        mbr_downlink 64
+        gbr_uplink 31
+        gbr_downlink 31
+
+bearerQoS QCI5
+        qci 5
+
+bearerQoS QCI7
+        qci 7
+
+bearerQoS QCI8
+        qci 8
+
+transfer sampleTransferDescriptionDL5
+	type udp
+	packetSize 64
+	dir downlink
+	packetRate 0.2
+
+transfer sampleTransferDescriptionUL5
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 0.2
+
+transfer sampleTransferDescription5
+        type rtp
+        packetSize 41
+        dir twoway
+        packetRate 50
+
+transfer sampleTransferDescriptionComfortNoise5
+        type rtp
+        packetSize 41
+        dir twoway
+        packetRate 6
+
+trafficProfile DLandUL5
+        downlink
+        packetSize 53
+        packetRate 54
+        uplink
+        packetSize 53
+        packetRate 50
+
+trafficProfile DL5
+        downlink
+        packetSize 53
+        packetRate 54
+        uplink
+        packetSize 20
+        packetRate 6
+
+trafficProfile UL5
+        downlink
+        packetSize 20
+        packetRate 6
+        uplink
+        packetSize 53
+        packetRate 50
+
+transfer sampleTransferDescriptionDL10
+	type udp
+	packetSize 700
+	dir downlink
+	packetRate 4
+
+transfer sampleTransferDescriptionUL10
+	type udp
+	packetSize 700
+	dir uplink
+	packetRate 4
+
+trafficProfile DLandUL10
+        downlink
+	packetSize 53
+        packetRate 50
+	uplink
+	packetSize 53
+	packetRate 50
+
+trafficProfile DL10
+	downlink
+	packetSize 53
+        packetRate 50
+	uplink
+	packetSize 20
+	packetRate 6
+
+trafficProfile UL10
+	downlink
+	packetSize 20
+        packetRate 6
+	uplink
+	packetSize 53
+	packetRate 50
+		
+		
+transfer Both5
+        type rtp
+        profile DLandUL5
+
+transfer OnlyDL5
+        type rtp
+        profile DL5
+
+transfer OnlyUL5
+        type rtp
+        profile UL5
+
+trafficProfile markovVolte5
+        timeQuantum 3500
+        state3 Both5
+        state2 OnlyDL5
+        state1 OnlyUL5
+        [ state1 state1 0.4 ]
+        [ state1 state2 0.4 ]
+        [ state1 state3 0.2 ]
+        [ state2 state1 0.4 ]
+        [ state2 state2 0.4 ]
+        [ state2 state3 0.2 ]
+        [ state3 state1 0.4 ]
+        [ state3 state2 0.4 ]
+        [ state3 state3 0.2 ]
+
+transfer Mkv5
+        type rtp
+        profile markovVolte5
+
+
+transfer sampleTransferDescriptionB5
+        type udp
+        packetSize 50
+        dir twoway
+        packetRate 0.0001
+
+application simpleAppB5 [ bearer ]
+        startTransfer sampleTransferDescriptionB5 on bearer as sampleTransferB5
+        wait 5000
+        stopTransfer sampleTransferB5
+
+application simpleApp5 [ bearer ]
+        startTransfer Mkv5 on bearer as sampleTransfer5
+        wait 225000
+        stopTransfer sampleTransfer5
+
+application simpleAppComfortNoise5 [ bearer ]
+        startTransfer Mkv5 on bearer as sampleTransferComfortNoise5
+        wait 225000
+        stopTransfer sampleTransferComfortNoise5
+
+application App5 [ bearer ]
+	startTransfer sampleTransferDescriptionDL5 on bearer as sampleTransferDL5
+	startTransfer sampleTransferDescriptionUL5 on bearer as sampleTransferUL5 
+	wait 225000
+	stopTransfer sampleTransferDL5
+	stopTransfer sampleTransferUL5
+
+
+application App_long5 [ bearer ]
+        startTransfer sampleTransferDescriptionDL5 on bearer as sampleTransferDL5
+        startTransfer sampleTransferDescriptionUL5 on bearer as sampleTransferUL5
+        wait 22500
+        stopTransfer sampleTransferDL5
+        stopTransfer sampleTransferUL5
+		
+		
+transfer Both10
+	type rtp
+	profile DLandUL10
+
+transfer OnlyDL10
+	type rtp
+	profile DL10
+
+transfer OnlyUL10
+	type rtp
+	profile UL10
+
+trafficProfile markovVolte10
+	timeQuantum 3500
+	state3 Both10
+	state2 OnlyDL10
+	state1 OnlyUL10
+	[ state1 state1 0.4 ]
+	[ state1 state2 0.4 ]
+	[ state1 state3 0.2 ]
+	[ state2 state1 0.4 ]
+	[ state2 state2 0.4 ]
+	[ state2 state3 0.2 ]
+	[ state3 state1 0.4 ]
+	[ state3 state2 0.4 ]
+
+transfer Mkv10
+	type rtp
+	profile markovVolte10
+
+transfer sampleTransferDescriptionB10
+        type udp
+        packetSize 50
+        dir twoway
+        packetRate 0.0001
+
+application simpleAppB10 [ bearer ]
+        startTransfer sampleTransferDescriptionB10 on bearer as sampleTransferB10
+        wait 5000
+        stopTransfer sampleTransferB10
+
+application simpleApp10 [ bearer ]
+        startTransfer Mkv10 on bearer as sampleTransfer10
+        wait 225000
+        stopTransfer sampleTransfer10
+
+application App10 [ bearer ]
+	startTransfer sampleTransferDescriptionDL10 on bearer as sampleTransferDL10 
+	startTransfer sampleTransferDescriptionUL10 on bearer as sampleTransferUL10 
+	wait 225000
+	stopTransfer sampleTransferDL10
+	stopTransfer sampleTransferUL10
+	
+transfer sampleTransferDescriptionDL15
+	type udp
+	packetSize 700
+	dir downlink
+	packetRate 6
+
+transfer sampleTransferDescriptionUL15
+	type udp
+	packetSize 700
+	dir uplink
+	packetRate 6
+
+trafficProfile DLandUL15
+        downlink
+	packetSize 53
+        packetRate 5
+	uplink
+	packetSize 53
+	packetRate 5
+
+trafficProfile DL15
+	downlink
+	packetSize 53
+        packetRate 5
+	uplink
+	packetSize 20
+	packetRate 6
+
+trafficProfile UL15
+	downlink
+	packetSize 20
+        packetRate 6
+	uplink
+	packetSize 53
+	packetRate 5
+
+transfer Both15
+	type rtp
+	profile DLandUL15
+
+transfer OnlyDL15
+	type rtp
+	profile DL15
+
+transfer OnlyUL15
+	type rtp
+	profile UL15
+
+trafficProfile markovVolte15
+	timeQuantum 3500
+	state3 Both15
+	state2 OnlyDL15
+	state1 OnlyUL15
+	[ state1 state1 0.4 ]
+	[ state1 state2 0.4 ]
+	[ state1 state3 0.2 ]
+	[ state2 state1 0.4 ]
+	[ state2 state2 0.4 ]
+	[ state2 state3 0.2 ]
+	[ state3 state1 0.4 ]
+	[ state3 state2 0.4 ]
+
+transfer Mkv15
+	type rtp
+	profile markovVolte15
+
+transfer sampleTransferDescriptionB15
+        type udp
+        packetSize 50
+        dir twoway
+        packetRate 0.0001
+
+application simpleAppB15 [ bearer ]
+        startTransfer sampleTransferDescriptionB15 on bearer as sampleTransferB15
+        wait 500000
+        stopTransfer sampleTransferB15
+
+application simpleApp15 [ bearer ]
+        startTransfer Mkv15 on bearer as sampleTransfer15
+        wait 2250000
+        stopTransfer sampleTransfer15
+
+application App15 [ bearer ]
+	startTransfer sampleTransferDescriptionDL15 on bearer as sampleTransferDL15
+	startTransfer sampleTransferDescriptionUL15 on bearer as sampleTransferUL15
+	wait 22500000
+	stopTransfer sampleTransferDL15
+	stopTransfer sampleTransferUL15
+	
+	
+
+mobileSession simpleSession5
+    connectBearer QCI1 as B
+	connectBearer QCI5 as C
+	connectBearer QCI7 as F
+    connectBearer QCI8 as G
+    connectBearer DEFAULT as A
+    startApplication simpleApp5 [ B ] as mySimpleApp5
+    wait applicationsFinish [ mySimpleApp5 ]
+	startApplication simpleAppB5 [ C ] as mySimpleAppC5 
+ 	wait applicationsFinish [ mySimpleAppC5 ]
+    startApplication App5 [ F ] as mySimpleAppF5
+	wait applicationsFinish [ mySimpleAppF5 ] 
+    startApplication App5 [ G ] as mySimpleAppG5 
+	wait applicationsFinish [ mySimpleAppG5 ]
+    startApplication App_long5 [ A ] as mySimpleAppA5
+	wait applicationsFinish [ mySimpleAppA5 ] 
+	releaseBearer B
+	releaseBearer C
+	releaseBearer F
+	releaseBearer G
+
+mobileSession comfortNoise5
+    connectBearer QCI1 as D
+	connectBearer QCI5 as E
+	connectBearer QCI7 as H
+    connectBearer QCI8 as I
+    connectBearer DEFAULT as J
+    startApplication simpleAppComfortNoise5 [ D ] as mySimpleAppComfortNoise5
+    wait applicationsFinish [ mySimpleAppComfortNoise5 ]
+    startApplication simpleAppB5 [ E ] as mySimpleAppE5
+	wait applicationsFinish [ mySimpleAppE5 ]
+    startApplication App5 [ H ] as mySimpleAppH5
+	wait applicationsFinish [ mySimpleAppH5 ]
+    startApplication App5 [ I ] as mySimpleAppI5 
+	wait applicationsFinish [ mySimpleAppI5 ]
+    startApplication App_long5 [ J ] as mySimpleAppJ5
+	wait applicationsFinish [ mySimpleAppJ5 ]
+	releaseBearer D
+	releaseBearer E
+	releaseBearer H
+	releaseBearer I
+
+mobileSession simpleSession10
+    connectBearer QCI1 as B
+	connectBearer QCI5 as C
+	connectBearer QCI7 as F
+    connectBearer QCI8 as G
+    connectBearer DEFAULT as Z
+    startApplication simpleApp10 [ B ] as mySimpleApp10
+    wait applicationsFinish [ mySimpleApp10 ]
+	startApplication simpleAppB10 [ C ] as mySimpleAppC10 
+ 	wait applicationsFinish [ mySimpleAppC10 ]
+    startApplication App10 [ F ] as mySimpleAppF10
+	wait applicationsFinish [ mySimpleAppF10 ] 
+    startApplication App10 [ G ] as mySimpleAppG10 
+	wait applicationsFinish [ mySimpleAppG10 ]
+    startApplication App10 [ Z ] as mySimpleAppA10
+	wait applicationsFinish [ mySimpleAppA10 ] 
+	releaseBearer B
+	releaseBearer C
+	releaseBearer F
+	releaseBearer G
+	
+mobileSession simpleSession15
+    connectBearer QCI1 as B
+	connectBearer QCI5 as C
+	connectBearer QCI7 as F
+    connectBearer QCI8 as G
+    connectBearer DEFAULT as X
+    startApplication simpleApp15 [ B ] as mySimpleApp15
+    wait applicationsFinish [ mySimpleApp15 ]
+	startApplication simpleAppB15 [ C ] as mySimpleAppC15 
+ 	wait applicationsFinish [ mySimpleAppC15 ]
+    startApplication App15 [ F ] as mySimpleAppF15
+	wait applicationsFinish [ mySimpleAppF15 ] 
+    startApplication App15 [ G ] as mySimpleAppG15 
+	wait applicationsFinish [ mySimpleAppG15 ]
+    startApplication App15 [ X ] as mySimpleAppA15
+	wait applicationsFinish [ mySimpleAppA15 ] 
+	releaseBearer B
+	releaseBearer C
+	releaseBearer F
+	releaseBearer G
+	
+testScenario
+  simpleSession15
+    rate 9.0/s
+        cells[1]
+    activityIntervalLength 34 s
+
+  simpleSession10
+    rate 9.0/s
+        cells[2]
+    activityIntervalLength 40 s
+
+  simpleSession10
+    rate 9.0/s
+        cells[3]
+    activityIntervalLength 57 s
+
+
+

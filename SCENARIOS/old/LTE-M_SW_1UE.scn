@@ -1,0 +1,39 @@
+#############################################################
+# S/W upgrade (SW) [Mobile Termination]
+# 1UE CAT-M  
+#
+############################################################
+
+transfer sw_tr1_default_bearer_dl
+	type udp
+	packetSize 700
+	dir downlink
+	packetRate 1
+	forceResume false
+
+application app_sw[ DEFAULT ]
+	wait 11
+	1000x
+		startTransfer sw_tr1_default_bearer_dl on DEFAULT as sw_tr1_default_bearer_dl_alias
+		wait 3
+		stopTransfer sw_tr1_default_bearer_dl_alias
+		wait 297
+		startTransfer sw_tr1_default_bearer_dl on DEFAULT as sw_tr1_default_bearer_dl_alias
+		wait 3
+		stopTransfer sw_tr1_default_bearer_dl_alias
+		wait 297
+
+
+mobileSession sw
+	connectBearer DEFAULT as DEFAULT_alias
+	startApplication app_sw[ DEFAULT_alias  ] as app_sw_alias &
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+testScenario
+	sw
+		cells[ 1 ]
+		rate 1/s
+		activityIntervalLength 0.9 s
+		ueCapabilities catM
+

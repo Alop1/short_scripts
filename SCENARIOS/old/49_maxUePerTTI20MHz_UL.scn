@@ -1,0 +1,69 @@
+# Num. of UEs:		200 UEs UL + 200 UEs DL / cell
+# Direction:		UL & DL
+# Packet rate:		pps / UE
+
+transfer sampleTransferDescriptionUL
+	type udp
+	packetSize 1400
+	packetRate 225
+        dir uplink
+
+	transfer sampleTransferDescriptionUL2
+	type udp
+	packetSize 1400
+	packetRate 112
+ 	dir uplink
+
+application AppUL [ bearer ]
+	startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer1 
+	wait 9000
+	stopTransfer sampleTransfer1 
+	wait 11
+
+application AppUL2 [ bearer ]
+	startTransfer sampleTransferDescriptionUL2 on bearer as sampleTransfer2
+	wait 9000
+	stopTransfer sampleTransfer2
+	wait 11
+
+mobileSession testSessionUL
+	connectBearer DEFAULT as stream
+	startApplication AppUL [ stream ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer stream
+
+mobileSession testSessionUL2
+	connectBearer DEFAULT as stream2
+	startApplication AppUL2 [ stream2 ] as myApp2
+	wait applicationsFinish [ myApp2 ]
+	releaseBearer stream2
+	
+# transfer sampleTransferDescriptionDL
+#	type tcp
+#	transferSize 1024000000
+#	dir downlink
+
+
+# application AppDL [ bearer ]
+#	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+#	wait 900
+#	stopTransfer sampleTransfer1 
+#	wait 11
+	
+# mobileSession testSessionDL
+#	connectBearer DEFAULT as stream
+#	startApplication AppDL [ stream ] as myApp
+#	wait applicationsFinish [ myApp ]	
+#	releaseBearer stream
+
+testScenario
+  testSessionUL
+	rate 6.0/s
+	cells[1 2 3]
+#	ueCapabilities cat1
+	activityIntervalLength 8.9 s
+  testSessionUL2
+	rate 6.0/s
+	cells[1 2 3]
+	ueCapabilities cat1
+	activityIntervalLength 0.9

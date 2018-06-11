@@ -1,0 +1,527 @@
+bearerQoS QCI1
+        qci 1
+        mbr_uplink 64
+        mbr_downlink 64
+        gbr_uplink 31
+        gbr_downlink 31
+# 	network_initiated TRUE
+
+bearerQoS QCI5
+        qci 5
+
+transfer sampleTransferDescriptionVoLTE
+        type rtp
+        packetSize 41
+        dir twoway
+        packetRate 50
+
+# <- bearer add, HO inter ->
+transfer TransferDLinter
+	type udp
+	packetSize 600
+	dir downlink
+	packetRate 2
+
+transfer TransferULinter
+	type udp
+	packetSize 600
+	dir uplink
+	packetRate 1
+
+# <-  HO inter , attach_detach
+transfer TransferDLAttDet
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 100
+
+transfer TransferULAttDet
+	type udp
+	packetSize 1400
+	dir uplink
+	packetRate 100
+
+
+# <- att_det, HO intra ->
+transfer TransferDL
+	type udp
+	packetSize 1440
+	dir downlink
+	packetRate 70
+
+transfer TransferUL
+	type udp
+	packetSize 720 
+	dir uplink
+	packetRate 70
+# <- HO intra
+
+# state transitions ->
+transfer sampleTransferDescriptionDL
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 0.16
+    
+application AppDL1 [ bearer ]
+	wait 15
+	idleHandover to 1
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+	wait 180
+	stopTransfer sampleTransfer1
+	wait 10
+	idleHandover to 11
+    
+application AppDL2 [ bearer ]
+	wait 15
+	idleHandover to 2
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+	wait 180
+	stopTransfer sampleTransfer1
+	wait 10
+	idleHandover to 11
+	
+
+application AppDL3 [ bearer ]
+	wait 15
+	idleHandover to 3
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+	wait 180
+	stopTransfer sampleTransfer1
+	wait 10
+	idleHandover to 11
+
+    
+mobileSession testSessionInactivity1
+	connectBearer DEFAULT as stream
+	startApplication AppDL1 [ stream ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer stream
+
+mobileSession testSessionInactivity2
+	connectBearer DEFAULT as stream
+	startApplication AppDL2 [ stream ] as myApp
+	wait applicationsFinish [ myApp ]
+	releaseBearer stream
+
+mobileSession testSessionInactivity3
+	connectBearer DEFAULT as stream
+	startApplication AppDL3 [ stream ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer stream  
+
+# <- state transitions, bearer add ->
+
+application simpleApp [ bearer ]
+        startTransfer sampleTransferDescriptionVoLTE on bearer as sampleTransfer
+        wait 11
+        stopTransfer sampleTransfer
+
+# this is a simple session scenario
+mobileSession simpleSession1
+	connectBearer DEFAULT as A
+	wait 12
+	idleHandover to 1
+	wait 2
+	2x
+		connectBearer QCI1 as B
+		connectBearer QCI5 as C
+		startApplication simpleApp [ B ] as mySimpleApp &
+		wait applicationsFinish [ mySimpleApp ]
+		releaseBearer B
+		releaseBearer C
+		wait 2
+	wait 15
+	idleHandover to 11
+	releaseBearer A
+
+mobileSession simpleSession2
+	connectBearer DEFAULT as A
+	wait 12
+	idleHandover to 2
+	wait 2
+	2x
+		connectBearer QCI1 as B
+		connectBearer QCI5 as C
+		startApplication simpleApp [ B ] as mySimpleApp &
+		wait applicationsFinish [ mySimpleApp ]
+		releaseBearer B
+		releaseBearer C
+		wait 2
+	wait 15
+	idleHandover to 11
+	releaseBearer A
+
+mobileSession simpleSession3
+	connectBearer DEFAULT as A
+	wait 12
+	idleHandover to 3
+	wait 2
+	2x
+		connectBearer QCI1 as B
+		connectBearer QCI5 as C
+		startApplication simpleApp [ B ] as mySimpleApp &
+		wait applicationsFinish [ mySimpleApp ]
+		releaseBearer B
+		releaseBearer C
+		wait 2
+	wait 15
+	idleHandover to 11
+	releaseBearer A
+# <- bearer add, HO inter ->
+#
+application AppHO1inter [ bearerHO1inter ]
+	startTransfer TransferDLinter on bearerHO1inter as TransferHO1DLinter
+	startTransfer TransferULinter on bearerHO1inter as TransferHO1ULinter
+	wait 2
+	20x
+		handover to 1
+		wait 2
+		handover to 11
+		wait 2
+	stopTransfer TransferHO1DLinter
+	stopTransfer TransferHO1ULinter
+#	wait 2
+
+mobileSession testSessionHO1inter
+	connectBearer DEFAULT as streamHO1inter
+	startApplication AppHO1inter [ streamHO1inter ] as myAppHO1inter
+	wait applicationsFinish [ myAppHO1inter ]
+	releaseBearer streamHO1inter
+
+application AppHO2inter [ bearerHO2inter ]
+	startTransfer TransferDLinter on bearerHO2inter as TransferHO2DLinter
+	startTransfer TransferULinter on bearerHO2inter as TransferHO2ULinter
+	wait 2
+	20x
+		handover to 2
+		wait 2
+		handover to 11
+		wait 2
+	stopTransfer TransferHO2DLinter
+	stopTransfer TransferHO2ULinter
+#	wait 2
+
+mobileSession testSessionHO2inter
+	connectBearer DEFAULT as streamHO2inter
+	startApplication AppHO2inter [ streamHO2inter ] as myAppHO2inter
+	wait applicationsFinish [ myAppHO2inter ]
+	releaseBearer streamHO2inter
+
+application AppHO3inter [ bearerHO3inter ]
+	startTransfer TransferDLinter on bearerHO3inter as TransferHO3DLinter
+	startTransfer TransferULinter on bearerHO3inter as TransferHO3ULinter
+	wait 2
+	20x
+		handover to 3
+		wait 2
+		handover to 11
+		wait 2
+	stopTransfer TransferHO3DLinter
+	stopTransfer TransferHO3ULinter
+#	wait 2
+
+mobileSession testSessionHO3inter
+	connectBearer DEFAULT as streamHO3inter
+	startApplication AppHO3inter [ streamHO3inter ] as myAppHO3inter
+	wait applicationsFinish [ myAppHO3inter ]
+	releaseBearer streamHO3inter
+
+#application AppHO1interOut [ bearerHO1inter ]
+#	wait 12
+#	10x
+#		idleHandover to 1
+#		startTransfer TransferDLinter on bearerHO1inter as TransferHO1DLinter
+#		startTransfer TransferULinter on bearerHO1inter as TransferHO1ULinter
+#		wait 2
+#		handover to 11
+#		wait 2
+#		stopTransfer TransferHO1DLinter
+#		stopTransfer TransferHO1ULinter
+#		wait 8
+#
+#mobileSession testSessionHO1interOut
+#	connectBearer DEFAULT as streamHO1inter
+#	startApplication AppHO1interOut [ streamHO1inter ] as myAppHO1inter
+#	wait applicationsFinish [ myAppHO1inter ]
+#	releaseBearer streamHO1inter
+#
+#application AppHO2interOut [ bearerHO1inter ]
+#	wait 12
+#	10x
+#		idleHandover to 2
+#		startTransfer TransferDLinter on bearerHO1inter as TransferHO1DLinter
+#		startTransfer TransferULinter on bearerHO1inter as TransferHO1ULinter
+#		wait 2
+#		handover to 11
+#		wait 2
+#		stopTransfer TransferHO1DLinter
+#		stopTransfer TransferHO1ULinter
+#		wait 8
+#
+#mobileSession testSessionHO2interOut
+#	connectBearer DEFAULT as streamHO2inter
+#	startApplication AppHO2interOut [ streamHO2inter ] as myAppHO2inter
+#	wait applicationsFinish [ myAppHO2inter ]
+#	releaseBearer streamHO2inter
+#
+#application AppHO3interOut [ bearerHO1inter ]
+#	wait 12
+#	10x
+#		idleHandover to 2
+#		startTransfer TransferDLinter on bearerHO1inter as TransferHO1DLinter
+#		startTransfer TransferULinter on bearerHO1inter as TransferHO1ULinter
+#		wait 2
+#		handover to 11
+#		wait 2
+#		stopTransfer TransferHO1DLinter
+#		stopTransfer TransferHO1ULinter
+#		wait 8
+#
+#
+#mobileSession testSessionHO3interOut
+#	connectBearer DEFAULT as streamHO3inter
+#	startApplication AppHO3interOut [ streamHO3inter ] as myAppHO3inter
+#	wait applicationsFinish [ myAppHO3inter ]
+#	releaseBearer streamHO3inter
+#
+# <- HO inter, TAU ->
+    
+mobileSession testSessionTAU1
+	wait 15
+	idleHandover to 1
+	wait 7
+#	every 7.0 s tau as periodicTau
+#	wait 50
+	every 1.5 s tau as periodicTau
+	wait 92
+	cancel periodicTau
+	wait 7
+	idleHandover to 11
+
+mobileSession testSessionTAU2
+	wait 15
+	idleHandover to 2
+	wait 7
+	#every 7.0 s tau as periodicTau
+	#wait 50
+	every 1.5 s tau as periodicTau
+	wait 92
+	cancel periodicTau
+	wait 7
+	idleHandover to 11
+
+mobileSession testSessionTAU3
+	wait 15
+	idleHandover to 3
+	wait 7
+	#every 7.0 s tau as periodicTau
+	#wait 50
+	every 1.5 s tau as periodicTau
+	wait 92
+	cancel periodicTau
+	wait 7
+	idleHandover to 11
+
+# <- tau, ho intra ->
+    
+application AppHO1 [ bearerHO1 ]
+	wait 15
+	idleHandover to 3
+	startTransfer TransferDL on bearerHO1 as TransferHO1DL
+	startTransfer TransferUL on bearerHO1 as TransferHO1UL
+	wait 2
+	3x
+		handover to 1
+		wait 9
+		handover to 2
+		wait 9
+		handover to 3
+		wait 9
+	stopTransfer TransferHO1DL
+	stopTransfer TransferHO1UL
+#	wait 2
+	wait 7
+	idleHandover to 11
+
+mobileSession testSessionHO1
+	connectBearer DEFAULT as streamHO1
+	startApplication AppHO1 [ streamHO1 ] as myAppHO1
+	wait applicationsFinish [ myAppHO1 ]
+	releaseBearer streamHO1
+
+application AppHO2 [ bearerHO2 ]
+	wait 15
+	idleHandover to 1
+	startTransfer TransferDL on bearerHO2 as TransferHO2DL
+	startTransfer TransferUL on bearerHO2 as TransferHO2UL
+	wait 2
+	3x
+		handover to 2
+		wait 9
+		handover to 3
+		wait 9
+		handover to 1
+		wait 9
+	stopTransfer TransferHO2DL
+	stopTransfer TransferHO2UL
+#	wait 2
+	wait 7
+	idleHandover to 11
+
+mobileSession testSessionHO2
+	connectBearer DEFAULT as streamHO2
+	startApplication AppHO2 [ streamHO2 ] as myAppHO2
+	wait applicationsFinish [ myAppHO2 ]
+	releaseBearer streamHO2
+
+application AppHO3 [ bearerHO3 ]
+	wait 15
+	idleHandover to 2
+	startTransfer TransferDL on bearerHO3 as TransferHO3DL
+	startTransfer TransferUL on bearerHO3 as TransferHO3UL
+	wait 2
+	3x
+		handover to 3
+		wait 9
+		handover to 1
+		wait 9
+		handover to 2
+		wait 9
+	stopTransfer TransferHO3DL
+	stopTransfer TransferHO3UL
+#	wait 2
+	wait 7
+	idleHandover to 11
+
+mobileSession testSessionHO3
+	connectBearer DEFAULT as streamHO3
+	startApplication AppHO3 [ streamHO3 ] as myAppHO3
+	wait applicationsFinish [ myAppHO3 ]
+	releaseBearer streamHO3
+    
+# <- HO intra, att_det ->
+
+application AppAttDet [ bearer ] 
+	startTransfer TransferDLAttDet on bearer as TransferAttDetDL
+	startTransfer TransferULAttDet on bearer as TransferAttDetUL
+	wait 10
+	stopTransfer TransferAttDetDL
+	stopTransfer TransferAttDetUL
+#	wait 2
+
+mobileSession attachSession1
+	connectBearer DEFAULT as att_det
+	startApplication AppAttDet [ att_det ] as myAppAttDet
+	wait applicationsFinish [ myAppAttDet ]
+   
+  
+testScenario
+  testSessionTAU1
+	rate 0.5591/s
+	cells[11]
+
+  testSessionTAU2
+	rate 0.5591/s
+	cells[11]
+	delayToStart 1.33 s
+
+  testSessionTAU3
+	rate 0.5591/s
+	cells[11]
+	delayToStart 2.66 s
+
+  testSessionInactivity1
+	#rate 2.9811/s
+	rate 1.4252/s
+	#rate 1.1685/s
+	cells[11]
+	delayToStart 3.9 s
+
+  testSessionInactivity2
+	#rate 2.9811/s
+	rate 1.4252/s
+	#rate 1.1387/s
+	cells[11]
+	delayToStart 5.23 s
+ 
+  testSessionInactivity3
+	#rate 2.9811/s
+	#rate 1.1387/s
+	rate 1.4252/s
+	cells[11]
+	delayToStart 6.25 s
+# <-state transitions,HO intra ->
+  testSessionHO1
+	rate 0.6533/sec
+	cells[11]
+	delayToStart 7.211 s
+
+  testSessionHO2
+	rate 0.6533/sec
+	cells[11]
+	delayToStart 8.2321 s
+
+  testSessionHO3
+	rate 0.6533/sec
+	cells[11]
+	delayToStart 9.6564 s
+
+  testSessionHO1inter
+	rate 0.5930/sec
+	cells[11]
+	#activityvalLength 6.05 s
+	delayToStart 10.123 s
+
+  testSessionHO2inter
+	rate 0.5930/sec
+	cells[11]
+	delayToStart 11.6543 s
+	#activityvalLength 6.05 s
+
+  testSessionHO3inter
+	rate 0.5930/sec
+	cells[11]
+	delayToStart 12 s
+	#activityvalLength 6.05 s
+
+#  testSessionHO1interOut
+#	rate 0.7448/sec
+#	cells[11]
+#	#activityvalLength 6.05 s
+#	delayToStart 10.123 s
+#
+#  testSessionHO2interOut
+#	rate 0.7448/sec
+#	cells[11]
+#	delayToStart 11.6543 s
+#	#activityvalLength 6.05 s
+#
+#  testSessionHO3interOut
+#	rate 0.7448/sec
+#	cells[11]
+#	delayToStart 12 s
+#	#activityvalLength 6.05 s
+# bearer add ->
+  simpleSession1
+       rate 0.7737/s
+	cells[11]
+	delayToStart 13 s
+
+  simpleSession2
+       rate 0.7737/s
+	cells[11]
+	delayToStart 14 s
+
+  simpleSession3
+       rate 0.7737/s
+	cells[11]
+	delayToStart 15 s
+
+## att/det ->
+  attachSession1
+	rate 0.2800/s
+	cells[1 2 3]
+	delayToStart 16 s
+
+

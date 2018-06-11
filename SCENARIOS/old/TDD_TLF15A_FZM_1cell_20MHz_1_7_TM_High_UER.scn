@@ -1,0 +1,536 @@
+#
+#***********************BEGIN_COPYRIGHT_HEADER******************
+#					   COPYRIGHT(C)NSN 2014
+#						 ALL RIGHTS RESERVED
+#				   NSN Confidential Proprietary
+#
+#**************************BEGIN_SCRIPT_HEADER******************
+########################################################
+
+
+####################################################################################
+#
+#		Traffic model High Load
+#	   2,5 x Normal Load
+#
+####################################################################################
+
+transfer TransferDL
+	type udp
+	packetSize 886
+	dir downlink
+	packetRate 57.0			
+
+
+transfer TransferUL
+	type udp
+	packetSize 126
+	dir uplink
+	packetRate 100.0
+	
+transfer TransferDLPing
+	type udp
+	packetSize 64
+	dir downlink
+	packetRate 1.0
+
+transfer TransferULPing
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 1.0
+
+ 
+
+###################################################################################
+#
+#										  Measurement raport
+#
+##################################################################################
+
+configMeas conf1
+
+reportMeas report1
+				amount	1
+				interval		1
+				servingCell rsrpMin=10 rsrpMax=10 rsrqMin=20 rsrqMax=20
+				#neighCell   rsrpMin=50 rsrpMax=50 rsrqMin=20 rsrqMax=20
+				events 2
+				skipNeigh	
+
+	
+####################################################################################
+#
+#		IDLE SESSION
+#
+####################################################################################
+#  Total UEs (idle+connected)=2800
+#  Total UEs in idle=2800-484(rrc connected)=2316
+#
+#  This component will require 1798,056 UEs in idle: 2316-325,731 [Service Request] - 192,213 [TAU] =  1798,056
+#  to achieve this, the total idle time per UE needs to be 300 [ sec ] ( 1798,056 [ UE ] * 1 [ sec ] / 6.(attach rate) [ UE ] )  
+####################################################################################
+application AppIDLE [ bearerSR ]
+	wait 12
+	idleHandover to 1
+	wait 300
+	idleHandover to 11
+
+mobileSession testSessionIDLE1
+	connectBearer DEFAULT as stream1
+	startApplication AppIDLE [ stream1 ] as myAppSR1
+	wait applicationsFinish [ myAppSR1 ]
+	releaseBearer stream1	
+	
+####################################################################################
+#
+#		SERVICE REQUEST
+#	   (UE State Transitions)
+#
+####################################################################################
+#  484 UE Initiated Attach BHCA on the primary eNB
+#
+#  calculation of AppSR duration:
+#  this "component" will require 414,57 [ UE ] in RRC_CONNECTED ( 484 - 38,11 /inter-eNB HO/ - 13,28 /TAU/ - 10,24 /Dedicated/ - 7,8 /ATTACH=PDN )
+#  to achieve this, the total RRC_CONNECTED time per UE needs to be 320,73 [ sec ] ( 414,57 [ UE ] * 1 [ sec ] / 1,293 (attach rate) [ UE ] ) :
+#  - 10 [ sec ] takes the UE to go idle before detaching
+#
+#  - Sum of SR: 31.022 /s; 31.022 = 0.518 attach/s * iterations => iterations = 24
+#  - there are 24 iterations of Service Request component, so each iteration needs to have a UE for 13.198[ sec ] in RRC_CONNECTED ( 320,73 [ sec ] / 24 = 13,363)
+#
+#  UEs RRC_CONN = 24 [iterations]*(10+4)[sec]*1,293 (attach_rate)=434,308
+#  UEs Idle = (12+24*10)[go to idle]*1,293(attach_rate)=325,731
+#  UEs Sending traffic = 24*4*1,293 = 124,088
+###################################################################################
+
+application AppSR [ bearerSR ]
+	wait 12
+	idleHandover to 1
+	24x
+		wait 12
+		startTransfer TransferDL on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR as sampleTransferSRUL
+		wait 1
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+	wait 12
+	idleHandover to 11
+	
+application AppSRPing [ bearerSRPing ]
+	wait 12	
+	idleHandover to 1
+	24x
+		wait 12
+		startTransfer TransferDLPing on bearerSRPing as sampleTransferSRDLPing
+		startTransfer TransferULPing on bearerSRPing as sampleTransferSRULPing
+		wait 1
+		stopTransfer sampleTransferSRDLPing
+		stopTransfer sampleTransferSRULPing
+	wait 12
+	idleHandover to 11
+
+	
+mobileSession testSessionSR
+	connectBearer DEFAULT as stream1
+	startApplication AppSR [ stream1 ] as myAppSR1
+	wait applicationsFinish [ myAppSR1 ]
+	releaseBearer stream1
+
+mobileSession testSessionSRPing
+	connectBearer DEFAULT as stream1Ping
+	startApplication AppSRPing [ stream1Ping ] as myAppSR1Ping
+	wait applicationsFinish [ myAppSR1Ping ]
+	releaseBearer stream1Ping
+	
+###################################################################################
+#
+#		PDN==ATTACH/DETACH
+#
+###################################################################################
+#  0,078 attach / s 
+#  No of UEs in RRC_CONNECTED : 100 * 0.078[ UEs ] / 1 [ sec ] = 7.8 UEs
+#  OK
+###################################################################################
+
+application AppPDN [ bearerPDN ]
+	startTransfer TransferDL on bearerPDN as sampleTransferPDNDL
+	startTransfer TransferUL on bearerPDN as sampleTransferPDNUL
+	wait 100
+	stopTransfer sampleTransferPDNDL
+	stopTransfer sampleTransferPDNUL
+
+application AppPDNPing [ bearerPDNPing ]
+	startTransfer TransferDLPing on bearerPDNPing as sampleTransferPDNDLPing
+	startTransfer TransferULPing on bearerPDNPing as sampleTransferPDNULPing
+	wait 100
+	stopTransfer sampleTransferPDNDLPing
+	stopTransfer sampleTransferPDNULPing
+
+mobileSession testSessionPDN1
+	connectBearer DEFAULT as stream1
+	startApplication AppPDN [ stream1 ] as myAppPDN1 &
+	wait applicationsFinish [ myAppPDN1 ]
+	releaseBearer stream1
+
+mobileSession testSessionPDN1Ping
+	connectBearer DEFAULT as stream1Ping
+	startApplication AppPDNPing [ stream1Ping ] as myAppPDN1Ping &
+	wait applicationsFinish [ myAppPDN1Ping ]
+	releaseBearer stream1Ping
+
+
+###################################################################################
+#
+#		INTER-ENB HO	
+#
+###################################################################################
+#  25.87/s inter-eNB HOs / s / 2 (src + tgt) = 12,935/s - 0 (intra-eNB HO) - 0,2328 (dedicated bearers) = 12.7022 /s
+#  12.7022/s = 10 iterations x 1.27022 attaches/s
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] * 3 [ sec ] ) * 1.27022 [ UEs ] / 1 [ sec ] = 38.1066UEs
+###################################################################################
+
+application AppInterHO1 [ bearerInterHO1 ]
+		startTransfer TransferDL on bearerInterHO1 as TransferInterHO1DL
+		startTransfer TransferUL on bearerInterHO1 as TransferInterHO1UL
+		10x
+				wait 1
+				startReporting conf1 report1
+				stopReporting
+				wait 1
+				handover to 1
+				wait 1
+				startReporting conf1 report1
+				stopReporting
+				wait 1
+				handover to 11
+	stopTransfer TransferInterHO1DL
+	stopTransfer TransferInterHO1UL
+	
+mobileSession testSessionInterHO1
+	connectBearer DEFAULT as streamInterHO1
+	startApplication AppInterHO1 [ streamInterHO1 ] as myAppInterHO1
+	wait applicationsFinish [ myAppInterHO1 ]
+	releaseBearer streamInterHO1
+
+	
+application AppInterHO1Ping [ bearerInterHO1Ping ]
+	startTransfer TransferDLPing on bearerInterHO1Ping as TransferInterHO1DLPing
+	startTransfer TransferULPing on bearerInterHO1Ping as TransferInterHO1ULPing
+		10x
+				wait 2
+				startReporting conf1 report1
+				stopReporting
+				wait 1
+				handover to 1
+				wait 2
+				startReporting conf1 report1
+				stopReporting
+				wait 1
+				handover to 11
+	stopTransfer TransferInterHO1DLPing
+	stopTransfer TransferInterHO1ULPing
+	
+mobileSession testSessionInterHO1Ping
+	connectBearer DEFAULT as streamInterHO1Ping
+	startApplication AppInterHO1Ping [ streamInterHO1Ping ] as myAppInterHO1Ping
+	wait applicationsFinish [ myAppInterHO1Ping ]
+	releaseBearer streamInterHO1Ping
+
+##################################################################################################################
+#
+#		TRACKING AREA UPDATE
+#
+##################################################################################################################
+#  26.56 TAU / s 
+#  26.56/s = 30 iterations x 0.8853 attaches/s
+#  203 / 7 + 1 = 30 [ iterations ]
+#  UEs connected = 30 iteration * 0,5s (T_NAS_DELAY) * 0.8853 attaches/s = 13.28
+#  UEs idle = 12s+12s+(205-30iteration*0,5)s*0.8853 attaches/s=214*0.3542s=192.21 UEs idle
+##################################################################################################################
+
+mobileSession testSessionTAU1
+	wait 15
+	idleHandover to 1
+	wait 12
+	every 7.0 s tau as periodicTau
+	wait 65
+	cancel periodicTau
+	wait 12
+	idleHandover to 11
+
+#################################################################################################################
+#		Dedicated Bearers 
+#	   (Bearer Addition/Release)
+#
+#  2.328 Dedicated Bearers / s = 10 iterations x 0.2328 attaches/s
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] + 1) x 4 [ sec ] * 0.2328[ UEs ] / 1 [ sec ] = 10.243
+#  UEs idle = 0
+#################################################################################################################
+	
+
+bearerQoS DED
+	qci 3
+	mbr_uplink 31
+	mbr_downlink 31
+	gbr_uplink 31
+	gbr_downlink 31
+	network_initiated FALSE
+	
+		
+application App_DED [ bearerDED ]
+	startTransfer TransferDL on bearerDED as sampleTransferDLDED
+	startTransfer TransferUL on bearerDED as sampleTransferULDED
+	wait 60
+	stopTransfer sampleTransferDLDED
+	stopTransfer sampleTransferULDED		
+	
+
+application App_DEDPing [ bearerDEDPing ]
+	startTransfer TransferDLPing on bearerDEDPing as sampleTransferDLDEDPing
+	startTransfer TransferULPing on bearerDEDPing as sampleTransferULDEDPing
+	wait 60
+	stopTransfer sampleTransferDLDEDPing	
+	stopTransfer sampleTransferULDEDPing	
+	
+	
+mobileSession testSessionDED1
+	connectBearer DEFAULT as D1
+	startApplication App_DED [ D1 ] as myApp_DEFAULT1 &
+	wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+	handover to 1
+	10x
+		connectBearer DED on D1 as streamDED1
+		wait 4
+		releaseBearer streamDED1
+	wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1 ]
+	releaseBearer D1
+	
+
+mobileSession testSessionDED1Ping
+	connectBearer DEFAULT as D1Ping
+	startApplication App_DEDPing [ D1Ping ] as myApp_DEFAULT1Ping &
+	wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+	handover to 1
+	10x
+		connectBearer DED on D1Ping as streamDED1Ping
+		wait 4
+		releaseBearer streamDED1Ping
+	wait 3
+		startReporting conf1 report1
+		stopReporting
+		wait 1
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1Ping ]
+	releaseBearer D1Ping
+		
+
+		
+####################################################################################
+# 
+#        VoLTE
+# 
+####################################################################################
+
+transfer TransferDL_SIP 
+	type udp 
+	packetSize 80 
+	dir downlink 
+	packetRate 707.0 
+
+transfer TransferUL_SIP 
+	type udp 
+	packetSize 80 
+	dir uplink 
+	packetRate 505.0 
+
+trafficProfile TransferDL_RTP_prof 
+	downlink 
+	packetSize 45 
+	packetRate 50.0 
+	uplink 
+	packetSize 20 
+	packetRate 6.25 
+
+trafficProfile TransferUL_RTP_prof 
+	uplink 
+	packetSize 45 
+	packetRate 50.0 
+	downlink 
+	packetSize 20 
+	packetRate 6.25 
+
+transfer TransferDL_RTP 
+	type rtp 
+	profile TransferDL_RTP_prof 
+
+transfer TransferUL_RTP 
+	type rtp 
+	profile TransferUL_RTP_prof 
+
+trafficProfile RTP_MV_prof 
+	timeQuantum 10000 
+	state1 TransferDL_RTP 
+	state2 TransferUL_RTP 
+	[ state2 state1 0.5 ] 
+	[ state2 state2 0.5 ] 
+	[ state1 state2 0.5 ] 
+	[ state1 state1 0.5 ] 
+
+transfer Transfer_RTP 
+	type rtp 
+	profile RTP_MV_prof 
+
+application App_SIP [ bearerSIP ] 
+	startTransfer TransferDL_SIP on bearerSIP as sampleTransferVoLTEDL_SIP1
+	startTransfer TransferUL_SIP on bearerSIP as sampleTransferVoLTEUL_SIP1
+	wait 1 
+	stopTransfer sampleTransferVoLTEDL_SIP1
+	stopTransfer sampleTransferVoLTEUL_SIP1
+
+application App_RTP [ bearerRTP ] 
+	startTransfer Transfer_RTP on bearerRTP as sampleTransferVoLTEDL_RTP 
+	wait 227
+	stopTransfer sampleTransferVoLTEDL_RTP 
+
+bearerQoS VoLTE_RTP 
+	qci 1 
+	mbr_uplink 31 
+	mbr_downlink 31 
+	gbr_uplink 31 
+	gbr_downlink 31 
+	network_initiated FALSE 
+
+bearerQoS VoLTE_SIP 
+	qci 5 
+	network_initiated FALSE 
+
+bearerQoS Data_Stream 
+	qci 7 
+	network_initiated FALSE 
+
+mobileSession testSessionVoLTE_1
+	wait 12 
+	idleHandover to 1
+	connectBearer DEFAULT as DEFAULT_alias 
+	wait 2 
+	connectBearer VoLTE_SIP on DEFAULT_alias as streamVoLTE_SIP1
+	wait 2 
+	startApplication App_SIP [ streamVoLTE_SIP1 ] as myApp_SIP1
+	wait applicationsFinish [ myApp_SIP1 ] 
+	connectBearer VoLTE_RTP on DEFAULT_alias as streamVoLTE_RTP1
+	startApplication App_RTP [ streamVoLTE_RTP1 ] as myApp_RTP1 &
+	4x 
+		wait 27 
+		startReporting conf1 report1 
+		stopReporting 
+		wait 1 
+		handover to 11
+		wait 27 
+		startReporting conf1 report1 
+		stopReporting 
+		wait 1 
+		handover to 1
+	wait applicationsFinish [ myApp_RTP1 ] 
+	releaseBearer streamVoLTE_RTP1 
+
+	startApplication App_SIP [ streamVoLTE_SIP1 ] as myApp_SIP2 
+	wait applicationsFinish [ myApp_SIP2 ] 
+	releaseBearer streamVoLTE_SIP1 
+	wait 61 
+	idleHandover to 11
+	wait 1 
+	releaseBearer DEFAULT_alias 
+		
+
+
+####################################################################################
+#  
+#		Traffic Model scenario
+#		   20% of UE with Traffic
+#		   80% of UE with Ping
+#
+####################################################################################
+
+testScenario
+  # testSessionIDLE1
+	# rate 6.0/s
+	# cells[11]
+	# ueCapabilities simple1
+	
+  testSessionSR
+	rate 0.9/s
+	cells[11]
+	delayToStart 1.0 s
+	ueCapabilities simple1
+
+ #testSessionSRPing
+#	rate 0.7333/s
+#	cells[11]
+#	delayToStart 2.0 s
+#	ueCapabilities simple1
+
+	
+  testSessionPDN1
+	rate 0.09/s
+	cells[1]
+	delayToStart 3.0 s
+	ueCapabilities simple1
+
+ #testSessionPDN1Ping
+	#rate 0.0624/s
+	#cells[1]
+	#delayToStart 4.0 s	
+	#ueCapabilities simple1
+
+ testSessionInterHO1
+	#rate 0.1181/s
+	rate 0.9079/s
+	cells[11]
+	delayToStart 5.0 s
+	ueCapabilities simple1
+
+# testSessionInterHO1Ping
+#	rate 0.8214/s
+#	cells[11]
+#	delayToStart 6.0 s
+#	ueCapabilities simple1
+
+	
+ testSessionTAU1
+	#rate 0.3542/s
+	rate 2.188/s
+	cells[11]
+	delayToStart 7.0 s
+	ueCapabilities simple1
+
+
+ testSessionDED1
+	rate 0.1715/s
+	cells[11]
+	delayToStart 8.0 s
+	ueCapabilities simple1
+
+ #testSessionDED1Ping
+#	rate 0.18624/s
+#	cells[11]
+#	delayToStart 9.0 s
+#	ueCapabilities simple1
+	
+    ## VoLTE Session
+	testSessionVoLTE_1
+		rate 0.3/s
+		cells[11]
+		delayToStart 0.9 s
+		ueCapabilities simple1

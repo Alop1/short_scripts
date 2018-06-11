@@ -1,0 +1,28 @@
+transfer TransferDLPing
+	type udp
+	packetSize 64
+	dir downlink
+	packetRate 1.0
+
+application AppRRC [ bearer ]
+	startTransfer TransferDLPing on bearer as sampleTransferRRCDLPing
+	wait 2000
+	stopTransfer sampleTransferRRCDLPing
+
+mobileSession SessionRRC
+	connectBearer DEFAULT as stream
+	startApplication AppRRC [ stream ] as myAppRRC &
+	wait applicationsFinish [ myAppRRC ]
+#	wait 3
+    wait 12
+	releaseBearer stream
+
+# /hap/active/components/user/rrcMMIShell
+# callproc perftest dltxmode 30 tm4
+	
+testScenario
+  SessionRRC
+	rate 1.0/s
+	cells [1]
+	activityIntervalLength 29.9 s
+	ueCapabilities simple1

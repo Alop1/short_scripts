@@ -1,0 +1,72 @@
+bearerQoS QCI1
+        qci 1
+        mbr_uplink 64
+        mbr_downlink 64
+        gbr_uplink 31
+        gbr_downlink 31
+
+bearerQoS QCI5
+        qci 5
+
+
+
+transfer DL_VOlte
+	dir downlink
+	packetSize 53
+   	packetRate 45
+	type rtp
+	
+	
+transfer UL_VOlte
+	dir uplink
+	packetSize 53
+    	packetRate 45
+	type rtp
+
+	
+transfer DL_UDP
+	dir downlink
+	packetSize 1400
+    	packetRate 5  # 1 #14
+	type udp
+	
+transfer UL_UDP
+	dir uplink
+	packetSize 1400
+    	packetRate 5  #1 #4.5
+	type udp
+
+
+
+application simpleAppB [ bearer ]
+        startTransfer DL_VOlte on bearer as sampleTransferdl
+	startTransfer UL_VOlte on bearer as sampleTransferul
+        wait 1800
+        stopTransfer sampleTransferdl
+		stopTransfer sampleTransferul
+
+application simpleAppA [ bearer ]
+        startTransfer DL_UDP on bearer as sampleTransfer_udpdl
+	startTransfer UL_UDP on bearer as sampleTransfer_udpul
+        wait 1800
+        stopTransfer sampleTransfer_udpdl
+	stopTransfer sampleTransfer_udpul
+		
+mobileSession simpleSession
+    connectBearer QCI1 as B
+	connectBearer QCI5 as C
+    connectBearer DEFAULT as A
+    startApplication simpleAppB [ B ] as mySimpleAppB &
+    startApplication simpleAppA [ A ] as mySimpleAppA &
+    wait applicationsFinish [ mySimpleAppB ]
+    wait applicationsFinish [ mySimpleAppA ]
+	releaseBearer B
+	releaseBearer C
+	releaseBearer A
+
+testScenario
+  simpleSession
+    rate 10.0/s
+    cells[1 2 3]
+    activityIntervalLength 149.8 s
+

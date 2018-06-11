@@ -1,0 +1,112 @@
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'Trunk_CRT\GRnD\PET\CRT2';
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'LTE1694-A-ce_PET_FSMr4_Krk_TL1';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+
+my $sw_version = 'FL00_FSM4_9999_170222_0134567'; ##must be on EMSS
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+
+{-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version,}},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+<<<<<<< HEAD
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}                = 'NO';
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}                   = 'NO';
+=======
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'YES';
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}                  = 'NO';
+>>>>>>> 42b29dc78249a2a31b0f52e94bc08e00aecf48c9
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "software_update",
+
+#############################################################
+#         3xABIA 3cells 3xFRHA 2x2 configuration            #
+#############################################################
+
+     #'Commissionning_for_Case1_Capacity__20MHz__2x2_with_IPHY_xml_change_Trunk',
+    
+      'Commissionning_for_Case1_Capacity__20MHz__2x2_Trunk', 
+<<<<<<< HEAD
+      #    'FSMr4_BTS_Capacity_Static_Users_Case026',
+      #'Commissionning_for_Case2_Tput_Model__5MHz__2x2_Trunk', 
+      #    'FSMr4_BTS_Performance_TotalBTS_Throughput_Case33',  
+      #'Commissionning_for_Case3_Tput_Model__10MHz__2x2_Trunk',
+      #    'FSMr4_BTS_Performance_TotalBTS_Throughput_Case34',
+      #'Commissionning_for_Case4_Tput_Model__15MHz__2x2_Trunk',    
+      #    'FSMr4_BTS_Performance_TotalBTS_Throughput_Case35',
+      #'Commissionning_for_Case5_Tput_Model__20MHz__2x2_Trunk',
+      #    'FSMr4_BTS_Performance_TotalBTS_Throughput_Case36', 
+=======
+          'FSMr4_BTS_Capacity_Static_Users_Case026',
+      'Commissionning_for_Case2_Tput_Model__5MHz__2x2_Trunk', 
+          'FSMr4_BTS_Performance_TotalBTS_Throughput_Case33',  
+      'Commissionning_for_Case3_Tput_Model__10MHz__2x2_Trunk',
+          'FSMr4_BTS_Performance_TotalBTS_Throughput_Case34',
+      'Commissionning_for_Case4_Tput_Model__15MHz__2x2_Trunk',    
+          'FSMr4_BTS_Performance_TotalBTS_Throughput_Case35',
+      'Commissionning_for_Case5_Tput_Model__20MHz__2x2_Trunk',
+          'FSMr4_BTS_Performance_TotalBTS_Throughput_Case36', 
+>>>>>>> 42b29dc78249a2a31b0f52e94bc08e00aecf48c9
+          
+#############################################################
+#       1xABIA 4cells 4xFRIG 4x4 and 2x2 configuration      #
+#############################################################
+     #'Commisioning_Capacity__20MHz__4x4_with_IPHY_xml_change_Trunk',
+    
+<<<<<<< HEAD
+      #'Commisioning_for_Case1_Capacity__20MHz__4x4_Trunk',
+      #    'FSMr4_BTS_Capacity_Static_Users_Case02',
+      #'Commisioning_for_Case2__Capacity__20MHz__4x4__DL_Trunk',
+      #    'FSMr4_BTS_Capacity_Static_Users_Case05_DL', 
+      #'Commisioning_for_Case2__Capacity__20MHz__4x4__UL_Trunk',
+      #    'FSMr4_BTS_Capacity_Static_Users_Case05_UL',
+      #'Commisioning_for_Case3_Capacity__5MHz__4x4_Trunk',
+      #    'FSMr4_BTS_Capacity_Static_Users_Case015', 
+      #'Commisioningfor_for_Case4_Capacity__10MHz__4x4_Trunk',
+      #    'FSMr4_BTS_Capacity_Static_Users_Case016',  
+      #'Commisioning_for_Case5_Capacity__15MHz__4x4_Trunk',
+      #    'FSMr4_BTS_Capacity_Static_Users_Case017',
+      #'Commissionning_for_Case6_Capacity__5_20MHz__2x2_Trunk',
+      #    'FSMr4_BTS_Capacity_Static_Users_Case018', 
+      #'Commisioning__for_Case7_Capacity__10MHz__2x2_Trunk', 
+      #    'FSMr4_BTS_Capacity_Static_Users_Case020', 
+=======
+      'Commisioning_for_Case1_Capacity__20MHz__4x4_Trunk',
+          'FSMr4_BTS_Capacity_Static_Users_Case02',
+      'Commisioning_for_Case2__Capacity__20MHz__4x4__DL_Trunk',
+          'FSMr4_BTS_Capacity_Static_Users_Case05_DL', 
+      'Commisioning_for_Case2__Capacity__20MHz__4x4__UL_Trunk',
+          'FSMr4_BTS_Capacity_Static_Users_Case05_UL',
+      'Commisioning_for_Case3_Capacity__5MHz__4x4_Trunk',
+          'FSMr4_BTS_Capacity_Static_Users_Case015', 
+      'Commisioningfor_for_Case4_Capacity__10MHz__4x4_Trunk',
+          'FSMr4_BTS_Capacity_Static_Users_Case016',  
+      'Commisioning_for_Case5_Capacity__15MHz__4x4_Trunk',
+          'FSMr4_BTS_Capacity_Static_Users_Case017',
+      'Commissionning_for_Case6_Capacity__5_20MHz__2x2_Trunk',
+          'FSMr4_BTS_Capacity_Static_Users_Case018', 
+      'Commisioning__for_Case7_Capacity__10MHz__2x2_Trunk', 
+          'FSMr4_BTS_Capacity_Static_Users_Case020', 
+>>>>>>> 42b29dc78249a2a31b0f52e94bc08e00aecf48c9
+
+         
+
+];

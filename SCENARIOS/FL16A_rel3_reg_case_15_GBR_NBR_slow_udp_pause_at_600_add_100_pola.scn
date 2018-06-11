@@ -1,0 +1,195 @@
+###################################################################################
+####################### Bearers ###################################################
+###################################################################################
+
+bearerQoS QCI1
+    qci 1
+    mbr_uplink 64
+    mbr_downlink 64
+    gbr_uplink 31
+    gbr_downlink 31
+#   network_initiated TRUE
+
+bearerQoS QCI5
+    qci 5
+#   mbr_uplink 8640
+#   mbr_downlink 8640
+#   gbr_uplink
+#   gbr_downlink
+#   network_initiated TRUE
+
+bearerQoS QCI6
+    qci 6
+        
+###################################################################################
+####################### TrafficProfiles ###########################################
+###################################################################################
+
+
+trafficProfile DLandUL
+    downlink
+    packetSize 53
+    packetRate 50
+    uplink
+    packetSize 53
+    packetRate 50
+
+trafficProfile DL
+    downlink
+    packetSize 53
+    packetRate 50
+    uplink
+    packetSize 20
+    packetRate 6
+
+trafficProfile UL
+    downlink
+    packetSize 20
+    packetRate 6
+    uplink
+    packetSize 53
+    packetRate 50
+
+
+###################################################################################
+####################### Transfer ##################################################
+###################################################################################
+
+transfer Both
+    type rtp
+    profile DLandUL
+    
+transfer OnlyDL
+    type rtp
+    profile DL
+
+transfer OnlyUL
+    type rtp
+    profile UL
+    
+trafficProfile markovVolte
+    timeQuantum 3500
+    state3 Both
+    state2 OnlyDL
+    state1 OnlyUL
+    [ state1 state1 0.4 ]
+    [ state1 state2 0.4 ]
+    [ state1 state3 0.2 ]
+    [ state2 state1 0.4 ]
+    [ state2 state2 0.4 ]
+    [ state2 state3 0.2 ]
+    [ state3 state1 0.4 ]
+    [ state3 state2 0.4 ]
+    [ state3 state3 0.2 ]    
+
+transfer Mkv
+    type rtp
+    profile markovVolte
+    
+    
+transfer sampleTransferPingData
+    type udp
+    packetSize 64
+    dir twoway
+    packetRate 0.5
+    
+transfer sampleTransferDescriptionFTP
+    type udp
+    packetSize 1400
+    packetRate 5
+    #dir twoway
+    dir downlink
+    
+ #       type udp
+ #   packetSize 64
+ #   dir twoway
+ #   packetRate 0.33
+
+###################################################################################
+####################### app #######################################################
+###################################################################################
+    
+application simpleApp [ bearer ]
+    startTransfer Mkv on bearer as sampleTransfer
+    wait 3600
+    stopTransfer sampleTransfer
+
+application FTP120 [ bearer ]
+    startTransfer sampleTransferDescriptionFTP on bearer as sampleTransferFTP 
+    wait 450
+    stopTransfer sampleTransferFTP
+    wait 4
+    
+application FTP [ bearer ]
+    startTransfer sampleTransferDescriptionFTP on bearer as sampleTransferFTP 
+    wait 3500
+    stopTransfer sampleTransferFTP
+    wait 4
+    
+ application pingData120 [ bearer ]
+    startTransfer sampleTransferPingData on bearer as samplePingData
+    wait 450
+    stopTransfer samplePingData	
+    
+application pingData [ bearer ]
+    startTransfer sampleTransferPingData on bearer as samplePingData
+    wait 3500
+    stopTransfer samplePingData		
+
+###################################################################################
+####################### Mobile   ##################################################
+###################################################################################
+
+mobileSession VoLTESession
+    connectBearer QCI1 as B
+    connectBearer QCI5 as C
+    #connectBearer DEFAULT as B
+    startApplication simpleApp [ B ] as mySimpleApp &
+    #startApplication simpleAppB [ C ] as mySimpleAppB &
+    wait applicationsFinish [ mySimpleApp ]
+    #wait applicationsFinish [ mySimpleAppB ]
+    releaseBearer B
+    #releaseBearer C
+    
+    
+mobileSession 2_DRBSession440UEs
+
+    connectBearer DEFAULT as 2_DRBSession380
+    connectBearer QCI6 as 2_DRBSessionFTP
+    startApplication pingData [ 2_DRBSession380 ] as myPingdata &
+    startApplication FTP [ 2_DRBSessionFTP ] as myFTP &
+    wait applicationsFinish [ myPingdata ]
+    wait applicationsFinish [ myFTP ]
+        
+    releaseBearer 2_DRBSession380
+    releaseBearer 2_DRBSessionFTP
+    
+mobileSession 2_DRBSessionAddUEs
+
+    connectBearer DEFAULT as 2_DRBSession120
+    connectBearer QCI6 as 2_DRBSessionFTP120
+    startApplication pingData120 [ 2_DRBSession120 ] as myPingdata120 &
+    startApplication FTP120 [ 2_DRBSessionFTP120 ] as myFTP120 &
+    wait applicationsFinish [ myPingdata120 ]
+    wait applicationsFinish [ myFTP120 ]
+        
+    releaseBearer 2_DRBSession120
+    releaseBearer 2_DRBSessionFTP120
+
+###################################################################################
+####################### app #######################################################
+###################################################################################
+
+testScenario
+   VoLTESession
+       rate 10.0/s
+       #uePool SIM
+       cells[1]
+       activityIntervalLength 15.9 s
+       
+    2_DRBSession440UEs
+        rate 4.0/s
+	cells[1]
+	activityIntervalLength 124.9 s
+	
+ 

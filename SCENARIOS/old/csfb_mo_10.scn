@@ -1,0 +1,65 @@
+# application AppREG1 [ bearerREG1 ]
+	# wait 12
+	# idleHandover to 1
+	# wait 12
+
+mobileSession testSessionREG1
+	connectBearer DEFAULT as streamREG1    
+	# startApplication AppREG1 [ streamREG1 ] as myAppREG1
+	wait applicationsFinish [ AppREG1 ]
+	redirect cdma csfb serv 0 neigh 0
+	wait 12
+	# idleHandover to 11
+	releaseBearer streamREG1	
+
+# application AppREG2 [ bearerREG2 ]
+        # wait 12
+        # idleHandover to 2
+        # wait 12
+
+mobileSession testSessionREG2
+        connectBearer DEFAULT as streamREG2
+        # startApplication AppREG2 [ streamREG2 ] as myAppREG2
+        wait applicationsFinish [ AppREG2 ]
+        redirect cdma csfb serv 0 neigh 0
+        wait 12
+        # idleHandover to 11
+
+        releaseBearer streamREG2
+
+# application AppREG3 [ bearerREG3 ]
+        # wait 12
+        # idleHandover to 3
+        # wait 12
+
+mobileSession testSessionREG3
+        connectBearer DEFAULT as streamREG3
+        # startApplication AppREG3 [ streamREG3 ] as myAppREG3
+        wait applicationsFinish [ AppREG3 ]
+        redirect cdma csfb serv 0 neigh 0
+        wait 12
+        # idleHandover to 11
+        releaseBearer streamREG3
+
+
+testScenario
+ testSessionREG1
+	rate 4.0/sec
+	# cells[11]
+	cells[1]
+	ueCapabilities csfb
+
+ testSessionREG2
+        rate 4.0/sec
+        cells[1]
+        # cells[11]
+        ueCapabilities csfb
+
+ testSessionREG3
+        rate 2.0/sec
+        # cells[11]
+        cells[1]
+        ueCapabilities csfb
+
+
+	

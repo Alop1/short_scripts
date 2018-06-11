@@ -1,0 +1,109 @@
+bearerQoS QCI1
+        qci 1
+        mbr_uplink 64
+        mbr_downlink 64
+        gbr_uplink 31
+        gbr_downlink 31
+
+bearerQoS QCI5
+        qci 5
+
+trafficProfile DLandUL
+    downlink
+		packetSize 53
+        packetRate 53
+	uplink
+		packetSize 53
+		packetRate 50
+
+trafficProfile DL
+	downlink
+		packetSize 53
+		packetRate 53
+	uplink
+		packetSize 20
+		packetRate 6
+
+trafficProfile UL
+	downlink
+		packetSize 20
+		packetRate 6
+	uplink
+		packetSize 53
+		packetRate 50
+
+transfer Both
+	type rtp
+	profile DLandUL
+
+transfer OnlyDL
+	type rtp
+	profile DL
+
+transfer OnlyUL
+	type rtp
+	profile UL
+
+trafficProfile markovVolte
+	timeQuantum 3500
+	state3 Both
+	state2 OnlyDL
+	state1 OnlyUL
+	[ state1 state1 0.4 ]
+	[ state1 state2 0.4 ]
+	[ state1 state3 0.2 ]
+	[ state2 state1 0.4 ]
+	[ state2 state2 0.4 ]
+	[ state2 state3 0.2 ]
+	[ state3 state1 0.4 ]
+	[ state3 state2 0.4 ]
+	[ state3 state3 0.2 ]
+
+transfer Mkv
+	type rtp
+	profile markovVolte
+
+application simpleApp [ bearer ]
+        startTransfer Mkv on bearer as sampleTransfer
+        wait 18000
+        stopTransfer sampleTransfer
+
+mobileSession simpleSession5
+    connectBearer QCI1 as B
+	connectBearer QCI5 as C
+    startApplication simpleApp [ B ] as mySimpleApp &
+    wait applicationsFinish [ mySimpleApp ]
+	releaseBearer B
+	releaseBearer C
+	
+mobileSession simpleSession10
+    connectBearer QCI1 as B
+	connectBearer QCI5 as C
+    startApplication simpleApp [ B ] as mySimpleApp &
+    wait applicationsFinish [ mySimpleApp ]
+	releaseBearer B
+	releaseBearer C
+	
+mobileSession simpleSession15
+    connectBearer QCI1 as B
+	connectBearer QCI5 as C
+    startApplication simpleApp [ B ] as mySimpleApp &
+    wait applicationsFinish [ mySimpleApp ]
+	releaseBearer B
+	releaseBearer C
+
+
+testScenario
+  simpleSession5
+	rate 10.0/s
+	cells[1]
+    activityIntervalLength 19.9 s
+  simpleSession10
+	rate 10.0/s
+	cells[2]
+    activityIntervalLength 39.9 s
+  simpleSession15
+	rate 10.0/s
+	cells[3]
+    activityIntervalLength 49.9 s
+

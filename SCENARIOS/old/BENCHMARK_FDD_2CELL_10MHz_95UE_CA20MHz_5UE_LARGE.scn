@@ -1,0 +1,66 @@
+trafficProfile TransferDL_nonCA_prof
+        downlink
+        packetSize 1288
+        packetRate 28
+
+trafficProfile TransferDL_CA_prof
+        downlink
+        packetSize 1288
+        packetRate 3190#2586.9
+
+trafficProfile TransferUL_prof
+        uplink
+        packetSize 916
+        packetRate 36
+
+transfer TransferDL_nonCA
+        type udp
+        profile TransferDL_nonCA_prof
+
+transfer TransferDL_CA
+        type udp
+        profile TransferDL_CA_prof
+
+transfer TransferUL
+        type udp
+        profile TransferUL_prof
+
+application AppNonCA [ bearer ]
+        startTransfer TransferUL on bearer as sampleTransferUL
+        startTransfer TransferDL_nonCA on bearer as sampleTransferDL
+        wait 50000
+        stopTransfer sampleTransferUL
+        stopTransfer sampleTransferDL
+
+application AppCA [ bearer ]
+        startTransfer TransferUL on bearer as sampleTransferUL
+        startTransfer TransferDL_CA on bearer as sampleTransferDL
+        wait 50000
+        stopTransfer sampleTransferUL
+        stopTransfer sampleTransferDL
+
+mobileSession testSessionNonCA
+    connectBearer DEFAULT as stream
+    startApplication AppNonCA [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+mobileSession testSessionCA
+    connectBearer DEFAULT as stream
+    startApplication AppCA [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+testScenario
+    testSessionNonCA
+        rate 10.0/s
+        cells[1]
+        ueCapabilities cat5
+        activityIntervalLength 9.4 s
+
+    testSessionCA
+        rate 1.0/s
+        cells[1]
+        ueCapabilities cat8
+        activityIntervalLength 4.9 s
+

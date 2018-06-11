@@ -1,0 +1,47 @@
+#############################################################
+# Mobile Autonomous Reporting (MAR) [Mobile Origination]
+# 20 UE CAT-M  
+# 36,7 s interval 
+# 5.4 MAR/s (after 13 min ramping up) 
+############################################################
+
+transfer mar_tr1_default_bearer_ul
+	type udp
+	packetSize 50
+	dir uplink
+	packetRate 1
+
+transfer mar_tr1_default_bearer_dl
+	type udp
+	packetSize 1
+	dir downlink
+	packetRate 1
+
+application app_mar[ DEFAULT ]
+	1000x
+		wait 35.7
+		startTransfer mar_tr1_default_bearer_ul on DEFAULT as mar_tr1_default_bearer_ul_alias
+		wait 1
+		stopTransfer mar_tr1_default_bearer_ul_alias
+		wait 35.7
+		startTransfer mar_tr1_default_bearer_ul on DEFAULT as mar_tr1_default_bearer_ul_alias
+		wait 0.5
+		startTransfer mar_tr1_default_bearer_dl on DEFAULT as mar_tr1_default_bearer_dl_alias
+		wait 0.5
+		stopTransfer mar_tr1_default_bearer_ul_alias
+		stopTransfer mar_tr1_default_bearer_dl_alias
+
+
+mobileSession mar
+	connectBearer DEFAULT as DEFAULT_alias
+	startApplication app_mar[ DEFAULT_alias  ] as app_mar_alias &
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+testScenario
+	mar
+		cells[ 1 ]
+		rate 16.35/min
+		activityIntervalLength 733.9 s
+		ueCapabilities catM
+

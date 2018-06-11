@@ -1,0 +1,29 @@
+trafficProfile TransferDL_UL_prof
+        downlink
+        packetSize 40
+        packetRate 8333.3
+        uplink
+        packetSize 40
+        packetRate 4166.7
+
+transfer TransferDL_UL
+        type udp
+        profile TransferDL_UL_prof
+
+application App [ bearer ]
+        startTransfer TransferDL_UL on bearer as sampleTransfer
+        wait 50000
+        stopTransfer sampleTransfer
+
+mobileSession testSession
+    connectBearer DEFAULT as stream
+    startApplication App [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+testScenario
+    testSession
+        rate 1.0/s
+        cells[1]
+        ueCapabilities cat5
+        activityIntervalLength 7.9 s

@@ -1,0 +1,78 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+###FL17ASP1###
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17A SP1\GRnD\PET\CRT';
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL11 Traffic models';
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+#my $release = "FL17ASP1";
+
+####FL17A###
+  $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+  $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17A\GRnD\PET\CRT';
+  $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL193 Traffic models';
+  $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+  my $release = "FL17A";
+
+
+
+my $sw_version = 'FL17A_ENB_0000_001010_000000'; ##must be on EMSS
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+{-TC => "Reconfigure_EPCSIM_standard", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './config_files/epc_cfg_TL193_LTE1042_backhaul235.lua', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Reconfigure_EPCSIM_2MMEs", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './config_files/epc_cfg_TL193_2MMEs_sim_backhaul_235.lua', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Reconfigure_EPCSIM_maxLNRELs", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './config_fles/epc_cfg_TL193_with_x2_64x6.lua', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Reconfigure_EPCSIM_IPv6", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './config_fles/epcsim_6cell_test.cfg', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Reconfigure_EPCSIM_DP", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './config_fles/epc_6cellDualUplaneBezLogow_backhaul235.cfg', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Commissioning_ENB2_6Cell_IPv6", -TP => 'FLEXI_RECONFIG', -ENB_DEVICE_NAME => 'ENB2_FCT', -EXECUTION_PARAMS => {-CONFIG_FILE_NAME => 'BTS_TRS_ENB190_2Cabless_2Cells_DualUplane_IPv6.xml', -SCFC_SWAP => '1',}},
+{-TC => "software_update" , -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version, -USE_NEWEST_BUILD => 'YES', -RELEASE => $release}},
+
+{-TC => "Turn_on_TL193", -TP => 'power_switch_state_tp', -EXECUTION_PARAMS => {-PORT => 7, -STATE => 'ON'}},
+{-TC => "Turn_off_TL193", -TP => 'power_switch_state_tp', -EXECUTION_PARAMS => {-PORT => 7, -STATE => 'OFF'}},
+
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'YES';
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'NO';
+ # $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_SHB}               = 'YES';
+ # $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-GET_BTSSM_SNAPSHOT}               = 'YES';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}                 = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-LMTS_CONFIG_UPDATE }        => 'YES',
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-GET_BTSSM_SNAPSHOT }            => 'NO',
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_CLI_BTS_SNAPSHOT }            => 'NO',
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_EMIL_LOGS }            => 'NO',
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-RESTART_EPCSIM }            => 'YES',
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PRECHECK_UE_SIM_ENV}              = 'NO';
+
+
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "Turn_off_TL193",
+ # "software_update",
+# "Commissionning_for_Traffic_profile_3cells_ENB2",
+
+#your test execution
+       # "Commissionning_for_Traffic_profile_6cells_ENB2",
+     # "Commissionning_for_Traffic_profile_6cells_1cable_ENB2",
+        "Commissionning_for_Traffic_profile_6cells_2cable_IPV6_ENB2",
+      # 'Commissionning_for_Traffic_profile_3cells_ENB2',
+
+
+
+];
+
+

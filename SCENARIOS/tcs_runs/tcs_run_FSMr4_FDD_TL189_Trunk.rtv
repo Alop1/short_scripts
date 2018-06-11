@@ -1,0 +1,110 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+####################### If tests run for FL17SP ##########################################
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17 SP\GRnD\PET\New Features\Test automation for IPHY environment';
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'LTE3615-A - Baseband pooling';
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'LTE3615-A-f Baseband pooling - PET throughput';
+
+####################### If tests run for FL17A #########################################
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17A\GRnD\PET\CRT';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Airscale TL1069';
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'YES';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'YES';
+
+
+my $sw_version = 'FL00_FSM4_9999_170222_0134567'; ##must be on EMSS
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+
+{-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version,}},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'YES';
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "software_update",
+
+#############################################################
+#                       Capacity tests                      #
+#############################################################
+
+    #'Commissionning_for_AirScale_LTE2733_1xBBPool_1x5MHz_Cell_Capacity_1500UEs',
+    
+    'Commissionning_for_AirScale_LTE2733_1xBBPool_1x5MHz_Cell_Capacity_1500UEs', 
+        'AirScale_LTE2733_1xBBPool_1x5MHz_Cell_Capacity_1500UEs',
+    'Commissionning_for_AirScale_LTE2733_1xBBPool_1x10MHz_Cell_Capacity_1500UEs', 
+        'AirScale_LTE2733_1xBBPool_1x10MHz_Cell_Capacity_1500UEs',  
+    'Commissionning_for_AirScale_LTE2733_2xBBPool_16x5MHz_1_cell_tested_Cell_Capacity_and_Throughput_700UEs_DL',
+        'AirScale_LTE2733_2xBBPool_16x5MHz_1_cell_tested_Cell_Capacity_and_Throughput_700UEs_DL',
+    'Commissionning_for_AirScale_LTE2733_2xBBPool_16x5MHz_1_cell_tested_Cell_Capacity_and_Throughput_700UEs_UL',    
+        'AirScale_LTE2733_2xBBPool_16x5MHz_1_cell_tested_Cell_Capacity_and_Throughput_700UEs_UL',
+    'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_420UEs',
+        'AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_420UEs', 		 
+	'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_420UEs_on_5_cells', 
+		'AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_420UEs_on_5_cells',
+    'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_300UEs_120emergency', 
+       'AirScale_LTE2733_2xBBPool_12x20MHz_Cell_Capacity_300UEs_120emergency',  
+    'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_6cells_tested_DRB_Capacity_300UEs',
+        'AirScale_LTE2733_2xBBPool_12x20MHz_6cells_tested_DRB_Capacity_300UEs',
+    'Commissionning_for_AirScale_LTE2733_1xBBPool_6x20MHz_1_cell_tested_Num_UE_per_TTI_DL',    
+        'AirScale_LTE2733_1xBBPool_6x20MHz_1_cell_tested_Num_UE_per_TTI_DL',
+    'Commissionning_for_AirScale_LTE2733_1xBBPool_6x20MHz_1_cell_tested_Num_UE_per_TTI_UL',
+        'AirScale_LTE2733_1xBBPool_6x20MHz_1_cell_tested_Num_UE_per_TTI_UL',    
+    'Commissionning_for_AirScale_LTE2733_1xBBPool_6x20MHz_1_cell_tested_Num_UE_per_TTI_UL_DL',
+        'AirScale_LTE2733_1xBBPool_6x20MHz_1_cell_tested_Num_UE_per_TTI_UL_DL',
+    'Commissionning_for_AirScale_LTE2733_1xBBPool_8x5MHz_1_cell_tested_Num_UE_per_TTI_DL',
+        'AirScale_LTE2733_1xBBPool_8x5MHz_1_cell_tested_Num_UE_per_TTI_DL', 
+    'Commissionning_for_AirScale_LTE2733_1xBBPool_8x5MHz_1_cell_tested_Num_UE_per_TTI_UL',
+        'AirScale_LTE2733_1xBBPool_8x5MHz_1_cell_tested_Num_UE_per_TTI_UL',
+    'Commissionning_for_AirScale_LTE2733_1xBBPool_8x5MHz_1_cell_tested_Num_UE_per_TTI_UL_DL',
+        'AirScale_LTE2733_1xBBPool_8x5MHz_1_cell_tested_Num_UE_per_TTI_UL_DL', 
+    'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_6_cell_tested_Num_UE_per_TTI_DL',
+        'AirScale_LTE2733_2xBBPool_12x20MHz_6_cell_tested_Num_UE_per_TTI_DL',  
+    'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_6_cell_tested_Num_UE_per_TTI_UL',
+        'AirScale_LTE2733_2xBBPool_12x20MHz_6_cell_tested_Num_UE_per_TTI_UL',
+    'Commissionning_for_AirScale_LTE2733_2xBBPool_12x20MHz_6_cell_tested_Num_UE_per_TTI_UL_DL',
+        'AirScale_LTE2733_2xBBPool_12x20MHz_6_cell_tested_Num_UE_per_TTI_UL_DL', 
+ 
+#############################################################
+#                          Tput tests                       #
+#############################################################
+
+    #'Commissionning_for_AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__2xULCoMP__Max_Throughput__1200UEs',
+    #   'AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__2xULCoMP__Max_Throughput__1200UEs',
+    #'Commissionning_for_AirScale__LTE3615__2xBBPool__6x20MHz_2x2MIMO_6x10MHz_4x4MIMO__Max_Thr__900UEs',
+    #    'AirScale__LTE3615__2xBBPool__6x20MHz_2x2MIMO_6x10MHz_4x4MIMO__Max_Thr__900UEs', 
+    #'Commissionning_for_AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__Max_Throughput__1200UEs',
+    #    'AirScale__LTE3615__2xBBPool__6x20MHz_4x4MIMO__Max_Throughput__1200UEs',
+    #'Commissionning_for_AirScale__LTE3615__2xBBPool__8x10MHz_8x20MHz_2x2MIMO__Throughput_Discarded_Packets__2310ping_210data_UEs',
+    #    'AirScale__LTE3615__2xBBPool__8x10MHz_8x20MHz_2x2MIMO__Thr_Disc_Pack__2310p_210d_UEs', 
+    #'Commissionning_for_AirScale__LTE3615__2xBBPool__12x20MHz_2x2MIMO__Throughput_Discarded_Packets__2240ping_280data_UEs',
+    #    'AirScale__LTE3615__2xBBPool__12x20MHz_2x2MIMO__Thr_Disc_Pack__2240p_280d_UEs',  
+
+####
+# For Robert
+####
+
+    'Commissionning_for_AirScale_LTE2733_1xBBPool_7x5MHz_5x15Mhz_BTS_Capacity_Static_Users',
+    'AirScale_LTE2733_1xBBPool_7x5MHz_5x15Mhz_BTS_Capacity_Static_Users',      
+
+];
+
+

@@ -1,0 +1,121 @@
+bearerQoS QCI1
+        qci 1
+        mbr_uplink 64
+        mbr_downlink 64
+        gbr_uplink 31
+        gbr_downlink 31
+# 	network_initiated TRUE
+
+bearerQoS QCI5
+        qci 5
+#        mbr_uplink 8640
+#        mbr_downlink 8640
+#        gbr_uplink
+#        gbr_downlink
+#	network_initiated TRUE
+
+
+transfer sampleTransferDescription
+        type rtp
+        packetSize 41
+        dir twoway
+        packetRate 50
+
+transfer sampleTransferDescriptionComfortNoise
+        type rtp
+        packetSize 41
+        dir twoway
+        packetRate 6
+
+#transfer sampleTransferDescriptionB
+#        type udp
+#        packetSize 50
+#        dir twoway
+#        packetRate 0.0001
+
+#application simpleAppB [ bearer ]
+#        startTransfer sampleTransferDescriptionB on bearer as sampleTransferB
+#        wait 3000
+#        stopTransfer sampleTransferB
+
+application simpleApp [ bearer ]
+        startTransfer sampleTransferDescription on bearer as sampleTransfer
+        wait 90000000
+        stopTransfer sampleTransfer
+
+application simpleAppComfortNoise [ bearer ]
+        startTransfer sampleTransferDescriptionComfortNoise on bearer as sampleTransferComfortNoise
+        wait 9000000
+        stopTransfer sampleTransferComfortNoise
+
+
+# this is a simple session scenario
+mobileSession simpleSession
+        connectBearer QCI1 as B
+	connectBearer QCI5 as C
+        #connectBearer DEFAULT as B
+        startApplication simpleApp [ B ] as mySimpleApp &
+#        startApplication simpleAppB [ C ] as mySimpleAppB &
+        wait applicationsFinish [ mySimpleApp ]
+ #       wait applicationsFinish [ mySimpleAppB ]
+	releaseBearer B
+	releaseBearer C
+
+
+mobileSession comfortNoise
+        connectBearer QCI1 as D
+	connectBearer QCI5 as E
+        #connectBearer DEFAULT as B
+        startApplication simpleAppComfortNoise [ D ] as mySimpleAppComfortNoise &
+#        startApplication simpleAppB [ E ] as mySimpleAppB &
+        wait applicationsFinish [ mySimpleAppComfortNoise ]
+#        wait applicationsFinish [ mySimpleAppB ]
+	releaseBearer D
+	releaseBearer E
+
+testScenario
+  simpleSession
+#       rate 3.0/s
+       rate 1.0/s
+#     	uePool SIM
+	cells[1]
+	delayToStart 240 s
+       activityIntervalLength 359.8 s
+
+  simpleSession
+#       rate 3.0/s
+       rate 1.0/s
+#       uePool SIM
+        cells[2]
+        delayToStart 240 s
+       activityIntervalLength 359.8 s
+
+  simpleSession
+#       rate 3.0/s
+       rate 1.0/s
+#       uePool SIM
+        cells[3]
+        delayToStart 240 s
+       activityIntervalLength 359.8 s
+
+  comfortNoise
+#       rate 3.0/s
+       rate 1.0/s
+#      	uePool SIM
+	cells[1]
+       activityIntervalLength 239.9 s
+
+  comfortNoise
+#       rate 3.0/s
+       rate 1.0/s
+#       uePool SIM
+        cells[2]
+       activityIntervalLength 239.9 s
+
+  comfortNoise
+#       rate 3.0/s
+       rate 1.0/s
+#       uePool SIM
+        cells[3]
+       activityIntervalLength 239.9 s
+

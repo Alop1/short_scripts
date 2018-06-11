@@ -1,0 +1,30 @@
+transfer ue_stay_tr27_default_bearer_ul
+	type	udp
+	packetSize 1400
+	dir uplink
+	packetRate 1019.55
+
+transfer ue_stay_tr27_default_bearer_dl
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 10010.16
+
+application app_ue_stay[ DEFAULT ]
+	#startTransfer ue_stay_tr27_default_bearer_ul on DEFAULT as ue_stay_tr27_default_bearer_ul_alias
+	#startTransfer ue_stay_tr27_default_bearer_dl on DEFAULT as ue_stay_tr27_default_bearer_dl_alias
+
+
+mobileSession ue_stay
+	connectBearer DEFAULT as DEFAULT_alias
+	wait 86400.0
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+testScenario
+	ue_stay
+		cells[ 1 ]
+		rate 0.5/s
+		activityIntervalLength 1.0 s
+		ueCapabilities simple1
+

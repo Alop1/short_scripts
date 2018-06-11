@@ -1,0 +1,97 @@
+transfer TransferULPing
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 1.0
+
+configMeas conf1
+	sector	1
+#	ci	2
+#	tac	1
+#	plmn	mcc=102 mnc=101
+
+# configMeas conf2
+	# sector	2
+#	ci	3
+#	tac	1
+#	plmn	mcc=102 mnc=101
+
+# configMeas conf3
+	# sector	3
+#	ci	1
+#	tac	1
+#	plmn	mcc=102 mnc=101
+
+reportMeas report
+	amount	1000
+	interval	2
+	servingCell	rsrpMin=50 rsrpMax=50 rsrqMin=20 rsrqMax=20
+	neighCell	rsrpMin=50 rsrpMax=50 rsrqMin=20 rsrqMax=20
+	events 3 
+
+application AppMR1Ping [ bearerMR1Ping ]
+	startTransfer TransferULPing on bearerMR1Ping as sampleTransferMR1ULPing
+	wait 2
+	startReporting conf1 report
+	wait 2000
+	stopReporting
+	wait 2
+	stopTransfer sampleTransferMR1ULPing
+
+mobileSession testSessionMR1Ping
+	connectBearer DEFAULT as streamMR1Ping
+	startApplication AppMR1Ping [ streamMR1Ping ] as myAppMR1Ping
+	wait applicationsFinish [ myAppMR1Ping ]
+	releaseBearer streamMR1Ping
+
+	
+# application AppMR2Ping [ bearerMR2Ping ]
+	# startTransfer TransferULPing on bearerMR2Ping as sampleTransferMR2ULPing
+	# wait 2
+	# startReporting conf2 report
+	# wait 2000
+	# stopReporting
+	# wait 2
+	# stopTransfer sampleTransferMR2ULPing
+
+# mobileSession testSessionMR2Ping
+	# connectBearer DEFAULT as streamMR2Ping
+	# startApplication AppMR2Ping [ streamMR2Ping ] as myAppMR2Ping
+	# wait applicationsFinish [ myAppMR2Ping ]
+	# releaseBearer streamMR2Ping
+
+	
+# application AppMR3Ping [ bearerMR3Ping ]
+	# startTransfer TransferULPing on bearerMR3Ping as sampleTransferMR3ULPing
+	# wait 2
+	# startReporting conf3 report
+	# wait 2000
+	# stopReporting
+	# wait 2
+	# stopTransfer sampleTransferMR3ULPing
+
+# mobileSession testSessionMR3Ping
+	# connectBearer DEFAULT as streamMR3Ping
+	# startApplication AppMR3Ping [ streamMR3Ping ] as myAppMR3Ping
+	# wait applicationsFinish [ myAppMR3Ping ]
+	# releaseBearer streamMR3Ping
+
+
+testScenario
+  testSessionMR1Ping
+	rate 1.0/s
+	cells [1]
+	activityIntervalLength 19.5 s
+        ueCapabilities simple1
+
+  # testSessionMR2Ping
+	# rate 1.0/s
+	# cells [2]
+	# activityIntervalLength 19.5 s
+        # ueCapabilities simple1
+
+  # testSessionMR3Ping
+	# rate 1.0/s
+	# cells [3]
+	# activityIntervalLength 19.5 s
+        # ueCapabilities simple1

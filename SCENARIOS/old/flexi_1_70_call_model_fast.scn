@@ -1,0 +1,2706 @@
+##
+#***********************BEGIN_COPYRIGHT_HEADER******************
+#                       COPYRIGHT(C)NSN 2013
+#                         ALL RIGHTS RESERVED
+#                   NSN Confidential Proprietary
+#
+#**************************BEGIN_SCRIPT_HEADER******************
+########################################################
+
+transfer TransferDL
+        type udp
+#       packetSize 472
+        packetSize 822
+        dir downlink
+#       packetRate 286.12
+		packetRate 168.30			#150% bearer
+#       packetRate 112.20	#10MHz  100%bearer
+
+transfer TransferUL
+	type udp
+#	packetSize 62
+#	packetSize 822
+	packetSize 422
+	dir uplink
+#	packetRate 196.25
+#    packetRate 130.83	#10MHz
+#    packetRate 13.85	#10MHz, 850B		
+#    packetRate 26.16	#10MHz, 850B	# 100% bearer	
+	packetRate 48.18	#10MHz, 850B	# 150% bearer
+	
+transfer TransferDLPing
+	type udp
+	packetSize 64
+	dir downlink
+	packetRate 1.0
+
+transfer TransferULPing
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 1.0
+
+	
+####################################################################################
+#
+#		ATTACH/DETACH + SERVICE REQUEST + PDN CONNECTIVITY
+#
+####################################################################################
+#  1000 UE Initiated Attach BHCA on the primary eNB
+#  116 iterations of Service Requests = 122 - 6 in HRPD section [6=iteration/2, due to eHRPD attach rate =1/2 SR attach rate ]
+#
+#  calculation of AppSR duration:
+#  this "component" will require 425.41 [ UE ] in RRC_CONNECTED ( 763 - 6.435 /intra-eNB HO/ - 84.87 /inter-eNB HO/ - 2.835 /TAU/ - 1.65 /Dedicated/ - 241.5 /PDN/)
+#  to achieve this, the total RRC_CONNECTED time per UE needs to be 2836.00 [ sec ] ( 425.41 [ UE ] * 1 [ sec ] / 0.15 [ UE ] ) :
+#  - 10 [ sec ] takes the UE to go idle before detaching
+#
+#  - Sum of SR: 38.35/s (includes CSFB rates); 38.35 = 0.15 attach/s * iterations => iterations = 256 
+#  - there are 256 iterations of Service Request component, so each iteration needs to have a UE for 11.078 [ sec ] in RRC_CONNECTED ( 2836 [ sec ] / 256 = 11.078 )
+# 
+#
+#	PDN: 33.2 / 0.15 [attach rate] = 221.33 ~222 iteration
+#	PDN RRC_CONN: (1600[sec]+ 10[sec go to idle]) * 0.15 [attach rate/1s]= 241.5
+###################################################################################	
+
+application AppSR [ bearerSR ]
+	16x
+		wait 12
+		startTransfer TransferDL on bearerSR as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR as sampleTransferSRUL
+		wait 1
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+
+application AppSRPing [ bearerSRPing ]
+	16x
+		wait 12
+		startTransfer TransferDLPing on bearerSRPing as sampleTransferSRDLPing
+#		startTransfer TransferULPing on bearerSRPing as sampleTransferSRULPing
+		wait 1
+		stopTransfer sampleTransferSRDLPing
+#		stopTransfer sampleTransferSRULPing
+	wait 6
+
+
+
+application AppPDN [ bearerPDN ]
+	startTransfer TransferDL on bearerPDN as sampleTransferPDNDL
+	startTransfer TransferUL on bearerPDN as sampleTransferPDNUL
+	wait 100
+	stopTransfer sampleTransferPDNDL
+	stopTransfer sampleTransferPDNUL
+
+application AppPDNPing [ bearerPDNPing ]
+	startTransfer TransferDLPing on bearerPDNPing as sampleTransferPDNDLPing
+#	startTransfer TransferULPing on bearerPDNPing as sampleTransferPDNULPing
+	wait 100
+	stopTransfer sampleTransferPDNDLPing
+#	stopTransfer sampleTransferPDNULPing
+
+	
+mobileSession testSession1
+	connectBearer DEFAULT as stream1
+	startApplication AppSR [ stream1 ] as myAppSR1
+	wait applicationsFinish [ myAppSR1 ]
+	startApplication AppPDN [ stream1 ] as myAppPDN1 &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 1
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN1 ]
+	wait 6
+	releaseBearer stream1
+
+mobileSession testSession1Ping
+	connectBearer DEFAULT as stream1Ping
+	startApplication AppSRPing [ stream1Ping ] as myAppSR1Ping
+	wait applicationsFinish [ myAppSR1Ping ]
+	startApplication AppPDNPing [ stream1Ping ] as myAppPDN1Ping &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 1
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN1Ping ]
+	wait 6
+	releaseBearer stream1Ping
+
+
+mobileSession testSession2
+	connectBearer DEFAULT as stream2
+	startApplication AppSR [ stream2 ] as myAppSR2
+	wait applicationsFinish [ myAppSR2 ]
+	startApplication AppPDN [ stream2 ] as myAppPDN2 &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 2
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN2 ]
+	wait 6
+	releaseBearer stream2
+
+mobileSession testSession2Ping
+	connectBearer DEFAULT as stream2Ping
+	startApplication AppSRPing [ stream2Ping ] as myAppSR2Ping
+	wait applicationsFinish [ myAppSR2Ping ]
+	startApplication AppPDNPing [ stream2Ping ] as myAppPDN2Ping &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 2
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN2Ping ]
+	wait 6
+	releaseBearer stream2Ping
+
+
+mobileSession testSession3
+	connectBearer DEFAULT as stream3
+	startApplication AppSR [ stream3 ] as myAppSR3
+	wait applicationsFinish [ myAppSR3 ]
+	startApplication AppPDN [ stream3 ] as myAppPDN3 &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 3
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN3 ]
+	wait 6
+	releaseBearer stream3
+
+mobileSession testSession3Ping
+	connectBearer DEFAULT as stream3Ping
+	startApplication AppSRPing [ stream3Ping ] as myAppSR3Ping
+	wait applicationsFinish [ myAppSR3Ping ]
+	startApplication AppPDNPing [ stream3Ping ] as myAppPDN3Ping &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 3
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN3Ping ]
+	wait 6
+	releaseBearer stream3Ping
+
+
+
+###################################################################################
+#
+#		INTRA-ENB HO
+#
+###################################################################################
+#  1.95 Intra-eNB HOs / s = 10 iterations x 0.195 attaches/s
+#  10 iterations of intra-eNB HO in which 40% are from/to cell 1 (heavy cell)
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] + 1) x 3 [ sec ] * 0.195[ UEs ] / 1 [ sec ] = 6.435
+#  OK
+###################################################################################
+
+application AppIntraHO1 [ bearerIntraHO1 ]
+	startTransfer TransferDL on bearerIntraHO1 as sampleTransferIntraHODL1
+#	startTransfer TransferUL on bearerIntraHO1 as sampleTransferIntraHOUL1
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 1
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL1
+#	stopTransfer sampleTransferIntraHOUL1
+	
+application AppIntraHO1Ping [ bearerIntraHO1Ping ]
+	startTransfer TransferDLPing on bearerIntraHO1Ping as sampleTransferIntraHODL1Ping
+#	startTransfer TransferULPing on bearerIntraHO1Ping as sampleTransferIntraHOUL1Ping
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 1
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL1Ping
+#	stopTransfer sampleTransferIntraHOUL1Ping	
+
+mobileSession testSessionIntraHO1
+	connectBearer DEFAULT as streamIntraHO1
+	startApplication AppIntraHO1 [ streamIntraHO1 ] as myAppIntraHO1
+	wait applicationsFinish [ myAppIntraHO1 ]
+	releaseBearer streamIntraHO1
+	
+mobileSession testSessionIntraHO1Ping
+	connectBearer DEFAULT as streamIntraHO1Ping
+	startApplication AppIntraHO1Ping [ streamIntraHO1Ping ] as myAppIntraHO1Ping
+	wait applicationsFinish [ myAppIntraHO1Ping ]
+	releaseBearer streamIntraHO1Ping
+	
+	
+application AppIntraHO2 [ bearerIntraHO2 ]
+	startTransfer TransferDL on bearerIntraHO2 as sampleTransferIntraHODL2
+#	startTransfer TransferUL on bearerIntraHO2 as sampleTransferIntraHOUL2
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 1
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL2
+#	stopTransfer sampleTransferIntraHOUL2
+	
+application AppIntraHO2Ping [ bearerIntraHO2Ping ]
+	startTransfer TransferDLPing on bearerIntraHO2Ping as sampleTransferIntraHODL2Ping
+#	startTransfer TransferULPing on bearerIntraHO2Ping as sampleTransferIntraHOUL2Ping
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 1
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL2Ping
+#	stopTransfer sampleTransferIntraHOUL2Ping
+
+mobileSession testSessionIntraHO2
+	connectBearer DEFAULT as streamIntraHO2
+	startApplication AppIntraHO2 [ streamIntraHO2 ] as myAppIntraHO2
+	wait applicationsFinish [ myAppIntraHO2 ]
+	releaseBearer streamIntraHO2
+	
+mobileSession testSessionIntraHO2Ping
+	connectBearer DEFAULT as streamIntraHO2Ping
+	startApplication AppIntraHO2Ping [ streamIntraHO2Ping ] as myAppIntraHO2Ping
+	wait applicationsFinish [ myAppIntraHO2Ping ]
+	releaseBearer streamIntraHO2Ping
+
+
+application AppIntraHO3 [ bearerIntraHO3 ]
+	startTransfer TransferDL on bearerIntraHO3 as sampleTransferIntraHODL3
+#	startTransfer TransferUL on bearerIntraHO3 as sampleTransferIntraHOUL3
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 1
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL3
+#	stopTransfer sampleTransferIntraHOUL3
+	
+application AppIntraHO3Ping [ bearerIntraHO3Ping ]
+	startTransfer TransferDLPing on bearerIntraHO3Ping as sampleTransferIntraHODL3Ping
+#	startTransfer TransferULPing on bearerIntraHO3Ping as sampleTransferIntraHOUL3Ping
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 1
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 1
+	wait 3
+	handover to 2
+	wait 3
+	handover to 3
+	wait 3
+	handover to 11
+	wait 3
+	stopTransfer sampleTransferIntraHODL3Ping
+#	stopTransfer sampleTransferIntraHOUL3Ping
+
+mobileSession testSessionIntraHO3
+	connectBearer DEFAULT as streamIntraHO3
+	startApplication AppIntraHO3 [ streamIntraHO3 ] as myAppIntraHO3
+	wait applicationsFinish [ myAppIntraHO3 ]
+	releaseBearer streamIntraHO3
+	
+mobileSession testSessionIntraHO3Ping
+	connectBearer DEFAULT as streamIntraHO3Ping
+	startApplication AppIntraHO3Ping [ streamIntraHO3Ping ] as myAppIntraHO3Ping
+	wait applicationsFinish [ myAppIntraHO3Ping ]
+	releaseBearer streamIntraHO3Ping
+
+
+	
+###################################################################################
+#
+#		INTER-ENB HO	
+#
+###################################################################################
+#  57.025 inter-eNB HOs / s / 2 (src + tgt) = 28.5125/s - 0.195 (intra-eNB HO) - 0.0375/s (dedicated bearers) = 28.28/s
+#  28.28/s = 15 iterations x 1.886 attaches/s
+#  no of UEs in RRC_CONNECTED : 15  [ iterations ] * 3 [ sec ] * 1.886 [ UEs ] / 1 [ sec ] = 84.87
+#			OK!!!
+###################################################################################
+
+application AppInterHO1 [ bearerInterHO1 ]
+	startTransfer TransferDL on bearerInterHO1 as TransferInterHO1DL
+#	startTransfer TransferUL on bearerInterHO1 as TransferInterHO1UL
+	15x
+		wait 3
+		handover to 1
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO1DL
+#	stopTransfer TransferInterHO1UL
+	
+mobileSession testSessionInterHO1
+	connectBearer DEFAULT as streamInterHO1
+	startApplication AppInterHO1 [ streamInterHO1 ] as myAppInterHO1
+	wait applicationsFinish [ myAppInterHO1 ]
+	releaseBearer streamInterHO1
+
+	
+application AppInterHO1Ping [ bearerInterHO1Ping ]
+	startTransfer TransferDLPing on bearerInterHO1Ping as TransferInterHO1DLPing
+#	startTransfer TransferULPing on bearerInterHO1Ping as TransferInterHO1ULPing
+	15x
+		wait 3
+		handover to 1
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO1DLPing
+#	stopTransfer TransferInterHO1ULPing
+	
+mobileSession testSessionInterHO1Ping
+	connectBearer DEFAULT as streamInterHO1Ping
+	startApplication AppInterHO1Ping [ streamInterHO1Ping ] as myAppInterHO1Ping
+	wait applicationsFinish [ myAppInterHO1Ping ]
+	releaseBearer streamInterHO1Ping
+
+
+application AppInterHO2 [ bearerInterHO2 ]
+	startTransfer TransferDL on bearerInterHO2 as TransferInterHO2DL
+#	startTransfer TransferUL on bearerInterHO2 as TransferInterHO2UL
+	15x
+ 		wait 3
+ 		handover to 2
+ 		wait 3
+ 		handover to 11
+	stopTransfer TransferInterHO2DL
+#	stopTransfer TransferInterHO2UL
+
+mobileSession testSessionInterHO2
+	connectBearer DEFAULT as streamInterHO2
+	startApplication AppInterHO2 [ streamInterHO2 ] as myAppInterHO2
+	wait applicationsFinish [ myAppInterHO2 ]
+	releaseBearer streamInterHO2
+
+
+application AppInterHO2Ping [ bearerInterHO2Ping ]
+	startTransfer TransferDLPing on bearerInterHO2Ping as TransferInterHO2DLPing
+#	startTransfer TransferULPing on bearerInterHO2Ping as TransferInterHO2ULPing
+	15x
+ 		wait 3
+ 		handover to 2
+ 		wait 3
+ 		handover to 11
+	stopTransfer TransferInterHO2DLPing
+#	stopTransfer TransferInterHO2ULPing
+
+mobileSession testSessionInterHO2Ping
+	connectBearer DEFAULT as streamInterHO2Ping
+	startApplication AppInterHO2Ping [ streamInterHO2Ping ] as myAppInterHO2Ping
+	wait applicationsFinish [ myAppInterHO2Ping ]
+	releaseBearer streamInterHO2Ping
+
+
+application AppInterHO3 [ bearerInterHO3 ]
+	startTransfer TransferDL on bearerInterHO3 as TransferInterHO3DL
+#	startTransfer TransferUL on bearerInterHO3 as TransferInterHO3UL
+	15x
+		wait 3
+		handover to 3
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO3DL
+#	stopTransfer TransferInterHO3UL
+	
+mobileSession testSessionInterHO3
+	connectBearer DEFAULT as streamInterHO3
+	startApplication AppInterHO3 [ streamInterHO3 ] as myAppInterHO3
+	wait applicationsFinish [ myAppInterHO3 ]
+	releaseBearer streamInterHO3
+
+
+application AppInterHO3Ping [ bearerInterHO3Ping ]
+	startTransfer TransferDLPing on bearerInterHO3Ping as TransferInterHO3DLPing
+#	startTransfer TransferULPing on bearerInterHO3Ping as TransferInterHO3ULPing
+	15x
+		wait 3
+		handover to 3
+		wait 3
+		handover to 11
+	stopTransfer TransferInterHO3DLPing
+#	stopTransfer TransferInterHO3ULPing
+	
+mobileSession testSessionInterHO3Ping
+	connectBearer DEFAULT as streamInterHO3Ping
+	startApplication AppInterHO3Ping [ streamInterHO3Ping ] as myAppInterHO3Ping
+	wait applicationsFinish [ myAppInterHO3Ping ]
+	releaseBearer streamInterHO3Ping
+
+
+####################################################################################
+#
+#		TRACKING AREA UPDATE
+#
+####################################################################################
+#  5.675 TAU / s 
+#  5.675/s = 30 iterations x 0.189 attaches/s
+#  203 / 7 + 1 = 30 [ iterations ]
+#  UEs connected = 30 iteration * 0,5s * 0.189 attaches/s = 2.835
+#  OK
+####################################################################################
+
+mobileSession testSessionTAU1
+	wait 15
+	idleHandover to 1
+	wait 12
+	every 7.0 s tau as periodicTau
+	wait 205
+	cancel periodicTau
+	wait 12
+	idleHandover to 11
+
+mobileSession testSessionTAU2
+	wait 15
+	idleHandover to 2
+	wait 12
+	every 7.0 s tau as periodicTau
+	wait 205
+	cancel periodicTau
+	wait 12
+	idleHandover to 11
+
+mobileSession testSessionTAU3
+	wait 15
+	idleHandover to 3
+	wait 12
+	every 7.0 s tau as periodicTau
+	wait 205
+	cancel periodicTau
+	wait 12
+	idleHandover to 11
+
+
+#################################################################################################################
+#    
+#		Dedicated Bearers 
+#
+#  0.375 Dedicated Bearers / s = 10 iterations x 0.0375 attaches/s
+#  no of UEs in RRC_CONNECTED : (10  [ iterations ] + 1) x 4 [ sec ] * 0.0375[ UEs ] / 1 [ sec ] = 1.65
+#  OK
+#
+#
+#################################################################################################################
+	
+
+bearerQoS DED
+	qci 6
+#	mbr_uplink 31
+#	mbr_downlink 31
+#	gbr_uplink 31
+#	gbr_downlink 31
+	network_initiated FALSE
+	
+	
+	
+	
+application App_DED [ bearerDED ]
+	startTransfer TransferDL on bearerDED as sampleTransferDLDED
+	startTransfer TransferUL on bearerDED as sampleTransferULDED
+	wait 60
+	stopTransfer sampleTransferDLDED
+	stopTransfer sampleTransferULDED		
+	
+
+application App_DEDPing [ bearerDEDPing ]
+	startTransfer TransferDLPing on bearerDEDPing as sampleTransferDLDEDPing
+#	startTransfer TransferULPing on bearerDEDPing as sampleTransferULDEDPing
+	wait 60
+	stopTransfer sampleTransferDLDEDPing	
+#	stopTransfer sampleTransferULDEDPing	
+	
+	
+mobileSession testSessionDED1
+	connectBearer DEFAULT as D1
+	startApplication App_DED [ D1 ] as myApp_DEFAULT1 &
+	wait 4
+	handover to 1
+	10x
+		connectBearer DED on D1 as streamDED1
+		wait 2
+		releaseBearer streamDED1
+		wait 1
+	wait 4
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1 ]
+	releaseBearer D1
+	
+
+mobileSession testSessionDED1Ping
+	connectBearer DEFAULT as D1Ping
+	startApplication App_DEDPing [ D1Ping ] as myApp_DEFAULT1Ping &
+	wait 4
+	handover to 1
+	10x
+		connectBearer DED on D1Ping as streamDED1Ping
+		wait 2
+		releaseBearer streamDED1Ping
+		wait 1
+	wait 4
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT1Ping ]
+	releaseBearer D1Ping
+	
+	
+	
+mobileSession testSessionDED2
+	connectBearer DEFAULT as D2
+	startApplication App_DED [ D2 ] as myApp_DEFAULT2 &
+	wait 4
+	handover to 2
+	10x
+		connectBearer DED on D2 as streamDED2
+		wait 2
+		releaseBearer streamDED2
+		wait 1
+	wait 4
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT2 ]
+	releaseBearer D2
+	
+mobileSession testSessionDED2Ping
+	connectBearer DEFAULT as D2Ping
+	startApplication App_DEDPing [ D2Ping ] as myApp_DEFAULT2Ping &
+	wait 4
+	handover to 2
+	10x
+		connectBearer DED on D2Ping as streamDED2Ping
+		wait 2
+		releaseBearer streamDED2Ping
+		wait 1
+	wait 4
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT2Ping ]
+	releaseBearer D2Ping
+	
+	
+mobileSession testSessionDED3
+	connectBearer DEFAULT as D3
+	startApplication App_DED [ D3 ] as myApp_DEFAULT3 &
+	wait 4
+	handover to 3
+	10x
+		connectBearer DED on D3 as streamDED3
+		wait 2
+		releaseBearer streamDED3
+		wait 1
+	wait 4
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT3]
+	releaseBearer D3
+	
+mobileSession testSessionDED3Ping
+	connectBearer DEFAULT as D3Ping
+	startApplication App_DEDPing [ D3Ping ] as myApp_DEFAULT3Ping &
+	wait 4
+	handover to 3
+	10x
+		connectBearer DED on D3Ping as streamDED3Ping
+		wait 2
+		releaseBearer streamDED3Ping
+		wait 1
+	wait 4
+	handover to 11
+	wait applicationsFinish [ myApp_DEFAULT3Ping ]
+	releaseBearer D3Ping
+	
+
+#################################################################################################################
+#    
+#		VoLTE transfer definition
+#
+#################################################################################################################	
+transfer TransferDL_SIP
+	type udp
+	packetSize 1000
+	dir downlink
+	packetRate 10.0
+
+transfer TransferUL_SIP
+	type udp
+	packetSize 1000
+	dir uplink
+	packetRate 10.0
+
+	
+trafficProfile TransferDL_RTP_prof
+	downlink
+	packetSize 50    
+	packetRate 50.0
+	uplink
+	packetSize 20
+	packetRate 6.25
+
+trafficProfile TransferUL_RTP_prof
+	uplink
+	packetSize 50       
+	packetRate 50.0
+	downlink
+	packetSize 20
+	packetRate 6.25	  
+	
+transfer TransferDL_RTP
+	type rtp
+	profile TransferDL_RTP_prof
+  
+
+transfer TransferUL_RTP
+	type rtp
+	profile TransferUL_RTP_prof
+
+# trafficProfile RTP_MV_prof
+	# timeQuantum 10000
+	# state1 TransferDL_RTP
+	# state2 TransferUL_RTP
+	# [ state2 state1 0.5 ]
+	# [ state2 state2 0.5 ]
+	# [ state1 state2 0.5 ]
+	# [ state1 state1 0.5 ]
+	
+	
+# transfer Transfer_RTP
+	# type rtp
+	# profile RTP_MV_prof
+
+	
+application App_SIPDL [ bearerSIP ]
+	startTransfer TransferDL_SIP on bearerSIP as sampleTransferVoLTEDL_SIP1
+#	startTransfer TransferUL_SIP on bearerSIP as sampleTransferVoLTEUL_SIP1
+	wait 1
+	stopTransfer sampleTransferVoLTEDL_SIP1
+#	stopTransfer sampleTransferVoLTEUL_SIP1
+
+
+application App_SIPUL [ bearerSIP ]
+#	startTransfer TransferDL_SIP on bearerSIP as sampleTransferVoLTEDL_SIP1
+	startTransfer TransferUL_SIP on bearerSIP as sampleTransferVoLTEUL_SIP1
+	wait 1
+#	stopTransfer sampleTransferVoLTEDL_SIP1
+	stopTransfer sampleTransferVoLTEUL_SIP1
+
+	
+	
+application App_RTPDL [ bearerRTP ]
+	startTransfer TransferDL_RTP on bearerRTP as sampleTransferVoLTEDL_RTP
+	wait 120
+	stopTransfer sampleTransferVoLTEDL_RTP
+
+application App_RTPUL [ bearerRTP ]
+	startTransfer TransferUL_RTP on bearerRTP as sampleTransferVoLTEUL_RTP
+	wait 120
+	stopTransfer sampleTransferVoLTEUL_RTP
+	
+
+	
+
+bearerQoS VoLTE_RTP
+	qci 1
+	mbr_uplink 64
+	mbr_downlink 64
+	gbr_uplink 64
+	gbr_downlink 64
+	network_initiated FALSE
+	
+bearerQoS VoLTE_SIP
+	qci 5
+	network_initiated FALSE
+
+
+#################################################################################################################
+#    
+#		VoLTE only Intra-eNB handover session
+#
+#################################################################################################################
+	
+# mobileSession testSessionVoLTE_HO1
+	# connectBearer DEFAULT on 1 as streamVoLTE_SIP01
+	# connectBearer VoLTE_SIP on streamVoLTE_SIP01 as streamVoLTE_SIP01
+	
+	# startApplication App_SIP [ streamVoLTE_SIP01] as myApp_SIP01
+	# wait applicationsFinish [ myApp_SIP01 ]  
+	# wait 12
+	# startApplication App_SIP [ streamVoLTE_SIP01] as myApp_SIP02
+	# wait applicationsFinish [ myApp_SIP02 ]  
+	
+	# connectBearer VoLTE_RTP on streamVoLTE_SIP01 as streamVoLTE_RTP01
+	# startApplication App_RTP1 [ streamVoLTE_RTP01 ] as myApp_RTP01 &
+	# wait applicationsFinish [ myApp_RTP01 ]
+	# releaseBearer streamVoLTE_RTP01
+	# wait 7
+		
+	# startApplication App_SIP [ streamVoLTE_SIP01] as myApp_SIP03
+	# wait applicationsFinish [ myApp_SIP03 ]  
+	# wait 12
+	# startApplication App_SIP [ streamVoLTE_SIP01] as myApp_SIP04
+	# wait applicationsFinish [ myApp_SIP04 ] 
+mobileSession testSessionVoLTE_HO1DL
+	connectBearer DEFAULT as streamVoLTE_SIP1 
+#	connectBearer VoLTE_SIP on streamVoLTE_SIP1 as streamVoLTE_SIP1
+
+##	startApplication App_SIP [ streamVoLTE_SIP1] as myApp_SIP1 
+##	wait applicationsFinish [ myApp_SIP1 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP1] as myApp_SIP2
+	wait applicationsFinish [ myApp_SIP2 ]  
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1 as streamVoLTE_RTP1
+	startApplication App_RTPDL [ streamVoLTE_RTP1 ] as myApp_RTP1 &
+	wait applicationsFinish [ myApp_RTP1 ]
+	releaseBearer streamVoLTE_RTP1
+	
+		
+	startApplication App_SIPDL [ streamVoLTE_SIP1] as myApp_SIP5
+	wait applicationsFinish [ myApp_SIP5 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP1] as myApp_SIP6
+	wait applicationsFinish [ myApp_SIP6 ]  
+	  			
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1 as streamVoLTE_RTP9
+	startApplication App_RTPDL [ streamVoLTE_RTP9 ] as myApp_RTP9 &
+	wait applicationsFinish [ myApp_RTP9 ]
+	releaseBearer streamVoLTE_RTP9
+	
+
+	startApplication App_SIPDL [ streamVoLTE_SIP1] as myApp_SIP21
+	wait applicationsFinish [ myApp_SIP21 ]  
+#	wait 12
+#	# startApplication App_SIP [ streamVoLTE_SIP1] as myApp_SIP22
+#	# wait applicationsFinish [ myApp_SIP22 ]  			
+#	# wait 12
+	releaseBearer streamVoLTE_SIP1
+
+	
+	
+	
+mobileSession testSessionVoLTE_HO1UL
+	connectBearer DEFAULT as streamVoLTE_SIP1 
+#	connectBearer VoLTE_SIP on streamVoLTE_SIP1 as streamVoLTE_SIP1
+
+##	startApplication App_SIP [ streamVoLTE_SIP1] as myApp_SIP1 
+##	wait applicationsFinish [ myApp_SIP1 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP1] as myApp_SIP2
+	wait applicationsFinish [ myApp_SIP2 ]  
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1 as streamVoLTE_RTP1
+	startApplication App_RTPUL [ streamVoLTE_RTP1 ] as myApp_RTP1 &
+	wait applicationsFinish [ myApp_RTP1 ]
+	releaseBearer streamVoLTE_RTP1
+	
+		
+	startApplication App_SIPUL [ streamVoLTE_SIP1] as myApp_SIP5
+	wait applicationsFinish [ myApp_SIP5 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP1] as myApp_SIP6
+	wait applicationsFinish [ myApp_SIP6 ]  	  			
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1 as streamVoLTE_RTP9
+	startApplication App_RTPUL [ streamVoLTE_RTP9 ] as myApp_RTP9 &
+	wait applicationsFinish [ myApp_RTP9 ]
+	releaseBearer streamVoLTE_RTP9
+	
+
+	startApplication App_SIPUL [ streamVoLTE_SIP1] as myApp_SIP21
+	wait applicationsFinish [ myApp_SIP21 ]  
+#	wait 12
+#	# startApplication App_SIP [ streamVoLTE_SIP1] as myApp_SIP22
+#	# wait applicationsFinish [ myApp_SIP22 ]  			
+#	# wait 12
+	releaseBearer streamVoLTE_SIP1	
+
+
+	
+	
+# mobileSession testSessionVoLTE_HO2
+	# connectBearer DEFAULT on 1 as streamVoLTE_SIP002
+	# connectBearer VoLTE_SIP on streamVoLTE_SIP002 as streamVoLTE_SIP002
+	# startApplication App_SIP [ streamVoLTE_SIP002] as myApp_SIP002
+	# wait applicationsFinish [ myApp_SIP002 ]  
+	# wait 12
+	# startApplication App_SIP [ streamVoLTE_SIP002] as myApp_SIP002
+	# wait applicationsFinish [ myApp_SIP002 ]  
+	
+	# connectBearer VoLTE_RTP on streamVoLTE_SIP002 as streamVoLTE_RTP002
+	# startApplication App_RTP1 [ streamVoLTE_RTP002 ] as myApp_RTP002 &
+	# wait applicationsFinish [ myApp_RTP002 ]
+	# releaseBearer streamVoLTE_RTP002
+	# wait 7
+	
+	# startApplication App_SIP [ streamVoLTE_SIP002] as myApp_SIP003
+	# wait applicationsFinish [ myApp_SIP003 ]  
+	# wait 12
+	# startApplication App_SIP [ streamVoLTE_SIP002] as myApp_SIP004
+	# wait applicationsFinish [ myApp_SIP004 ]  
+
+	
+mobileSession testSessionVoLTE_HO2DL
+	connectBearer DEFAULT as streamVoLTE_SIP2
+#	connectBearer VoLTE_SIP on streamVoLTEdef2 as streamVoLTE_SIP2
+
+##	startApplication App_SIP [ streamVoLTE_SIP2] as myApp_SIP40
+##	wait applicationsFinish [ myApp_SIP40 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP2] as myApp_SIP41
+	wait applicationsFinish [ myApp_SIP41 ]   
+ 
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2 as streamVoLTE_RTP20
+	startApplication App_RTPDL [ streamVoLTE_RTP20 ] as myApp_RTP20 &
+	wait applicationsFinish [ myApp_RTP20 ]
+	releaseBearer streamVoLTE_RTP20
+
+	startApplication App_SIPDL [ streamVoLTE_SIP2] as myApp_SIP42
+	wait applicationsFinish [ myApp_SIP42 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP2] as myApp_SIP43
+	wait applicationsFinish [ myApp_SIP43 ]   	  	
+	
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2 as streamVoLTE_RTP28
+	startApplication App_RTPDL [ streamVoLTE_RTP28 ] as myApp_RTP28 &
+	wait applicationsFinish [ myApp_RTP28 ]
+	releaseBearer streamVoLTE_RTP28
+	
+	startApplication App_SIPDL [ streamVoLTE_SIP2] as myApp_SIP60
+	wait applicationsFinish [ myApp_SIP60 ]  
+##	wait 12
+	releaseBearer streamVoLTE_SIP2 
+
+
+	
+	
+	
+mobileSession testSessionVoLTE_HO2UL
+	connectBearer DEFAULT as streamVoLTE_SIP2
+#	connectBearer VoLTE_SIP on streamVoLTEdef2 as streamVoLTE_SIP2
+
+##	startApplication App_SIP [ streamVoLTE_SIP2] as myApp_SIP40
+##	wait applicationsFinish [ myApp_SIP40 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP2] as myApp_SIP41
+	wait applicationsFinish [ myApp_SIP41 ]   
+ 
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2 as streamVoLTE_RTP20
+	startApplication App_RTPUL [ streamVoLTE_RTP20 ] as myApp_RTP20 &
+	wait applicationsFinish [ myApp_RTP20 ]
+	releaseBearer streamVoLTE_RTP20
+
+	startApplication App_SIPUL [ streamVoLTE_SIP2] as myApp_SIP42
+	wait applicationsFinish [ myApp_SIP42 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP2] as myApp_SIP43
+	wait applicationsFinish [ myApp_SIP43 ]   	
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2 as streamVoLTE_RTP28
+	startApplication App_RTPUL [ streamVoLTE_RTP28 ] as myApp_RTP28 &
+	wait applicationsFinish [ myApp_RTP28 ]
+	releaseBearer streamVoLTE_RTP28
+	
+	startApplication App_SIPUL [ streamVoLTE_SIP2] as myApp_SIP60
+	wait applicationsFinish [ myApp_SIP60 ]  
+##	wait 12
+	releaseBearer streamVoLTE_SIP2
+
+
+	
+	
+# mobileSession testSessionVoLTE_HO3
+	# connectBearer DEFAULT on 1 as streamVoLTE_SIP0003
+	# connectBearer VoLTE_SIP on streamVoLTE_SIP0003 as streamVoLTE_SIP0003
+	
+	# startApplication App_SIP [ streamVoLTE_SIP0003] as myApp_SIP0003
+	# wait applicationsFinish [ myApp_SIP0003 ]  
+	# wait 12
+	# startApplication App_SIP [ streamVoLTE_SIP0003] as myApp_SIP0003
+	# wait applicationsFinish [ myApp_SIP0003 ]  
+	
+	# connectBearer VoLTE_RTP on streamVoLTE_SIP0003 as streamVoLTE_RTP0003
+	# startApplication App_RTP1 [ streamVoLTE_RTP0003 ] as myApp_RTP0003 &
+	# wait applicationsFinish [ myApp_RTP0003 ]
+	# releaseBearer streamVoLTE_RTP0003
+	# wait 7
+	
+	# startApplication App_SIP [ streamVoLTE_SIP0003] as myApp_SIP0003
+	# wait applicationsFinish [ myApp_SIP0003 ]  
+	# wait 12
+	# startApplication App_SIP [ streamVoLTE_SIP0003] as myApp_SIP0004
+	# wait applicationsFinish [ myApp_SIP0004 ]  
+
+mobileSession testSessionVoLTE_HO3DL
+	
+	connectBearer DEFAULT as streamVoLTE_SIP3
+#	connectBearer VoLTE_SIP on streamVoLTEdef3 as streamVoLTE_SIP3
+	
+#	startApplication App_SIP [ streamVoLTE_SIP3] as myApp_SIP78
+#	wait applicationsFinish [ myApp_SIP78 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP3] as myApp_SIP79
+	wait applicationsFinish [ myApp_SIP79 ]   	
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3 as streamVoLTE_RTP30
+	startApplication App_RTPDL [ streamVoLTE_RTP30 ] as myApp_RTP30 &
+	wait applicationsFinish [ myApp_RTP30 ]
+	releaseBearer streamVoLTE_RTP30
+	
+	startApplication App_SIPDL [ streamVoLTE_SIP3] as myApp_SIP80
+	wait applicationsFinish [ myApp_SIP80 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP3] as myApp_SIP81
+	wait applicationsFinish [ myApp_SIP81 ]   	   		
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3 as streamVoLTE_RTP38
+	startApplication App_RTPDL [ streamVoLTE_RTP38 ] as myApp_RTP38 &
+	wait applicationsFinish [ myApp_RTP38 ]
+	releaseBearer streamVoLTE_RTP38
+	
+		
+	startApplication App_SIPDL [ streamVoLTE_SIP3] as myApp_SIP118
+	wait applicationsFinish [ myApp_SIP118 ]   		
+##	wait 12
+	releaseBearer streamVoLTE_SIP3
+		
+
+		
+		
+mobileSession testSessionVoLTE_HO3UL
+	
+	connectBearer DEFAULT as streamVoLTE_SIP3
+#	connectBearer VoLTE_SIP on streamVoLTEdef3 as streamVoLTE_SIP3
+	
+#	startApplication App_SIP [ streamVoLTE_SIP3] as myApp_SIP78
+#	wait applicationsFinish [ myApp_SIP78 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP3] as myApp_SIP79
+	wait applicationsFinish [ myApp_SIP79 ]   	
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3 as streamVoLTE_RTP30
+	startApplication App_RTPUL [ streamVoLTE_RTP30 ] as myApp_RTP30 &
+	wait applicationsFinish [ myApp_RTP30 ]
+	releaseBearer streamVoLTE_RTP30
+	
+	startApplication App_SIPUL [ streamVoLTE_SIP3] as myApp_SIP80
+	wait applicationsFinish [ myApp_SIP80 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP3] as myApp_SIP81
+	wait applicationsFinish [ myApp_SIP81 ]   	   		
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3 as streamVoLTE_RTP38
+	startApplication App_RTPUL [ streamVoLTE_RTP38 ] as myApp_RTP38 &
+	wait applicationsFinish [ myApp_RTP38 ]
+	releaseBearer streamVoLTE_RTP38
+	
+		
+	startApplication App_SIPUL [ streamVoLTE_SIP3] as myApp_SIP118
+	wait applicationsFinish [ myApp_SIP118 ]   		
+##	wait 12
+	releaseBearer streamVoLTE_SIP3
+
+#################################################################################################################
+#    
+#		VoLTE session
+#
+#################################################################################################################
+	
+
+
+mobileSession  testSessionVoLTE1DL
+	connectBearer DEFAULT as streamVoLTE_SIP1   
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP1] as myApp_SIP2
+	wait applicationsFinish [ myApp_SIP2 ]  
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1 as streamVoLTE_RTP1
+	startApplication App_RTPDL [ streamVoLTE_RTP1 ] as myApp_RTP1 &
+	2x
+		wait 4
+		handover to 2
+		wait 4
+		handover to 1
+	wait applicationsFinish [ myApp_RTP1 ]
+	releaseBearer streamVoLTE_RTP1
+	
+		
+	startApplication App_SIPDL [ streamVoLTE_SIP1] as myApp_SIP5
+	wait applicationsFinish [ myApp_SIP5 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP1] as myApp_SIP6
+	wait applicationsFinish [ myApp_SIP6 ]  
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1 as streamVoLTE_RTP9
+	startApplication App_RTPDL [ streamVoLTE_RTP9 ] as myApp_RTP9 &
+	2x
+		wait 4
+		handover to 2
+		wait 4
+		handover to 1
+	wait applicationsFinish [ myApp_RTP9 ]
+	releaseBearer streamVoLTE_RTP9
+	
+
+	startApplication App_SIPDL [ streamVoLTE_SIP1] as myApp_SIP21
+	wait applicationsFinish [ myApp_SIP21 ]  
+	releaseBearer streamVoLTE_SIP1
+
+	
+	
+	
+mobileSession  testSessionVoLTE1UL
+	connectBearer DEFAULT as streamVoLTE_SIP1   
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP1] as myApp_SIP2
+	wait applicationsFinish [ myApp_SIP2 ]  
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1 as streamVoLTE_RTP1
+	startApplication App_RTPUL [ streamVoLTE_RTP1 ] as myApp_RTP1 &
+	2x
+		wait 4
+		handover to 2
+		wait 4
+		handover to 1
+	wait applicationsFinish [ myApp_RTP1 ]
+	releaseBearer streamVoLTE_RTP1
+	
+		
+	startApplication App_SIPUL [ streamVoLTE_SIP1] as myApp_SIP5
+	wait applicationsFinish [ myApp_SIP5 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP1] as myApp_SIP6
+	wait applicationsFinish [ myApp_SIP6 ]  
+
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1 as streamVoLTE_RTP9
+	startApplication App_RTPUL [ streamVoLTE_RTP9 ] as myApp_RTP9 &
+	2x
+		wait 4
+		handover to 2
+		wait 4
+		handover to 1
+	wait applicationsFinish [ myApp_RTP9 ]
+	releaseBearer streamVoLTE_RTP9
+	
+
+	startApplication App_SIPUL [ streamVoLTE_SIP1] as myApp_SIP21
+	wait applicationsFinish [ myApp_SIP21 ]  
+	releaseBearer streamVoLTE_SIP1	
+
+
+	
+	
+ 
+
+	
+mobileSession  testSessionVoLTE2DL
+	connectBearer DEFAULT as streamVoLTE_SIP2 
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP2] as myApp_SIP41
+	wait applicationsFinish [ myApp_SIP41 ]   
+ 
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2 as streamVoLTE_RTP20
+	startApplication App_RTPDL [ streamVoLTE_RTP20 ] as myApp_RTP20 &
+	2x
+		wait 4
+		handover to 3
+		wait 4
+		handover to 2
+	wait applicationsFinish [ myApp_RTP20 ]
+	releaseBearer streamVoLTE_RTP20
+
+	startApplication App_SIPDL [ streamVoLTE_SIP2] as myApp_SIP42
+	wait applicationsFinish [ myApp_SIP42 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP2] as myApp_SIP43
+	wait applicationsFinish [ myApp_SIP43 ]   	
+
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2 as streamVoLTE_RTP28
+	startApplication App_RTPDL [ streamVoLTE_RTP28 ] as myApp_RTP28 &
+	2x
+		wait 4
+		handover to 3
+		wait 4
+		handover to 2
+	wait applicationsFinish [ myApp_RTP28 ]
+	releaseBearer streamVoLTE_RTP28
+	
+	startApplication App_SIPDL [ streamVoLTE_SIP2] as myApp_SIP60
+	wait applicationsFinish [ myApp_SIP60 ]  
+	releaseBearer streamVoLTE_SIP2 
+
+
+	
+	
+	
+mobileSession  testSessionVoLTE2UL
+	connectBearer DEFAULT as streamVoLTE_SIP2  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP2] as myApp_SIP41
+	wait applicationsFinish [ myApp_SIP41 ]   
+ 
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2 as streamVoLTE_RTP20
+	startApplication App_RTPUL [ streamVoLTE_RTP20 ] as myApp_RTP20 &
+	2x
+		wait 4
+		handover to 3
+		wait 4
+		handover to 2
+	wait applicationsFinish [ myApp_RTP20 ]
+	releaseBearer streamVoLTE_RTP20
+
+	startApplication App_SIPUL [ streamVoLTE_SIP2] as myApp_SIP42
+	wait applicationsFinish [ myApp_SIP42 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP2] as myApp_SIP43
+	wait applicationsFinish [ myApp_SIP43 ]   	
+	
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2 as streamVoLTE_RTP28
+	startApplication App_RTPUL [ streamVoLTE_RTP28 ] as myApp_RTP28 &
+	2x
+		wait 4
+		handover to 3
+		wait 4
+		handover to 2
+	wait applicationsFinish [ myApp_RTP28 ]
+	releaseBearer streamVoLTE_RTP28
+	
+	startApplication App_SIPUL [ streamVoLTE_SIP2] as myApp_SIP60
+	wait applicationsFinish [ myApp_SIP60 ]  
+	releaseBearer streamVoLTE_SIP2
+
+
+	
+	
+
+mobileSession testSessionVoLTE3DL
+	connectBearer DEFAULT as streamVoLTE_SIP3  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP3] as myApp_SIP79
+	wait applicationsFinish [ myApp_SIP79 ]   	
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3 as streamVoLTE_RTP30
+	startApplication App_RTPDL [ streamVoLTE_RTP30 ] as myApp_RTP30 &
+	2x
+		wait 4
+		handover to 1
+		wait 4
+		handover to 3
+	wait applicationsFinish [ myApp_RTP30 ]
+	releaseBearer streamVoLTE_RTP30
+	
+	startApplication App_SIPDL [ streamVoLTE_SIP3] as myApp_SIP80
+	wait applicationsFinish [ myApp_SIP80 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP3] as myApp_SIP81
+	wait applicationsFinish [ myApp_SIP81 ]   	
+
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3 as streamVoLTE_RTP38
+	startApplication App_RTPDL [ streamVoLTE_RTP38 ] as myApp_RTP38 &
+	2x
+		wait 4
+		handover to 1
+		wait 4
+		handover to 3
+	wait applicationsFinish [ myApp_RTP38 ]
+	releaseBearer streamVoLTE_RTP38
+	
+		
+	startApplication App_SIPDL [ streamVoLTE_SIP3] as myApp_SIP118
+	wait applicationsFinish [ myApp_SIP118 ]   		
+	releaseBearer streamVoLTE_SIP3
+		
+
+		
+		
+mobileSession  testSessionVoLTE3UL
+	connectBearer DEFAULT as streamVoLTE_SIP3
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP3] as myApp_SIP79
+	wait applicationsFinish [ myApp_SIP79 ]   	
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3 as streamVoLTE_RTP30
+	startApplication App_RTPUL [ streamVoLTE_RTP30 ] as myApp_RTP30 &
+	2x
+		wait 4
+		handover to 1
+		wait 4
+		handover to 3
+	wait applicationsFinish [ myApp_RTP30 ]
+	releaseBearer streamVoLTE_RTP30
+	
+	startApplication App_SIPUL [ streamVoLTE_SIP3] as myApp_SIP80
+	wait applicationsFinish [ myApp_SIP80 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP3] as myApp_SIP81
+	wait applicationsFinish [ myApp_SIP81 ]   	
+	
+
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3 as streamVoLTE_RTP38
+	startApplication App_RTPUL [ streamVoLTE_RTP38 ] as myApp_RTP38 &
+	2x
+		wait 4
+		handover to 1
+		wait 4
+		handover to 3
+	wait applicationsFinish [ myApp_RTP38 ]
+	releaseBearer streamVoLTE_RTP38
+	
+		
+	startApplication App_SIPUL [ streamVoLTE_SIP3] as myApp_SIP118
+	wait applicationsFinish [ myApp_SIP118 ]   		
+	releaseBearer streamVoLTE_SIP3
+	
+####################################################################################
+#
+#                        CSFB & HRPD SESSIONS
+#                              
+#
+###################################################################################
+
+
+
+transfer sampleTransferDescriptionDL
+        type udp
+        packetSize 64
+        dir downlink
+        packetRate 1.0
+
+
+reportMeas reportA2InterRatHrpd
+    amount 1
+    interval 1
+    servingCell rsrpMin=10 rsrpMax=15 rsrqMin=0 rsrqMax=0
+    skipNeigh
+    measIdBlackList 4
+    events 2
+
+
+application AppHRPD1 [ bearer ]
+        wait 7
+        startTransfer sampleTransferDescriptionDL on bearer as sampleTransferDL
+        wait 2
+        startReporting reportA2InterRatHrpd
+        wait 2
+        stopReporting reportA2InterRatHrpd
+        wait 2
+        stopTransfer sampleTransferDL
+
+
+application simpleApp [ bearer ]
+        wait 11
+
+
+
+application AppCSFBMOVC1 [ bearerCSFBMOVC1 ]
+        wait 12
+        1x
+                idleHandover to 1
+                wait 11
+
+application AppCSFBMOVC2 [ bearerCSFBMOVC1 ]
+        wait 12
+        1x
+                idleHandover to 2
+                wait 11
+
+application AppCSFBMOVC3 [ bearerCSFBMOVC1 ]
+        wait 12
+        1x
+                idleHandover to 3
+                wait 11
+
+
+mobileSession testSessionHRPD1
+        connectBearer DEFAULT as streamHRPD1
+        startApplication AppHRPD1 [ streamHRPD1 ] as myAppHRPD1
+        wait applicationsFinish [ myAppHRPD1 ]
+        redirect cdma pci 1 optHrpdHo serv 40 neigh 50
+        releaseBearer streamHRPD1
+
+mobileSession testSessionHRPD2
+        connectBearer DEFAULT as streamHRPD2
+        startApplication AppHRPD1 [ streamHRPD2 ] as myAppHRPD2
+        wait applicationsFinish [ myAppHRPD2 ]
+        redirect cdma optHrpdHo serv 40 neigh 50
+        releaseBearer streamHRPD2
+
+mobileSession testSessionHRPD3
+        connectBearer DEFAULT as streamHRPD3
+        startApplication AppHRPD1 [ streamHRPD3 ] as myAppHRPD3
+        wait applicationsFinish [ myAppHRPD3 ]
+        redirect cdma optHrpdHo serv 40 neigh 50
+        releaseBearer streamHRPD3
+
+
+
+
+mobileSession testSessionCSFBMOVC1
+        connectBearer DEFAULT as streamCSFBMOVC1
+        startApplication AppCSFBMOVC1 [ streamCSFBMOVC1 ] as myAppCSFBMOVC1
+        wait applicationsFinish [ myAppCSFBMOVC1 ]
+        redirect cdma csfb serv 0  neigh 0
+        releaseBearer streamCSFBMOVC1
+
+mobileSession testSessionCSFBMOVC2
+        connectBearer DEFAULT as streamCSFBMOVC1
+        startApplication AppCSFBMOVC2 [ streamCSFBMOVC1 ] as myAppCSFBMOVC1
+        wait applicationsFinish [ myAppCSFBMOVC1 ]
+        redirect cdma csfb serv 0  neigh 0
+        releaseBearer streamCSFBMOVC1
+
+mobileSession testSessionCSFBMOVC3
+        connectBearer DEFAULT as streamCSFBMOVC1
+        startApplication AppCSFBMOVC3 [ streamCSFBMOVC1 ] as myAppCSFBMOVC1
+        wait applicationsFinish [ myAppCSFBMOVC1 ]
+        redirect cdma csfb serv 0  neigh 0
+        releaseBearer streamCSFBMOVC1
+
+
+####################################################################################
+#  
+#		RRC CONNECTION RECONFIGURATION
+#
+####################################################################################
+#  61.803/s - 0.86/s (eHRPD HO pretrigger) =~ 61/s
+####################################################################################
+
+# /hap/active/components/user/rrcMMIShell
+# callproc perftest dltxmode 198 tm4
+
+
+################################   new section for fast rump up  ###################################
+
+application AppSR1_ [ bearerSR1_ ]
+	wait 11
+	idleHandover to 1
+	16x
+		wait 12
+		startTransfer TransferDL on bearerSR1_ as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR1_ as sampleTransferSRUL
+		wait 1
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+
+application AppSRPing1_ [ bearerSRPing1_ ]
+	wait 11
+	idleHandover to 1
+	16x
+		wait 12
+		startTransfer TransferDLPing on bearerSRPing1_ as sampleTransferSRDLPing
+#		startTransfer TransferULPing on bearerSRPing1_ as sampleTransferSRULPing
+		wait 1
+		stopTransfer sampleTransferSRDLPing
+#		stopTransfer sampleTransferSRULPing
+	wait 6
+
+
+application AppPDN1_ [ bearerPDN1_ ]
+	startTransfer TransferDL on bearerPDN1_ as sampleTransferPDNDL
+	startTransfer TransferUL on bearerPDN1_ as sampleTransferPDNUL
+	wait 100
+	stopTransfer sampleTransferPDNDL
+	stopTransfer sampleTransferPDNUL
+	wait 11
+	idleHandover to 11
+
+application AppPDNPing1_ [ bearerPDNPing1_ ]
+	startTransfer TransferDLPing on bearerPDNPing1_ as sampleTransferPDNDLPing
+#	startTransfer TransferULPing on bearerPDNPing1_ as sampleTransferPDNULPing
+	wait 100
+	stopTransfer sampleTransferPDNDLPing
+#	stopTransfer sampleTransferPDNULPing
+	wait 11
+	idleHandover to 11
+	
+	
+application AppSR2_ [ bearerSR2_ ]
+	wait 11
+	idleHandover to 2
+	16x
+		wait 12
+		startTransfer TransferDL on bearerSR2_ as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR2_ as sampleTransferSRUL
+		wait 1
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+
+application AppSRPing2_ [ bearerSRPing2_ ]
+	wait 11
+	idleHandover to 2
+	16x
+		wait 12
+		startTransfer TransferDLPing on bearerSRPing2_ as sampleTransferSRDLPing
+#		startTransfer TransferULPing on bearerSRPing2_ as sampleTransferSRULPing
+		wait 1
+		stopTransfer sampleTransferSRDLPing
+#		stopTransfer sampleTransferSRULPing
+	wait 6
+
+
+
+application AppPDN2_ [ bearerPDN2_ ]
+	startTransfer TransferDL on bearerPDN2_ as sampleTransferPDNDL
+	startTransfer TransferUL on bearerPDN2_ as sampleTransferPDNUL
+	wait 100
+	stopTransfer sampleTransferPDNDL
+	stopTransfer sampleTransferPDNUL
+	wait 11
+	idleHandover to 11
+
+application AppPDNPing2_ [ bearerPDNPing2_ ]
+	startTransfer TransferDLPing on bearerPDNPing2_ as sampleTransferPDNDLPing
+#	startTransfer TransferULPing on bearerPDNPing2_ as sampleTransferPDNULPing
+	wait 100
+	stopTransfer sampleTransferPDNDLPing
+#	stopTransfer sampleTransferPDNULPing
+	wait 11
+	idleHandover to 11
+	
+	
+
+application AppSR3_ [ bearerSR3_ ]
+	wait 11
+	idleHandover to 3
+	16x
+		wait 12
+		startTransfer TransferDL on bearerSR3_ as sampleTransferSRDL
+		startTransfer TransferUL on bearerSR3_ as sampleTransferSRUL
+		wait 1
+		stopTransfer sampleTransferSRDL
+		stopTransfer sampleTransferSRUL
+
+application AppSRPing3_ [ bearerSRPing3_ ]
+	wait 11
+	idleHandover to 3
+	16x
+		wait 12
+		startTransfer TransferDLPing on bearerSRPing3_ as sampleTransferSRDLPing
+#		startTransfer TransferULPing on bearerSRPing3_ as sampleTransferSRULPing
+		wait 1
+		stopTransfer sampleTransferSRDLPing
+#		stopTransfer sampleTransferSRULPing
+	wait 6
+
+
+
+application AppPDN3_ [ bearerPDN3_ ]
+	startTransfer TransferDL on bearerPDN3_ as sampleTransferPDNDL
+	startTransfer TransferUL on bearerPDN3_ as sampleTransferPDNUL
+	wait 100
+	stopTransfer sampleTransferPDNDL
+	stopTransfer sampleTransferPDNUL
+	wait 11
+	idleHandover to 11
+
+application AppPDNPing3_ [ bearerPDNPing3_ ]
+	startTransfer TransferDLPing on bearerPDNPing3_ as sampleTransferPDNDLPing
+#	startTransfer TransferULPing on bearerPDNPing3_ as sampleTransferPDNULPing
+	wait 100
+	stopTransfer sampleTransferPDNDLPing
+#	stopTransfer sampleTransferPDNULPing
+	wait 11
+	idleHandover to 11
+	
+	
+mobileSession testSession1_
+	connectBearer DEFAULT as stream1_
+	startApplication AppSR1_ [ stream1_ ] as myAppSR1_
+	wait applicationsFinish [ myAppSR1_ ]
+	startApplication AppPDN1_ [ stream1_ ] as myAppPDN1_ &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 1
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN1_ ]
+	wait 6
+	releaseBearer stream1_
+
+mobileSession testSession1Ping_
+	connectBearer DEFAULT as stream1Ping_
+	startApplication AppSRPing1_ [ stream1Ping_ ] as myAppSR1Ping
+	wait applicationsFinish [ myAppSR1Ping ]
+	startApplication AppPDNPing1_ [ stream1Ping_ ] as myAppPDN1Ping &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 1
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN1Ping ]
+	wait 6
+	releaseBearer stream1Ping_
+
+
+mobileSession testSession2_
+	connectBearer DEFAULT as stream2_
+	startApplication AppSR2_ [ stream2_ ] as myAppSR2
+	wait applicationsFinish [ myAppSR2 ]
+	startApplication AppPDN2_ [ stream2_ ] as myAppPDN2 &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 2
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN2 ]
+	wait 6
+	releaseBearer stream2_
+
+mobileSession testSession2Ping_
+	connectBearer DEFAULT as stream2Ping_
+	startApplication AppSRPing2_ [ stream2Ping_ ] as myAppSR2Ping
+	wait applicationsFinish [ myAppSR2Ping ]
+	startApplication AppPDNPing2_ [ stream2Ping_ ] as myAppPDN2Ping &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 2
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN2Ping ]
+	wait 6
+	releaseBearer stream2Ping_
+
+
+mobileSession testSession3_
+	connectBearer DEFAULT as stream3_
+	startApplication AppSR3_ [ stream3_ ] as myAppSR3
+	wait applicationsFinish [ myAppSR3 ]
+	startApplication AppPDN3_ [ stream3_ ] as myAppPDN3 &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 3
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN3 ]
+	wait 6
+	releaseBearer stream3_
+
+mobileSession testSession3Ping_
+	connectBearer DEFAULT as stream3Ping_
+	startApplication AppSRPing3_ [ stream3Ping_ ] as myAppSR3Ping
+	wait applicationsFinish [ myAppSR3Ping ]
+	startApplication AppPDNPing3_ [ stream3Ping_ ] as myAppPDN3Ping &
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 1
+	handover to 11
+	wait 3
+	handover to 3
+	wait 7
+	7x
+		connectBearer DEFAULT on 1 as streamPDN1
+		wait 3  
+		releaseBearer streamPDN1
+		wait 3	#wait 7
+	wait 2
+	wait applicationsFinish [ myAppPDN3Ping ]
+	wait 6
+	releaseBearer stream3Ping_
+
+ 
+ 
+ 
+mobileSession testSessionVoLTE_HO1DL_
+	connectBearer DEFAULT as streamVoLTE_SIP1_ 
+	wait 11
+	idleHandover to 1 
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP1_] as myApp_SIP2
+	wait applicationsFinish [ myApp_SIP2 ]  
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1_ as streamVoLTE_RTP1_
+	startApplication App_RTPDL [ streamVoLTE_RTP1_ ] as myApp_RTP1 &
+	wait applicationsFinish [ myApp_RTP1 ]
+	releaseBearer streamVoLTE_RTP1_
+	
+		
+	startApplication App_SIPDL [ streamVoLTE_SIP1_] as myApp_SIP5
+	wait applicationsFinish [ myApp_SIP5 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP1_] as myApp_SIP6
+	wait applicationsFinish [ myApp_SIP6 ]  
+	  			
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1_ as streamVoLTE_RTP9_
+	startApplication App_RTPDL [ streamVoLTE_RTP9_ ] as myApp_RTP9 &
+	wait applicationsFinish [ myApp_RTP9 ]
+	releaseBearer streamVoLTE_RTP9_
+	
+
+	startApplication App_SIPDL [ streamVoLTE_SIP1_] as myApp_SIP21
+	wait applicationsFinish [ myApp_SIP21 ]  
+	wait 11
+	idleHandover to 11
+	releaseBearer streamVoLTE_SIP1_	
+	
+	
+mobileSession testSessionVoLTE_HO1UL_
+	connectBearer DEFAULT as streamVoLTE_SIP1_
+	wait 11
+	idleHandover to 1  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP1_] as myApp_SIP2
+	wait applicationsFinish [ myApp_SIP2 ]  
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1_ as streamVoLTE_RTP1_
+	startApplication App_RTPUL [ streamVoLTE_RTP1_ ] as myApp_RTP1 &
+	wait applicationsFinish [ myApp_RTP1 ]
+	releaseBearer streamVoLTE_RTP1_
+	
+		
+	startApplication App_SIPUL [ streamVoLTE_SIP1_] as myApp_SIP5
+	wait applicationsFinish [ myApp_SIP5 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP1_] as myApp_SIP6
+	wait applicationsFinish [ myApp_SIP6 ]  	  			
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1_ as streamVoLTE_RTP9_
+	startApplication App_RTPUL [ streamVoLTE_RTP9_ ] as myApp_RTP9 &
+	wait applicationsFinish [ myApp_RTP9 ]
+	releaseBearer streamVoLTE_RTP9_
+	
+
+	startApplication App_SIPUL [ streamVoLTE_SIP1_] as myApp_SIP21
+	wait applicationsFinish [ myApp_SIP21 ]  
+	wait 11
+	idleHandover to 11
+	releaseBearer streamVoLTE_SIP1_	
+
+	
+mobileSession testSessionVoLTE_HO2DL_
+	connectBearer DEFAULT as streamVoLTE_SIP2_
+	wait 11
+	idleHandover to 2 
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP2_] as myApp_SIP41
+	wait applicationsFinish [ myApp_SIP41 ]   
+ 
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2_ as streamVoLTE_RTP20_
+	startApplication App_RTPDL [ streamVoLTE_RTP20_ ] as myApp_RTP20 &
+	wait applicationsFinish [ myApp_RTP20 ]
+	releaseBearer streamVoLTE_RTP20_
+
+	startApplication App_SIPDL [ streamVoLTE_SIP2_] as myApp_SIP42
+	wait applicationsFinish [ myApp_SIP42 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP2_] as myApp_SIP43
+	wait applicationsFinish [ myApp_SIP43 ]   	  	
+	
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2_ as streamVoLTE_RTP28_
+	startApplication App_RTPDL [ streamVoLTE_RTP28_ ] as myApp_RTP28 &
+	wait applicationsFinish [ myApp_RTP28 ]
+	releaseBearer streamVoLTE_RTP28_
+	
+	startApplication App_SIPDL [ streamVoLTE_SIP2_] as myApp_SIP60
+	wait applicationsFinish [ myApp_SIP60 ]  
+	wait 11
+	idleHandover to 11
+	releaseBearer streamVoLTE_SIP2_ 
+
+	
+mobileSession testSessionVoLTE_HO2UL_
+	connectBearer DEFAULT as streamVoLTE_SIP2_
+	wait 11
+	idleHandover to 2  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP2_] as myApp_SIP41
+	wait applicationsFinish [ myApp_SIP41 ]   
+ 
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2_ as streamVoLTE_RTP20_
+	startApplication App_RTPUL [ streamVoLTE_RTP20_ ] as myApp_RTP20 &
+	wait applicationsFinish [ myApp_RTP20 ]
+	releaseBearer streamVoLTE_RTP20_
+
+	startApplication App_SIPUL [ streamVoLTE_SIP2_] as myApp_SIP42
+	wait applicationsFinish [ myApp_SIP42 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP2_] as myApp_SIP43
+	wait applicationsFinish [ myApp_SIP43 ]   	
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2_ as streamVoLTE_RTP28_
+	startApplication App_RTPUL [ streamVoLTE_RTP28_ ] as myApp_RTP28 &
+	wait applicationsFinish [ myApp_RTP28 ]
+	releaseBearer streamVoLTE_RTP28_
+	
+	startApplication App_SIPUL [ streamVoLTE_SIP2_] as myApp_SIP60
+	wait applicationsFinish [ myApp_SIP60 ]  
+	wait 11
+	idleHandover to 11
+	releaseBearer streamVoLTE_SIP2_
+ 
+
+mobileSession testSessionVoLTE_HO3DL_
+	connectBearer DEFAULT as streamVoLTE_SIP3_
+	wait 11
+	idleHandover to 3 
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP3_] as myApp_SIP79
+	wait applicationsFinish [ myApp_SIP79 ]   	
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3_ as streamVoLTE_RTP30_
+	startApplication App_RTPDL [ streamVoLTE_RTP30_ ] as myApp_RTP30 &
+	wait applicationsFinish [ myApp_RTP30 ]
+	releaseBearer streamVoLTE_RTP30_
+	
+	startApplication App_SIPDL [ streamVoLTE_SIP3_] as myApp_SIP80
+	wait applicationsFinish [ myApp_SIP80 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP3_] as myApp_SIP81
+	wait applicationsFinish [ myApp_SIP81 ]   	   		
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3_ as streamVoLTE_RTP38_
+	startApplication App_RTPDL [ streamVoLTE_RTP38_ ] as myApp_RTP38 &
+	wait applicationsFinish [ myApp_RTP38 ]
+	releaseBearer streamVoLTE_RTP38_
+	
+		
+	startApplication App_SIPDL [ streamVoLTE_SIP3_] as myApp_SIP118
+	wait applicationsFinish [ myApp_SIP118 ]   		
+	wait 11
+	idleHandover to 11
+	releaseBearer streamVoLTE_SIP3_
+				
+		
+mobileSession testSessionVoLTE_HO3UL_
+	connectBearer DEFAULT as streamVoLTE_SIP3_
+	wait 11
+	idleHandover to 3 
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP3_] as myApp_SIP79
+	wait applicationsFinish [ myApp_SIP79 ]   	
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3_ as streamVoLTE_RTP30_
+	startApplication App_RTPUL [ streamVoLTE_RTP30_ ] as myApp_RTP30 &
+	wait applicationsFinish [ myApp_RTP30 ]
+	releaseBearer streamVoLTE_RTP30_
+	
+	startApplication App_SIPUL [ streamVoLTE_SIP3_] as myApp_SIP80
+	wait applicationsFinish [ myApp_SIP80 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP3_] as myApp_SIP81
+	wait applicationsFinish [ myApp_SIP81 ]   	   		
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3_ as streamVoLTE_RTP38_
+	startApplication App_RTPUL [ streamVoLTE_RTP38_ ] as myApp_RTP38 &
+	wait applicationsFinish [ myApp_RTP38 ]
+	releaseBearer streamVoLTE_RTP38_
+	
+		
+	startApplication App_SIPUL [ streamVoLTE_SIP3_] as myApp_SIP118
+	wait applicationsFinish [ myApp_SIP118 ]   		
+	wait 11
+	idleHandover to 11
+	releaseBearer streamVoLTE_SIP3_
+
+
+
+
+mobileSession  testSessionVoLTE1DL_
+	connectBearer DEFAULT as streamVoLTE_SIP1_  
+	wait 11
+	idleHandover to 1 
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP1_] as myApp_SIP2
+	wait applicationsFinish [ myApp_SIP2 ]  
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1_ as streamVoLTE_RTP1_
+	startApplication App_RTPDL [ streamVoLTE_RTP1_ ] as myApp_RTP1 &
+	2x
+		wait 4
+		handover to 2
+		wait 4
+		handover to 1
+	wait applicationsFinish [ myApp_RTP1 ]
+	releaseBearer streamVoLTE_RTP1_
+	
+		
+	startApplication App_SIPDL [ streamVoLTE_SIP1_] as myApp_SIP5
+	wait applicationsFinish [ myApp_SIP5 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP1_] as myApp_SIP6
+	wait applicationsFinish [ myApp_SIP6 ]  
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1_ as streamVoLTE_RTP9_
+	startApplication App_RTPDL [ streamVoLTE_RTP9_ ] as myApp_RTP9 &
+	2x
+		wait 4
+		handover to 2
+		wait 4
+		handover to 1
+	wait applicationsFinish [ myApp_RTP9 ]
+	releaseBearer streamVoLTE_RTP9_
+	
+
+	startApplication App_SIPDL [ streamVoLTE_SIP1_] as myApp_SIP21
+	wait applicationsFinish [ myApp_SIP21 ]
+	wait 11
+	idleHandover to 11	
+	releaseBearer streamVoLTE_SIP1_
+
+	
+	
+	
+mobileSession  testSessionVoLTE1UL_
+	connectBearer DEFAULT as streamVoLTE_SIP1_
+	wait 11
+	idleHandover to 1 	
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP1_] as myApp_SIP2
+	wait applicationsFinish [ myApp_SIP2 ]  
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1_ as streamVoLTE_RTP1_
+	startApplication App_RTPUL [ streamVoLTE_RTP1_ ] as myApp_RTP1 &
+	2x
+		wait 4
+		handover to 2
+		wait 4
+		handover to 1
+	wait applicationsFinish [ myApp_RTP1 ]
+	releaseBearer streamVoLTE_RTP1_
+	
+		
+	startApplication App_SIPUL [ streamVoLTE_SIP1_] as myApp_SIP5
+	wait applicationsFinish [ myApp_SIP5 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP1_] as myApp_SIP6
+	wait applicationsFinish [ myApp_SIP6 ]  
+
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP1_ as streamVoLTE_RTP9_
+	startApplication App_RTPUL [ streamVoLTE_RTP9_ ] as myApp_RTP9 &
+	2x
+		wait 4
+		handover to 2
+		wait 4
+		handover to 1
+	wait applicationsFinish [ myApp_RTP9 ]
+	releaseBearer streamVoLTE_RTP9_
+	
+
+	startApplication App_SIPUL [ streamVoLTE_SIP1_] as myApp_SIP21
+	wait applicationsFinish [ myApp_SIP21 ]
+	wait 11
+	idleHandover to 11	
+	releaseBearer streamVoLTE_SIP1_	
+
+
+	
+	
+ 
+
+	
+mobileSession  testSessionVoLTE2DL_
+	wait 11
+	idleHandover to 2 
+	connectBearer DEFAULT as streamVoLTE_SIP2_ 
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP2_] as myApp_SIP41
+	wait applicationsFinish [ myApp_SIP41 ]   
+ 
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2_ as streamVoLTE_RTP20_
+	startApplication App_RTPDL [ streamVoLTE_RTP20_ ] as myApp_RTP20 &
+	2x
+		wait 4
+		handover to 3
+		wait 4
+		handover to 2
+	wait applicationsFinish [ myApp_RTP20 ]
+	releaseBearer streamVoLTE_RTP20_
+
+	startApplication App_SIPDL [ streamVoLTE_SIP2_] as myApp_SIP42
+	wait applicationsFinish [ myApp_SIP42 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP2_] as myApp_SIP43
+	wait applicationsFinish [ myApp_SIP43 ]   	
+
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2_ as streamVoLTE_RTP28_
+	startApplication App_RTPDL [ streamVoLTE_RTP28_ ] as myApp_RTP28 &
+	2x
+		wait 4
+		handover to 3
+		wait 4
+		handover to 2
+	wait applicationsFinish [ myApp_RTP28 ]
+	releaseBearer streamVoLTE_RTP28_
+	
+	startApplication App_SIPDL [ streamVoLTE_SIP2_] as myApp_SIP60
+	wait applicationsFinish [ myApp_SIP60 ]
+	wait 11
+	idleHandover to 11	
+	releaseBearer streamVoLTE_SIP2_ 
+
+
+	
+	
+	
+mobileSession  testSessionVoLTE2UL_
+	wait 11
+	idleHandover to 2 
+	connectBearer DEFAULT as streamVoLTE_SIP2_ 
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP2_] as myApp_SIP41
+	wait applicationsFinish [ myApp_SIP41 ]   
+ 
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2_ as streamVoLTE_RTP20_
+	startApplication App_RTPUL [ streamVoLTE_RTP20_ ] as myApp_RTP20 &
+	2x
+		wait 4
+		handover to 3
+		wait 4
+		handover to 2
+	wait applicationsFinish [ myApp_RTP20 ]
+	releaseBearer streamVoLTE_RTP20_
+
+	startApplication App_SIPUL [ streamVoLTE_SIP2_] as myApp_SIP42
+	wait applicationsFinish [ myApp_SIP42 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP2_] as myApp_SIP43
+	wait applicationsFinish [ myApp_SIP43 ]   	
+	
+		
+	connectBearer VoLTE_RTP on streamVoLTE_SIP2_ as streamVoLTE_RTP28_
+	startApplication App_RTPUL [ streamVoLTE_RTP28_ ] as myApp_RTP28 &
+	2x
+		wait 4
+		handover to 3
+		wait 4
+		handover to 2
+	wait applicationsFinish [ myApp_RTP28 ]
+	releaseBearer streamVoLTE_RTP28_
+	
+	startApplication App_SIPUL [ streamVoLTE_SIP2_] as myApp_SIP60
+	wait applicationsFinish [ myApp_SIP60 ]
+	wait 11
+	idleHandover to 11	
+	releaseBearer streamVoLTE_SIP2_
+
+
+	
+	
+
+mobileSession testSessionVoLTE3DL_
+	wait 11
+	idleHandover to 3 
+	connectBearer DEFAULT as streamVoLTE_SIP3_ 
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP3_] as myApp_SIP79
+	wait applicationsFinish [ myApp_SIP79 ]   	
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3_ as streamVoLTE_RTP30
+	startApplication App_RTPDL [ streamVoLTE_RTP30 ] as myApp_RTP30 &
+	2x
+		wait 4
+		handover to 1
+		wait 4
+		handover to 3
+	wait applicationsFinish [ myApp_RTP30 ]
+	releaseBearer streamVoLTE_RTP30
+	
+	startApplication App_SIPDL [ streamVoLTE_SIP3_] as myApp_SIP80
+	wait applicationsFinish [ myApp_SIP80 ]  
+	wait 12
+	startApplication App_SIPDL [ streamVoLTE_SIP3_] as myApp_SIP81
+	wait applicationsFinish [ myApp_SIP81 ]   	
+
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3_ as streamVoLTE_RTP38
+	startApplication App_RTPDL [ streamVoLTE_RTP38 ] as myApp_RTP38 &
+	2x
+		wait 4
+		handover to 1
+		wait 4
+		handover to 3
+	wait applicationsFinish [ myApp_RTP38 ]
+	releaseBearer streamVoLTE_RTP38
+	
+		
+	startApplication App_SIPDL [ streamVoLTE_SIP3_] as myApp_SIP118
+	wait applicationsFinish [ myApp_SIP118 ]
+	wait 11
+	idleHandover to 11	
+	releaseBearer streamVoLTE_SIP3_
+		
+
+		
+		
+mobileSession  testSessionVoLTE3UL_
+	wait 11
+	idleHandover to 3 
+	connectBearer DEFAULT as streamVoLTE_SIP3_
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP3_] as myApp_SIP79
+	wait applicationsFinish [ myApp_SIP79 ]   	
+	
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3_ as streamVoLTE_RTP30
+	startApplication App_RTPUL [ streamVoLTE_RTP30 ] as myApp_RTP30 &
+	2x
+		wait 4
+		handover to 1
+		wait 4
+		handover to 3
+	wait applicationsFinish [ myApp_RTP30 ]
+	releaseBearer streamVoLTE_RTP30
+	
+	startApplication App_SIPUL [ streamVoLTE_SIP3_] as myApp_SIP80
+	wait applicationsFinish [ myApp_SIP80 ]  
+	wait 12
+	startApplication App_SIPUL [ streamVoLTE_SIP3_] as myApp_SIP81
+	wait applicationsFinish [ myApp_SIP81 ]   	
+	
+
+	connectBearer VoLTE_RTP on streamVoLTE_SIP3_ as streamVoLTE_RTP38
+	startApplication App_RTPUL [ streamVoLTE_RTP38 ] as myApp_RTP38 &
+	2x
+		wait 4
+		handover to 1
+		wait 4
+		handover to 3
+	wait applicationsFinish [ myApp_RTP38 ]
+	releaseBearer streamVoLTE_RTP38
+	
+		
+	startApplication App_SIPUL [ streamVoLTE_SIP3_] as myApp_SIP118
+	wait applicationsFinish [ myApp_SIP118 ]
+	wait 11
+	idleHandover to 11	
+	releaseBearer streamVoLTE_SIP3_
+
+
+
+
+################################ end new section for fast rump up  ###################################
+####################################################################################
+#  
+#        C1 scenario
+#
+####################################################################################
+
+testScenario
+  testSession1
+	rate 0.048/s
+	cells[1]
+	delayToStart 1.0 s
+	ueCapabilities example1
+
+ testSession1Ping
+	rate 0.192/s
+	cells[1]
+	delayToStart 2.0 s
+	ueCapabilities example1	
+
+ testSession2
+	rate 0.036/s
+	cells[2]
+	delayToStart 3.0 s
+	ueCapabilities example1
+
+ testSession2Ping
+	rate 0.144/s
+	cells[2]
+	delayToStart 4.0 s
+	ueCapabilities example1	
+
+ testSession3
+	rate 0.036/s
+	cells[3]
+	delayToStart 5.0 s
+	ueCapabilities example1
+
+ testSession3Ping
+	rate 0.144/s
+	cells[3]
+	delayToStart 6.0 s
+	ueCapabilities example1
+
+
+
+ testSessionIntraHO1
+	rate 0.0156/s
+	cells[11]
+	delayToStart 7.0 s
+	ueCapabilities example1
+
+ testSessionIntraHO1Ping
+	rate 0.0624/s
+	cells[11]
+	delayToStart 8.0 s
+	ueCapabilities example1
+
+
+ testSessionIntraHO2
+	rate 0.01170/s
+	cells[11]
+	delayToStart 9.0 s
+	ueCapabilities example1
+
+ testSessionIntraHO2Ping
+	rate 0.0468/s
+	cells[11]
+	delayToStart 10.0 s
+	ueCapabilities example1
+
+
+ testSessionIntraHO3
+	rate 0.01170/s
+	cells[11]
+	delayToStart 11.0 s
+	ueCapabilities example1
+
+ testSessionIntraHO3Ping
+	rate 0.0468/s
+	cells[11]
+	delayToStart 12.0 s
+	ueCapabilities example1
+
+
+
+
+
+ testSessionInterHO1
+	rate 0.14448/s
+	cells[11]
+	delayToStart 14.0 s
+	ueCapabilities example1
+
+ testSessionInterHO1Ping
+	rate 0.52012/s
+	cells[11]
+	delayToStart 15.0 s
+	ueCapabilities example1
+
+
+ testSessionInterHO2
+	rate 0.10836/s
+	cells[11]
+	delayToStart 16.0 s
+	ueCapabilities example1
+
+ testSessionInterHO2Ping
+	rate 0.39009/s
+	cells[11]
+	delayToStart 17.0 s
+	ueCapabilities example1
+
+
+ testSessionInterHO3
+	rate 0.10836/s
+	cells[11]
+	delayToStart 18.0 s
+	ueCapabilities example1
+
+ testSessionInterHO3Ping
+	rate 0.39009/s
+	cells[11]
+	delayToStart 19.0 s
+	ueCapabilities example1
+
+
+ testSessionTAU1
+	rate 0.0756/s
+	cells[11]
+	delayToStart 25.0 s
+	ueCapabilities example1
+
+
+ testSessionTAU2
+	rate 0.0567/s
+	cells[11]
+	delayToStart 26.0 s
+	ueCapabilities example1	
+
+ testSessionTAU3
+	rate 0.0567/s
+	cells[11]
+	delayToStart 27.0 s
+	ueCapabilities example1
+
+
+
+
+ testSessionDED1
+	rate 0.072/s
+	cells[11]
+	delayToStart 34.0 s
+	ueCapabilities example1
+
+ testSessionDED1Ping
+	rate 0.288/s
+	cells[11]
+	delayToStart 37.0 s
+	ueCapabilities example1
+
+ testSessionDED2
+	rate 0.054/s
+	cells[11]
+	delayToStart 35.0 s
+	ueCapabilities example1
+
+ testSessionDED2Ping
+	rate 0.216/s
+	cells[11]
+	delayToStart 38.0 s
+	ueCapabilities example1
+
+ testSessionDED3
+	rate 0.054/s
+	cells[11]
+	delayToStart 36.0 s
+	ueCapabilities example1
+
+ testSessionDED3Ping
+	rate 0.216/s
+	cells[11]
+	delayToStart 39.0 s
+	ueCapabilities example1
+	
+	
+	
+	
+	
+	
+ testSessionVoLTE_HO1DL
+	rate 0.00047146/s
+	cells[1]
+	ueCapabilities example1
+
+ testSessionVoLTE_HO1UL
+	rate 0.00047146/s
+	cells[1]
+	ueCapabilities example1
+	
+ testSessionVoLTE_HO2DL
+	rate 0.0003536/s
+	cells[2]
+	delayToStart 1.0 s
+	ueCapabilities example1
+
+ testSessionVoLTE_HO2UL
+	rate 0.0003536/s
+	cells[2]
+	delayToStart 1.0 s
+	ueCapabilities example1
+
+ testSessionVoLTE_HO3DL
+	rate 0.0003536/s
+	cells[3]
+	delayToStart 2.0 s
+	ueCapabilities example1
+
+ testSessionVoLTE_HO3UL
+	rate 0.0003536/s
+	cells[3]
+	delayToStart 2.0 s
+	ueCapabilities example1
+	
+ testSessionVoLTE1DL
+	rate 0.00612898/s
+	cells[1]
+	ueCapabilities example1
+
+ testSessionVoLTE1UL
+	rate 0.00612898/s
+	cells[1]
+	ueCapabilities example1
+
+ testSessionVoLTE2DL
+	rate 0.004596735/s
+	cells[2]
+	delayToStart 1.0 s
+	ueCapabilities example1
+
+ testSessionVoLTE2UL
+	rate 0.004596735/s
+	cells[2]
+	delayToStart 1.0 s
+	ueCapabilities example1
+
+ testSessionVoLTE3DL
+	rate 0.004596735/s
+	cells[3]
+	delayToStart 2.0 s
+	ueCapabilities example1
+
+ testSessionVoLTE3UL
+	rate 0.004596735/s
+	cells[3]
+	delayToStart 2.0 s
+	ueCapabilities example1
+	
+	
+#testSessionHRPD1
+#        rate 10/m
+#        cells[1]
+#        ueCapabilities hrpdFullReg
+
+#testSessionHRPD2
+#        rate 10/m
+#        cells[2]
+#        ueCapabilities hrpdFullReg
+
+#testSessionHRPD3
+#        rate 10/m
+#        cells[3]
+#        ueCapabilities hrpdFullReg
+
+#testSessionCSFBMOVC1
+#        rate 10.0/min
+#        cells [11]
+#        ueCapabilities csfb
+
+#testSessionCSFBMOVC2
+#        rate 10.0/min
+#        cells [11]
+#        ueCapabilities csfb
+
+#testSessionCSFBMOVC3
+#        rate 10.0/min
+#        cells [11]
+#        ueCapabilities csfb
+	
+#################################### new session for fast rump up  ################################################
+
+testSession1_
+	rate 0.144/s
+	cells[11]
+	delayToStart 40.0 s
+	ueCapabilities example1
+
+ testSession1Ping_
+	rate 0.576/s
+	cells[11]
+	delayToStart 41.0 s
+	ueCapabilities example1	
+
+ testSession2_
+	rate 0.108/s
+	cells[11]
+	delayToStart 42.0 s
+	ueCapabilities example1
+
+ testSession2Ping_
+	rate 0.432/s
+	cells[11]
+	delayToStart 43.0 s
+	ueCapabilities example1	
+
+ testSession3_
+	rate 0.108/s
+	cells[11]
+	delayToStart 44.0 s
+	ueCapabilities example1
+
+ testSession3Ping_
+	rate 0.432/s
+	cells[11]
+	delayToStart 45.0 s
+	ueCapabilities example1
+	
+	
+testSessionVoLTE_HO1DL_
+	rate 0.00070719/s
+	cells[11]
+	delayToStart 46.0 s
+	ueCapabilities example1
+
+ testSessionVoLTE_HO1UL_
+	rate 0.00070719/s
+	cells[11]
+	delayToStart 47.0 s
+	ueCapabilities example1
+	
+ testSessionVoLTE_HO2DL_
+	rate 0.0005304/s
+	cells[11]
+	delayToStart 48.0 s
+	ueCapabilities example1
+
+ testSessionVoLTE_HO2UL_
+	rate 0.0005304/s
+	cells[11]
+	delayToStart 49.0 s
+	ueCapabilities example1
+
+ testSessionVoLTE_HO3DL_
+	rate 0.0005304/s
+	cells[11]
+	delayToStart 50.0 s
+	ueCapabilities example1
+
+ testSessionVoLTE_HO3UL_
+	rate 0.0005304/s
+	cells[11]
+	delayToStart 51.0 s
+	ueCapabilities example1
+	
+testSessionVoLTE1DL_
+	rate 0.00919347/s
+	cells[11]
+	delayToStart 52.0 s
+	ueCapabilities example1
+
+testSessionVoLTE1UL_
+	rate 0.00919347/s
+	cells[11]
+	delayToStart 53.0 s
+	ueCapabilities example1
+
+testSessionVoLTE2DL_
+	rate 0.0068951025/s
+	cells[11]
+	delayToStart 54.0 s
+	ueCapabilities example1
+
+testSessionVoLTE2UL_
+	rate 0.0068951025/s
+	cells[11]
+	delayToStart 55.0 s
+	ueCapabilities example1
+
+testSessionVoLTE3DL_
+	rate 0.0068951025/s
+	cells[11]
+	delayToStart 56.0 s
+	ueCapabilities example1
+
+testSessionVoLTE3UL_
+	rate 0.0068951025/s
+	cells[11]
+	delayToStart 57.0 s
+	ueCapabilities example1

@@ -1,0 +1,14 @@
+application AppAD [ bearer ]
+	wait 3
+
+mobileSession SessionAD
+	connectBearer DEFAULT as streamAD
+	startApplication AppAD [ streamAD ] as myAppAD
+	wait applicationsFinish [ myAppAD ]
+	releaseBearer streamAD
+
+testScenario
+  SessionAD
+	rate 0.0/s
+	cells [1]
+	ueCapabilities simple1

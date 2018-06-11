@@ -1,0 +1,55 @@
+bearerQoS QCI5
+        qci 5
+        
+bearerQoS QCI7
+        qci 7
+    
+transfer sampleTransferDescription70DL
+	type udp
+	packetSize 70
+#	packetRate 8.1
+	packetRate 8.2
+	dir downlink
+    
+transfer sampleTransferDescription1280DL
+	type udp
+	packetSize 1280
+#	packetRate 2.0
+	packetRate 2.0
+	dir downlink
+
+transfer sampleTransferDescription1460DL
+	type udp
+	packetSize 1460
+#	packetRate 10.1
+	packetRate 10.5
+	dir downlink
+
+application AppDL [ bearer ]
+
+	startTransfer sampleTransferDescription70DL on bearer as sampleTransfer1 
+    startTransfer sampleTransferDescription1280DL on bearer as sampleTransfer2 
+    startTransfer sampleTransferDescription1460DL on bearer as sampleTransfer3
+	wait 2700
+	stopTransfer sampleTransfer1
+    stopTransfer sampleTransfer2
+    stopTransfer sampleTransfer3
+	wait 11
+	
+mobileSession testSessionDL
+
+    connectBearer QCI5 as B
+	connectBearer QCI7 as C
+	connectBearer DEFAULT as stream
+	startApplication AppDL [ stream ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer stream
+    releaseBearer B
+    releaseBearer C
+
+testScenario
+  testSessionDL
+	rate 30/s
+#    uePool SIM  
+	cells[1 2 3]
+	activityIntervalLength 83.5 s

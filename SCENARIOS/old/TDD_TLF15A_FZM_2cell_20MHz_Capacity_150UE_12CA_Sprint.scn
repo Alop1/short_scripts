@@ -1,0 +1,162 @@
+#############################################################
+# Capacity 150 UE -> Sprint Defect #1659
+#
+# ***************Traffic per 1UE*********************
+# Default 	DL: 1 Mbit/s    UL: 0,1 Mbit/s
+# Ded QCI8:	DL: 0,4 Mbit/s   UL: 0,05 Mbit/s
+# Ded QCI3:	DL: 0,1 Mbit/s   UL: 0,05 Mbit/s
+# -----------------------------------------------
+# Total: 	DL: 1,5 Mbit/s UL: 0,2 Mbit/s
+#
+# ***************CA Traffic per 1UE******************
+# Default 	DL: 2 Mbit/s    UL: 0,001 Mbit/s
+# -----------------------------------------------
+# Total: 	DL: 2 Mbit/s    UL: 0,001 Mbit/s
+#
+#
+#
+# ***************Traffic 140 UEs*********************
+# Default 	DL: 140 Mbit/s    UL: 14 Mbit/s
+# Ded QCI8:	DL: 56 Mbit/s   UL: 7,0 Mbit/s
+# Ded QCI3:	DL: 14 Mbit/s   UL: 7,0 Mbit/s
+# -----------------------------------------------
+# Total: 	DL: 210 Mbit/s  UL: 28 Mbit/s
+#
+# ***************CA Traffic per 12UE******************
+# Default 	DL: 24 Mbit/s    UL: 0,012 Mbit/s
+# -----------------------------------------------
+# Total: 	DL: 24 Mbit/s    UL: 0,012 Mbit/s
+#=====================================================
+# TOTAL:    DL: 234 Mbit/s   UL: 28,012 Mbit/s
+# 
+############################################################
+#  Last modification: lskoczyl - 2016-09-23 
+############################################################
+
+transfer ue_traffic_ue_transfer_default_bearer_ul
+	type udp
+	packetSize 1400
+	dir uplink
+	packetRate 8.926
+
+transfer ue_traffic_ue_transfer_default_bearer_dl
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 89.286
+
+transfer ue_traffic_ue_transfer_qci8_bearer_ul
+	type udp
+	packetSize 300
+	dir uplink
+	packetRate 20.833
+
+transfer ue_traffic_ue_transfer_qci8_bearer_dl
+	type udp
+	packetSize 1000
+	dir downlink
+	packetRate 50
+
+bearerQoS ue_traffic_ue_transfer_qci8
+	qci 8
+	network_initiated FALSE
+
+transfer ue_traffic_ue_transfer_qci3_bearer_ul
+	type udp
+	packetSize 300
+	dir uplink
+	packetRate 20.833
+
+transfer ue_traffic_ue_transfer_qci3_bearer_dl
+	type udp
+	packetSize 300
+	dir downlink
+	packetRate 41.667
+
+bearerQoS ue_traffic_ue_transfer_qci3
+	qci 3
+	mbr_uplink 31 
+	mbr_downlink 31 
+	gbr_uplink 31 
+	gbr_downlink 31 
+	network_initiated FALSE
+
+
+
+bearerQoS ue_traffic_ue_transfer_qci5
+	qci 5
+	network_initiated FALSE
+
+application app_ue_traffic[ DEFAULT ue_traffic_ue_transfer_qci3 ue_traffic_ue_transfer_qci8 ]
+	startTransfer ue_traffic_ue_transfer_default_bearer_ul on DEFAULT as ue_traffic_ue_transfer_default_bearer_ul_alias
+	startTransfer ue_traffic_ue_transfer_qci8_bearer_ul on ue_traffic_ue_transfer_qci8 as ue_traffic_ue_transfer_qci8_bearer_ul_alias
+	startTransfer ue_traffic_ue_transfer_qci3_bearer_ul on ue_traffic_ue_transfer_qci3 as ue_traffic_ue_transfer_qci3_bearer_ul_alias
+	startTransfer ue_traffic_ue_transfer_default_bearer_dl on DEFAULT as ue_traffic_ue_transfer_default_bearer_dl_alias
+	startTransfer ue_traffic_ue_transfer_qci8_bearer_dl on ue_traffic_ue_transfer_qci8 as ue_traffic_ue_transfer_qci8_bearer_dl_alias
+	startTransfer ue_traffic_ue_transfer_qci3_bearer_dl on ue_traffic_ue_transfer_qci3 as ue_traffic_ue_transfer_qci3_bearer_dl_alias
+	wait 259200.0
+	stopTransfer ue_traffic_ue_transfer_default_bearer_ul_alias
+	stopTransfer ue_traffic_ue_transfer_qci8_bearer_ul_alias
+	stopTransfer ue_traffic_ue_transfer_qci3_bearer_ul_alias
+	stopTransfer ue_traffic_ue_transfer_default_bearer_dl_alias
+	stopTransfer ue_traffic_ue_transfer_qci8_bearer_dl_alias
+	stopTransfer ue_traffic_ue_transfer_qci3_bearer_dl_alias
+
+
+mobileSession ue_traffic
+	connectBearer DEFAULT as DEFAULT_alias
+	connectBearer ue_traffic_ue_transfer_qci3 as ue_traffic_ue_transfer_qci3_alias
+	connectBearer ue_traffic_ue_transfer_qci8 as ue_traffic_ue_transfer_qci8_alias
+	startApplication app_ue_traffic[ DEFAULT_alias ue_traffic_ue_transfer_qci3_alias ue_traffic_ue_transfer_qci8_alias ] as app_ue_traffic_alias &
+	wait 259200.0
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+	
+####################################################################################################################################################
+## CA
+####################################################################################################################################################
+
+transfer ca_ue_traffic_ue_transfer_default_bearer_ul
+	type udp
+	packetSize 1400
+	dir uplink
+	packetRate 0.08
+
+transfer ca_ue_traffic_ue_transfer_default_bearer_dl
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 178.57
+
+application app_ca_ue_traffic[ DEFAULT ]
+	startTransfer ca_ue_traffic_ue_transfer_default_bearer_ul on DEFAULT as ca_ue_traffic_ue_transfer_default_bearer_ul_alias
+	startTransfer ca_ue_traffic_ue_transfer_default_bearer_dl on DEFAULT as ca_ue_traffic_ue_transfer_default_bearer_dl_alias
+	wait 259200.0
+	stopTransfer ca_ue_traffic_ue_transfer_default_bearer_ul_alias
+	stopTransfer ca_ue_traffic_ue_transfer_default_bearer_dl_alias
+
+
+mobileSession ca_ue_traffic
+	connectBearer DEFAULT as ca_DEFAULT_alias
+	startApplication app_ca_ue_traffic[ ca_DEFAULT_alias  ] as app_ca_ue_traffic_alias & 
+	wait allApplicationsFinish
+	releaseBearer ca_DEFAULT_alias
+
+
+
+testScenario
+	## 140 UEs per cell
+	ue_traffic
+		cells[ 1 2 ]
+		rate 20/s
+		activityIntervalLength 13.99 s
+		ueCapabilities simple1
+		
+	## 12 UEs per cell
+	ue_traffic
+		cells[ 1 ]
+		rate 6/s
+		delayToStart 15 s
+		activityIntervalLength 1.99 s
+		ueCapabilities cat5
+

@@ -1,0 +1,304 @@
+transfer Transfer1
+	type udp
+	dir downlink
+	packetSize 1400
+	packetRate 4500 #5 UE
+
+transfer Transfer2
+	type udp
+	dir downlink
+	packetSize 1400
+	packetRate 2250 #10 UE
+
+transfer Transfer3
+	type udp
+	dir downlink
+	packetSize 1400
+	packetRate 1500 #15UE
+	
+transfer Transfer4
+	type udp
+	dir downlink
+	packetSize 1400
+	packetRate 1125 #20 UE
+
+transfer Transfer5
+	type udp
+	dir downlink
+	packetSize 1400
+	packetRate 900 #25 UE
+
+transfer Transfer6
+	type udp
+	dir downlink
+	packetSize 1400
+	packetRate 750 #30 UE
+ 
+ transfer Transfer7
+	type udp
+	dir downlink
+	packetSize 1400
+	packetRate 642.8 #35 UE
+
+transfer Transfer8
+	type udp
+	dir downlink
+	packetSize 1400
+	packetRate 562.5 #40 UE
+
+transfer Transfer9
+	type udp
+	dir downlink
+	packetSize 1400
+	packetRate 500 #45 UE
+
+transfer Transfer10
+	type udp
+	dir downlink
+	packetSize 1400
+	packetRate 450 #50 UE
+    	
+application App1 [ bearer ]
+	wait 19
+	startTransfer Transfer1 on bearer as sampleTransfer1
+	wait 180
+	stopTransfer sampleTransfer1
+
+application App2 [ bearer ]
+	wait 18
+	wait 180
+	startTransfer Transfer2 on bearer as sampleTransfer2
+	wait 180
+	stopTransfer sampleTransfer2
+
+application App3 [ bearer ]
+	wait 17
+	wait 360
+	startTransfer Transfer3 on bearer as sampleTransfer3
+	wait 180
+	stopTransfer sampleTransfer3    
+	
+application App4 [ bearer ]
+	wait 16
+	wait 540
+	startTransfer Transfer4 on bearer as sampleTransfer4
+	wait 180
+	stopTransfer sampleTransfer4
+
+application App5 [ bearer ]
+	wait 15
+	wait 720
+	startTransfer Transfer5 on bearer as sampleTransfer5
+	wait 180
+	stopTransfer sampleTransfer5
+#TODO
+application App6 [ bearer ]
+	wait 14
+	wait 900
+	startTransfer Transfer6 on bearer as sampleTransfer
+	wait 180
+	stopTransfer sampleTransfer
+
+application App7 [ bearer ]
+	wait 13
+	wait 1080
+	startTransfer Transfer7 on bearer as sampleTransfer
+	wait 180
+	stopTransfer sampleTransfer
+
+application App8 [ bearer ]
+	wait 12
+	wait 1260
+	startTransfer Transfer8 on bearer as sampleTransfer
+	wait 180
+	stopTransfer sampleTransfer
+
+application App9 [ bearer ]
+	wait 11
+	wait 1440
+	startTransfer Transfer9 on bearer as sampleTransfer
+	wait 180
+	stopTransfer sampleTransfer
+
+application App10 [ bearer ]
+	wait 10
+	wait 1620
+	startTransfer Transfer10 on bearer as sampleTransfer
+	wait 180
+	stopTransfer sampleTransfer
+    
+mobileSession Session1
+	connectBearer DEFAULT as stream
+    startApplication App10 [ stream ] as app10 &
+    startApplication App9 [ stream ] as app9 &
+    startApplication App8 [ stream ] as app8 &
+    startApplication App7 [ stream ] as app7 &
+    startApplication App6 [ stream ] as app6 &
+    startApplication App5 [ stream ] as app5 &
+	startApplication App4 [ stream ] as app4 &
+	startApplication App3 [ stream ] as app3 &
+	startApplication App2 [ stream ] as app2 &
+	startApplication App1 [ stream ] as app1 &
+	wait allApplicationsFinish 
+	releaseBearer stream
+
+mobileSession Session2
+	connectBearer DEFAULT as stream
+    startApplication App10 [ stream ] as app10 &
+    startApplication App9 [ stream ] as app9 &
+    startApplication App8 [ stream ] as app8 &
+    startApplication App7 [ stream ] as app7 &
+    startApplication App6 [ stream ] as app6 &
+    startApplication App5 [ stream ] as app5 &
+	startApplication App4 [ stream ] as app4 &
+	startApplication App3 [ stream ] as app3 &
+	startApplication App2 [ stream ] as app2 &
+	wait allApplicationsFinish
+	releaseBearer stream    
+
+mobileSession Session3
+	connectBearer DEFAULT as stream
+    startApplication App10 [ stream ] as app10 &
+    startApplication App9 [ stream ] as app9 &
+    startApplication App8 [ stream ] as app8 &
+    startApplication App7 [ stream ] as app7 &
+    startApplication App6 [ stream ] as app6 &
+    startApplication App5 [ stream ] as app5 &
+	startApplication App4 [ stream ] as app4 &
+	startApplication App3 [ stream ] as app3 &
+	wait allApplicationsFinish
+	releaseBearer stream 
+	
+mobileSession Session4
+	connectBearer DEFAULT as stream
+    startApplication App10 [ stream ] as app10 &
+    startApplication App9 [ stream ] as app9 &
+    startApplication App8 [ stream ] as app8 &
+    startApplication App7 [ stream ] as app7 &
+    startApplication App6 [ stream ] as app6 &    
+    startApplication App5 [ stream ] as app5 &
+	startApplication App4 [ stream ] as app4 &
+	wait allApplicationsFinish
+	releaseBearer stream    
+
+mobileSession Session5
+	connectBearer DEFAULT as stream
+    startApplication App10 [ stream ] as app10 &
+    startApplication App9 [ stream ] as app9 &
+    startApplication App8 [ stream ] as app8 &
+    startApplication App7 [ stream ] as app7 &
+    startApplication App6 [ stream ] as app6 &    
+	startApplication App5 [ stream ] as app5 &
+	wait allApplicationsFinish
+	releaseBearer stream 
+
+mobileSession Session6
+	connectBearer DEFAULT as stream
+    startApplication App10 [ stream ] as app10 &
+    startApplication App9 [ stream ] as app9 &
+    startApplication App8 [ stream ] as app8 &
+    startApplication App7 [ stream ] as app7 &
+    startApplication App6 [ stream ] as app6 &    
+	wait allApplicationsFinish
+	releaseBearer stream 
+
+mobileSession Session7
+	connectBearer DEFAULT as stream
+    startApplication App10 [ stream ] as app10 &
+    startApplication App9 [ stream ] as app9 &
+    startApplication App8 [ stream ] as app8 &
+    startApplication App7 [ stream ] as app7 &
+	wait allApplicationsFinish
+	releaseBearer stream 
+
+mobileSession Session8
+	connectBearer DEFAULT as stream
+    startApplication App10 [ stream ] as app10 &
+    startApplication App9 [ stream ] as app9 &
+    startApplication App8 [ stream ] as app8 &
+	wait allApplicationsFinish
+	releaseBearer stream 
+	
+ mobileSession Session9
+	connectBearer DEFAULT as stream
+    startApplication App10 [ stream ] as app10 &
+    startApplication App9 [ stream ] as app9 &
+	wait allApplicationsFinish
+	releaseBearer stream 
+    
+mobileSession Session10
+	connectBearer DEFAULT as stream
+    startApplication App10 [ stream ] as app10
+	wait allApplicationsFinish
+	releaseBearer stream 
+    
+testScenario
+	Session1
+		rate 5.0/s       
+		cells[1]
+		ueCapabilities cat8
+		activityIntervalLength 0.9 s
+	
+	Session2
+		rate 5.0/s       
+		cells[1]
+		ueCapabilities cat8
+		activityIntervalLength 0.9 s
+		delayToStart 1 s
+		
+	Session3
+		rate 5.0/s       
+		cells[1]
+		ueCapabilities cat8
+		activityIntervalLength 0.9 s
+		delayToStart 2 s
+		
+	Session4
+		rate 5.0/s       
+		cells[1]
+		ueCapabilities cat8
+		activityIntervalLength 0.9 s
+		delayToStart 3 s
+        
+    Session5
+		rate 5.0/s       
+		cells[1]
+		ueCapabilities cat8
+		activityIntervalLength 0.9 s
+		delayToStart 4 s
+        
+    Session6
+		rate 5.0/s       
+		cells[1]
+		ueCapabilities cat8
+		activityIntervalLength 0.9 s
+		delayToStart 5 s
+        
+    Session7
+		rate 5.0/s       
+		cells[1]
+		ueCapabilities cat8
+		activityIntervalLength 0.9 s
+		delayToStart 6 s
+        
+    Session8
+		rate 5.0/s       
+		cells[1]
+		ueCapabilities cat8
+		activityIntervalLength 0.9 s
+		delayToStart 7 s
+        
+    Session9
+		rate 5.0/s       
+		cells[1]
+		ueCapabilities cat8
+		activityIntervalLength 0.9 s
+		delayToStart 8 s
+        
+    Session10
+		rate 5.0/s       
+		cells[1]
+		ueCapabilities cat8
+		activityIntervalLength 0.9 s
+		delayToStart 9 s
+        

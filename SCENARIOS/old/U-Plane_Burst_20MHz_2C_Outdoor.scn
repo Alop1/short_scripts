@@ -1,0 +1,297 @@
+#############################################################
+###BURST SCENARIO
+###author: Tomasz Ogonek
+###date: 16 August 2016
+############################################################
+transfer ue_traffic_ue_transfer_default_bearer_ul_burst
+	type udp
+	packetSize 94
+	dir uplink
+	packetRate 10.4
+
+transfer ue_traffic_ue_transfer_default_bearer_dl_burst
+	type udp
+	packetSize 94
+	dir downlink
+	packetRate 2750
+
+
+transfer ue_traffic_ue_transfer_default_bearer_ul
+	type udp
+	##ping only
+	packetSize 1400
+	dir uplink
+	packetRate 1.0
+
+transfer ue_traffic_ue_transfer_default_bearer_dl
+	type udp
+	##ping only
+        packetSize 1400
+	dir downlink
+        packetRate 1.0
+
+transfer ue_traffic_ue_transfer_qci8_bearer_ul
+	type udp
+	packetSize 1400
+	dir uplink
+	packetRate 0.75
+
+transfer ue_traffic_ue_transfer_qci8_bearer_dl
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 1.4
+
+bearerQoS ue_traffic_ue_transfer_qci8
+	qci 8
+	network_initiated FALSE
+
+transfer ue_traffic_ue_transfer_qci3_bearer_ul
+	type udp
+	packetSize 1400				
+	dir uplink
+	packetRate 0.75
+
+transfer ue_traffic_ue_transfer_qci3_bearer_dl
+	type udp
+	packetSize 1400
+	dir downlink
+	packetRate 1.4
+
+bearerQoS ue_traffic_ue_transfer_qci3
+	qci 3
+	mbr_uplink 31 
+	mbr_downlink 31 
+	gbr_uplink 31 
+	gbr_downlink 31 
+	network_initiated FALSE
+
+
+
+bearerQoS ue_traffic_ue_transfer_qci5
+	qci 5
+	network_initiated FALSE
+
+	
+transfer TransferDL_SIP
+	type udp
+	packetSize 955
+	dir downlink
+	packetRate 10.0
+
+transfer TransferUL_SIP
+	type udp
+	packetSize 868
+	dir uplink
+	packetRate 10.0
+
+	
+trafficProfile TransferDL_RTP_prof
+	downlink
+	packetSize 45       
+	packetRate 50.0
+	uplink
+	packetSize 20
+	packetRate 6.25
+
+trafficProfile TransferUL_RTP_prof
+	uplink
+	packetSize 45       
+	packetRate 50.0
+	downlink
+	packetSize 20
+	packetRate 6.25	  
+	
+transfer TransferDL_RTP
+	type rtp
+	profile TransferDL_RTP_prof
+  
+
+transfer TransferUL_RTP
+	type rtp
+	profile TransferUL_RTP_prof
+
+trafficProfile RTP_MV_prof
+	timeQuantum 10000
+	state1 TransferDL_RTP
+	state2 TransferUL_RTP
+	[ state2 state1 0.5 ]
+	[ state2 state2 0.5 ]
+	[ state1 state2 0.5 ]
+	[ state1 state1 0.5 ]
+	
+	
+transfer Transfer_RTP
+	type rtp
+	profile RTP_MV_prof
+	
+	
+application app_ue_traffic[ DEFAULT ue_traffic_ue_transfer_qci3 ue_traffic_ue_transfer_qci8 ]
+	startTransfer ue_traffic_ue_transfer_default_bearer_ul on DEFAULT as ue_traffic_ue_transfer_default_bearer_ul_alias
+	startTransfer ue_traffic_ue_transfer_qci8_bearer_ul on ue_traffic_ue_transfer_qci8 as ue_traffic_ue_transfer_qci8_bearer_ul_alias
+	startTransfer ue_traffic_ue_transfer_qci3_bearer_ul on ue_traffic_ue_transfer_qci3 as ue_traffic_ue_transfer_qci3_bearer_ul_alias
+	startTransfer ue_traffic_ue_transfer_default_bearer_dl on DEFAULT as ue_traffic_ue_transfer_default_bearer_dl_alias
+	startTransfer ue_traffic_ue_transfer_qci8_bearer_dl on ue_traffic_ue_transfer_qci8 as ue_traffic_ue_transfer_qci8_bearer_dl_alias
+	startTransfer ue_traffic_ue_transfer_qci3_bearer_dl on ue_traffic_ue_transfer_qci3 as ue_traffic_ue_transfer_qci3_bearer_dl_alias
+	wait 3600.0
+	stopTransfer ue_traffic_ue_transfer_default_bearer_ul_alias
+	stopTransfer ue_traffic_ue_transfer_qci8_bearer_ul_alias
+	stopTransfer ue_traffic_ue_transfer_qci3_bearer_ul_alias
+	stopTransfer ue_traffic_ue_transfer_default_bearer_dl_alias
+	stopTransfer ue_traffic_ue_transfer_qci8_bearer_dl_alias
+	stopTransfer ue_traffic_ue_transfer_qci3_bearer_dl_alias
+	
+application app_ue_traffic_burst[  DEFAULT  ]
+	startTransfer ue_traffic_ue_transfer_default_bearer_ul_burst on DEFAULT as ue_traffic_ue_transfer_default_bearer_ul_alias_burst
+	startTransfer ue_traffic_ue_transfer_default_bearer_dl_burst on DEFAULT as ue_traffic_ue_transfer_default_bearer_dl_alias_burst
+	wait 600.0
+	stopTransfer ue_traffic_ue_transfer_default_bearer_ul_alias_burst
+	stopTransfer ue_traffic_ue_transfer_default_bearer_dl_alias_burst
+	
+application app_ue_traffic_burst1[  DEFAULT  ]
+	startTransfer ue_traffic_ue_transfer_default_bearer_ul_burst on DEFAULT as ue_traffic_ue_transfer_default_bearer_ul_alias_burst
+	startTransfer ue_traffic_ue_transfer_default_bearer_dl_burst on DEFAULT as ue_traffic_ue_transfer_default_bearer_dl_alias_burst
+	wait 600.0
+	stopTransfer ue_traffic_ue_transfer_default_bearer_ul_alias_burst
+	stopTransfer ue_traffic_ue_transfer_default_bearer_dl_alias_burst
+
+application app_ue_traffic_burst2[  DEFAULT  ]
+	startTransfer ue_traffic_ue_transfer_default_bearer_ul_burst on DEFAULT as ue_traffic_ue_transfer_default_bearer_ul_alias_burst
+	startTransfer ue_traffic_ue_transfer_default_bearer_dl_burst on DEFAULT as ue_traffic_ue_transfer_default_bearer_dl_alias_burst
+	wait 600.0
+	stopTransfer ue_traffic_ue_transfer_default_bearer_ul_alias_burst
+	stopTransfer ue_traffic_ue_transfer_default_bearer_dl_alias_burst
+	
+	
+application App_SIP [ bearerSIP ]
+	startTransfer TransferDL_SIP on bearerSIP as sampleTransferVoLTEDL_SIP1
+	startTransfer TransferUL_SIP on bearerSIP as sampleTransferVoLTEUL_SIP1
+	wait 1
+	stopTransfer sampleTransferVoLTEDL_SIP1
+	stopTransfer sampleTransferVoLTEUL_SIP1
+
+	
+application App_RTP [ bearerRTP ]
+	startTransfer Transfer_RTP on bearerRTP as sampleTransferVoLTEDL_RTP
+	wait 172800
+	stopTransfer sampleTransferVoLTEDL_RTP
+	
+bearerQoS VoLTE_RTP
+	qci 1
+	mbr_uplink 40
+	mbr_downlink 40
+	gbr_uplink 40
+	gbr_downlink 40
+	network_initiated FALSE
+	
+bearerQoS VoLTE_SIP
+	qci 5
+#	mbr_uplink 64
+#	mbr_downlink 64
+#	gbr_uplink 64
+#	gbr_downlink 64
+	network_initiated FALSE
+	
+bearerQoS Data_Stream
+	qci 7
+	network_initiated FALSE
+	
+
+
+mobileSession ue_traffic
+	connectBearer DEFAULT as DEFAULT_alias
+	connectBearer ue_traffic_ue_transfer_qci3 as ue_traffic_ue_transfer_qci3_alias
+	connectBearer ue_traffic_ue_transfer_qci8 as ue_traffic_ue_transfer_qci8_alias
+	startApplication app_ue_traffic[ DEFAULT_alias ue_traffic_ue_transfer_qci3_alias ue_traffic_ue_transfer_qci8_alias ] as app_ue_traffic_alias &
+	wait 3600.0
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+	
+mobileSession ue_traffic_burst
+	connectBearer DEFAULT as DEFAULT_alias
+	startApplication app_ue_traffic_burst[  DEFAULT_alias   ] as app_ue_traffic_alias_burst 
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+	
+mobileSession ue_traffic_burst1
+	connectBearer DEFAULT as DEFAULT_alias
+	startApplication app_ue_traffic_burst1[  DEFAULT_alias   ] as app_ue_traffic_alias_burst1 
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+mobileSession ue_traffic_burst2
+	connectBearer DEFAULT as DEFAULT_alias
+	startApplication app_ue_traffic_burst2[  DEFAULT_alias   ] as app_ue_traffic_alias_burst2 
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+	
+	
+mobileSession testSessionVoLTE1
+	connectBearer DEFAULT as DEFAULT_alias
+	wait 2
+    connectBearer VoLTE_SIP on DEFAULT_alias as streamVoLTE_SIP1
+	startApplication App_SIP [ streamVoLTE_SIP1] as myApp_SIP1
+	wait 2
+	connectBearer VoLTE_RTP as streamVoLTE_RTP1
+	startApplication App_RTP [ streamVoLTE_RTP1 ] as myApp_RTP1 &
+	wait applicationsFinish [ myApp_SIP1 ]
+    wait applicationsFinish [ myApp_RTP1 ]
+
+mobileSession testSessionVoLTE2
+	connectBearer DEFAULT as DEFAULT_alias2
+	wait 2
+    connectBearer VoLTE_SIP on DEFAULT_alias2 as streamVoLTE_SIP2
+	startApplication App_SIP [ streamVoLTE_SIP2] as myApp_SIP2
+	wait 2
+	connectBearer VoLTE_RTP as streamVoLTE_RTP2
+	startApplication App_RTP [ streamVoLTE_RTP2 ] as myApp_RTP2 &
+	wait applicationsFinish [ myApp_SIP2 ]
+    wait applicationsFinish [ myApp_RTP2 ]
+	
+
+
+testScenario
+	ue_traffic
+		cells[ 1]
+		rate 10/s
+		activityIntervalLength 9.99 s
+		ueCapabilities cat5
+
+	ue_traffic_burst
+		cells[ 1 2 ]
+		rate 1/s
+		activityIntervalLength 4.9 s
+		delayToStart 1200 s
+		ueCapabilities simple1
+				
+	ue_traffic_burst1
+		cells[ 1 2 ]
+		rate 1/s
+		activityIntervalLength 9.9 s
+		delayToStart 2100 s
+		ueCapabilities simple1
+					
+	ue_traffic_burst2
+		cells[ 1 2 ]
+		rate 1/s
+		activityIntervalLength 19.9 s
+		delayToStart 3000 s
+		ueCapabilities simple1
+
+
+	testSessionVoLTE1
+		rate 1/s
+		activityIntervalLength 149.5 s
+		cells[1]
+		delayToStart 1 s
+		ueCapabilities simple1
+
+		
+	testSessionVoLTE2
+		rate 1/s
+		activityIntervalLength 149.5 s
+		cells[2]
+		delayToStart 1 s
+		ueCapabilities simple1
+	

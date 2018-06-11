@@ -1,0 +1,148 @@
+bearerQoS QCI1
+	qci 1
+	mbr_uplink 64
+	mbr_downlink 64
+	gbr_uplink 31
+	gbr_downlink 31
+# 	network_initiated TRUE
+
+bearerQoS QCI5
+	qci 5
+# 	mbr_uplink 8640
+# 	mbr_downlink 8640
+# 	gbr_uplink
+# 	gbr_downlink
+#	network_initiated TRUE
+
+bearerQoS QCI7
+	qci 7
+# 	mbr_uplink 8640
+# 	mbr_downlink 8640
+# 	gbr_uplink
+# 	gbr_downlink
+#	network_initiated TRUE
+
+bearerQoS QCI8
+	qci 8
+#	mbr_uplink 8640
+#	mbr_downlink 8640
+#	gbr_uplink
+#	gbr_downlink
+#	network_initiated TRUE
+
+transfer sampleTransferDescriptionDL
+	type udp
+	packetSize 70
+	dir downlink
+	packetRate 1
+
+transfer sampleTransferDescriptionUL
+	type udp
+	packetSize 70
+	dir uplink
+	packetRate 1
+
+trafficProfile DLandUL
+	downlink
+	packetSize 53
+	packetRate 5
+	uplink
+	packetSize 53
+	packetRate 5
+
+trafficProfile DL
+	downlink
+	packetSize 53
+	packetRate 5
+	uplink
+	packetSize 20
+	packetRate 6
+
+trafficProfile UL
+	downlink
+	packetSize 20
+	packetRate 6
+	uplink
+	packetSize 53
+	packetRate 5
+
+transfer Both
+	type rtp
+	profile DLandUL
+
+transfer OnlyDL
+	type rtp
+	profile DL
+
+transfer OnlyUL
+	type rtp
+	profile UL
+
+trafficProfile markovVolte
+	timeQuantum 3500
+	state3 Both
+	state2 OnlyDL
+	state1 OnlyUL
+	[ state1 state1 0.4 ]
+	[ state1 state2 0.4 ]
+	[ state1 state3 0.2 ]
+	[ state2 state1 0.4 ]
+	[ state2 state2 0.4 ]
+	[ state2 state3 0.2 ]
+	[ state3 state1 0.4 ]
+	[ state3 state2 0.4 ]
+
+transfer Mkv
+	type rtp
+	profile markovVolte
+
+transfer sampleTransferDescriptionB
+	type udp
+	packetSize 50
+	dir twoway
+	packetRate 0.001
+
+application simpleAppB [ bearer ]
+	startTransfer sampleTransferDescriptionB on bearer as sampleTransferB
+	wait 500000
+	stopTransfer sampleTransferB
+
+application simpleApp [ bearer ]
+	startTransfer Mkv on bearer as sampleTransfer
+	wait 2250000
+	stopTransfer sampleTransfer
+
+application App [ bearer ]
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransferDL 
+	startTransfer sampleTransferDescriptionUL on bearer as sampleTransferUL 
+	wait 22500000
+	stopTransfer sampleTransferDL 
+	stopTransfer sampleTransferUL 
+
+# this is a simple session scenario
+mobileSession simpleSession
+	connectBearer QCI1 as B
+	connectBearer QCI5 as C
+	connectBearer QCI7 as F
+	connectBearer QCI8 as G
+	connectBearer DEFAULT as A
+	startApplication simpleApp [ B ] as mySimpleApp &
+	startApplication simpleAppB [ C ] as mySimpleAppC &
+	startApplication App [ F ] as mySimpleAppF &
+	startApplication App [ G ] as mySimpleAppG &
+	startApplication App [ A ] as mySimpleAppA &
+
+	wait applicationsFinish [ mySimpleApp mySimpleAppC mySimpleAppF mySimpleAppG mySimpleAppA]
+
+	releaseBearer B
+	releaseBearer C
+	releaseBearer F
+	releaseBearer G
+
+testScenario
+  simpleSession
+	rate 9.0/s
+	cells[1 2 3]
+	activityIntervalLength 167.8 s
+
+

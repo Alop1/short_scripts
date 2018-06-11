@@ -1,0 +1,161 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+#require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_LMTS_copy_for_31.rtv";
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 0;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'Trunk_CRT\GRnD\PET\CRT2';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL31';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'Test Cases\FD-LTE WMP\Automation test cases';
+
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'NO'; # RTPM set to YES is disabling COLLECT_PMSTATS | Disable collecting RTPMstats
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COPY_SCENARIO_FILE}              = 'NO';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-COLLECT_TTI}{-COPY_PARSER_FILES}                 = 'YES';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-COLLECT_TTI}{-TTI_SCRIPT_DIR}	 = '/home/lmts/tti/';	# Used default one
+
+
+my $sw_version = 'FL00_FSM3_9999_170328_036417'; ##must be on EMSS 
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+
+{-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version,}},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'YES';
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "software_update",
+	##################### 5 MHz  ########################################################################### Commissioning  ####################################
+
+<<<<<<< HEAD
+	#		'CRT_TL31_FL16_5MHz',			
+	#			'Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-5__UE-2520',			#yes	#CRT_TL31_FL16_5MHz.xml
+	#		'CRT_TL31_FL16_5MHz_dl_t-put',
+	#			'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_600_FSMF_FBBx_BW-5',	#UDP UL can be only 2% when max UEs			#CRT_TL31_FL16_5MHz.xml
+	#		'CRT_TL31_FL16_5MHz_ul_t-put',
+	#			'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_600_FSMF_FBBx_BW-5',			#CRT_TL31_FL16_5MHz.xml
+
+	##################### 10 MHz  ######################
+
+	#		'CRT_TL31_FL16_10MHz_ul_t-put',
+	#			'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_750_FSMF_FBBx_BW-10',			#CRT_TL31_FL16_10MHz.xml
+	#		'CRT_TL31_FL16_10MHz_dl_t-put',
+	#			'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_750_FSMF_FBBx_BW-10',			#CRT_TL31_FL16_10MHz.xml
+	#		'CRT_TL31_FL16_10MHz',
+	#			'Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-10__UE-3000', 	#==--PRO__added
+	#			'Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_DL_with_FSMF_14UE_28TB__BW-10__TRUNK',	#==--PRO__added
+	#			'Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_14UE_14TB__BW-10__TRUNK',	#==--PRO__added	
+	
+	##################### 15 MHz  ######################
+
+	#		'CRT_TL31_FL16_15MHz_dl_ul_t-put',
+	#			'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_1250_FSMF_FBBx_BW-15',			#CRT_TL31_FL16_15MHz.xml
+	#			'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_1250_FSMF_FBBx_BW-15',			#CRT_TL31_FL16_15MHz.xml
+	#			'Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_DL_UL_FSMF_FBBx_BW-15',	#==--PRO__added
+	#			'Automated_eNB_Capacity__Actively_scheluded_users_DL_with_FSMF_FBBA_4dsp__BW-15',	#==--PRO__added
+	#			'Automated_eNB_Capacity__Actively_scheluded_users_UL_with_FSMF_FBBA_4dsp__BW-15',	#==--PRO__added
+	#		'CRT_TL31_FL16_15MHz_Volte',
+	#			'Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF_FBBC_BW-15_UE-1500',	#yes	#CRT_TL31_FL16_15MHz.xml
+	#			'Automated_eNB_Capacity__VoLTE_1500_UEs_with_50_UEs_UDP_DL_throughput_with_FSMF_FBBA_BW-15',	#==--PRO__added	
+
+
+	#		'CRT_TL31_FL16_15MHz',
+	#			'Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-15__UE-3750', 		#yes	#CRT_TL31_FL16_15MHz.xml
+	#			'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_DL_4dsp_BW-15',	#==--PRO__added
+	#			'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_UL_4dsp_BW-15',	#==--PRO__added	
+
+	##################### 20 MHz  #####################
+
+
+	#		'CRT_TL31_FL16_20MHz_Volte',
+	#			'Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF_FBBC__BW-20_UE-1800',		#yes	#CRT_TL31_FL16_20MHz.xml
+	#			'Automated_eNB_Capacity__VoLTE_1800_UEs_with_50_UEs_UDP_DL_throughput_with_FSMF_FBBA_BW-20',	#==--PRO__added
+	#		'CRT_TL31_FL16_20MHz',
+	#			'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_UL_4dsp_BW-20',				#CRT_TL31_FL16_20MHz.xml#
+	#			'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_DL_4dsp_BW-20',				#CRT_TL31_FL16_20MHz.xml
+	#			'Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-20__UE-4500', 		#yes	#CRT_TL31_FL16_20MHz.xml
+	#			'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_3_DRBs_DL_FSMF_FBBx_BW-20',	#==--PRO__added
+	#			'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_3_DRBs_UL_FSMF_FBBx_BW-20',	#==--PRO__added
+	#			'Automated_eNB_Capacity__Intra_eNB_handover_performance_with_high_data_FSMF_FBBx__BW-20__RATE-90',	#==--PRO__added
+	#		'CRT_TL31_FL16_20MHz_ul_t-put',
+	#			'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_1500_FSMF_FBBx_BW-20',			#CRT_TL31_FL16_20MHz.xml
+	#			'Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_DL_120mbps_FSMF_FBBC_BW-20',	#CRT_TL31_FL16_20MHz.xml
+	#			'Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_UL_35mbps_FSMF_FBBC_BW-20',	#CRT_TL31_FL16_20MHz.xml	
+	#			'Automated_eNB_Capacity__Actively_scheluded_users_UL_with_FSMF_FBBA_4dsp__BW-20',	#==--PRO__added
+	#			'Automated_eNB_Capacity__Actively_scheluded_users_DL_with_FSMF_FBBA_4dsp__BW-20',	#==--PRO__added
+	#			'CRT_TL31_FL16_20MHz_dl_t-put',
+	#		 	'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_1500_FSMF_FBBx_BW-20',			#CRT_TL31_FL16_20MHz.xml
+			'CRT_TL31_FL16_20MHz_AMBR_tput',
+				'Automated_eNB_Capacity__50UEs_low_ambr_50UEs_high_ambr_FSMF_FBBC_BW_20',				
+=======
+#			'CRT_TL31_FL16_5MHz',			
+#				'Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-5__UE-2520',			#yes	#CRT_TL31_FL16_5MHz.xml
+#	    	'CRT_TL31_FL16_5MHz_dl_t-put',
+#			'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_600_FSMF_FBBx_BW-5',	#UDP UL can be only 2% when max UEs			#CRT_TL31_FL16_5MHz.xml
+#			'CRT_TL31_FL16_5MHz_ul_t-put',
+#				'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_600_FSMF_FBBx_BW-5',			#CRT_TL31_FL16_5MHz.xml
+
+	##################### 10 MHz  ######################
+			'CRT_TL31_FL16_10MHz_ul_t-put',
+				'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_750_FSMF_FBBx_BW-10',			#CRT_TL31_FL16_10MHz.xml
+#			'CRT_TL31_FL16_10MHz_dl_t-put',
+#				'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_750_FSMF_FBBx_BW-10',			#CRT_TL31_FL16_10MHz.xml
+#			'CRT_TL31_FL16_10MHz',
+#				'Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-10__UE-3000', 	#==--PRO__added
+#				'Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_DL_with_FSMF_14UE_28TB__BW-10__TRUNK',	#==--PRO__added
+#				'Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_14UE_14TB__BW-10__TRUNK',	#==--PRO__added	
+	
+	##################### 15 MHz  ######################
+
+#			'CRT_TL31_FL16_15MHz_dl_ul_t-put',
+#				'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_1250_FSMF_FBBx_BW-15',			#CRT_TL31_FL16_15MHz.xml
+#	    		'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_1250_FSMF_FBBx_BW-15',			#CRT_TL31_FL16_15MHz.xml
+#				'Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_DL_UL_FSMF_FBBx_BW-15',	#==--PRO__added
+#				'Automated_eNB_Capacity__Actively_scheluded_users_DL_with_FSMF_FBBA_4dsp__BW-15',	#==--PRO__added
+#				'Automated_eNB_Capacity__Actively_scheluded_users_UL_with_FSMF_FBBA_4dsp__BW-15',	#==--PRO__added
+#			'CRT_TL31_FL16_15MHz_Volte',
+#				'Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF_FBBC_BW-15_UE-1500',	#yes	#CRT_TL31_FL16_15MHz.xml
+#				'Automated_eNB_Capacity__VoLTE_1500_UEs_with_50_UEs_UDP_DL_throughput_with_FSMF_FBBA_BW-15',	#==--PRO__added	
+#			'CRT_TL31_FL16_15MHz',
+#				'Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-15__UE-3750', 		#yes	#CRT_TL31_FL16_15MHz.xml
+#    			'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_DL_4dsp_BW-15',	#==--PRO__added
+#				'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_UL_4dsp_BW-15',	#==--PRO__added	
+	##################### 20 MHz  #####################
+
+#		'CRT_TL31_FL16_20MHz_Volte',
+#				'Automated_eNB_Capacity__VoLTE_user_amount_with_FSMF_FBBC__BW-20_UE-1800__TRUNK',		#yes	#CRT_TL31_FL16_20MHz.xml
+#				'Automated_eNB_Capacity__VoLTE_1800_UEs_with_50_UEs_UDP_DL_throughput_with_FSMF_FBBA_BW-20',	#==--PRO__added
+#			'CRT_TL31_FL16_20MHz',
+#				'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_UL_4dsp_BW-20',				#CRT_TL31_FL16_20MHz.xml#
+#				'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_DL_4dsp_BW-20',				#CRT_TL31_FL16_20MHz.xml
+#				'Automated_eNB_Capacity__User_amount_with_FSMF_FBBC__BW-20__UE-4500', 		#yes	#CRT_TL31_FL16_20MHz.xml
+#				'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_3_DRBs_DL_FSMF_FBBx_BW-20',	#==--PRO__added
+#				'Automated_eNB_Capacity__MAX_Number_of_UEs_per_TTI_3_DRBs_UL_FSMF_FBBx_BW-20',	#==--PRO__added#
+# 				'Automated_eNB_Capacity__Intra_eNB_handover_performance_with_high_data_FSMF_FBBx__BW-20__RATE-90',	#==--PRO__added
+#			'CRT_TL31_FL16_20MHz_ul_t-put',
+#     			'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_1500_FSMF_FBBx_BW-20',    #CRT_TL31_FL16_20MHz.xml
+#				'Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_DL_120mbps_FSMF_FBBC_BW-20',	#CRT_TL31_FL16_20MHz.xml
+#				'Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_UL_35mbps_FSMF_FBBC_BW-20__TRUNK',	#CRT_TL31_FL16_20MHz.xml	
+#				'Automated_eNB_Capacity__Actively_scheluded_users_UL_with_FSMF_FBBA_4dsp__BW-20',	#==--PRO__added
+#				'Automated_eNB_Capacity__Actively_scheluded_users_DL_with_FSMF_FBBA_4dsp__BW-20',	#==--PRO__added
+#			'CRT_TL31_FL16_20MHz_dl_t-put',
+#			 	'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_1500_FSMF_FBBx_BW-20',		#CRT_TL31_FL16_20MHz.xml
+#    		'CRT_TL31_FL16_20MHz_AMBR_tput',
+#				'Automated_eNB_Capacity__50UEs_low_ambr_50UEs_high_ambr_FSMF_FBBC_BW_20',				
+>>>>>>> be4c2ed461526dd55acd79bbfe3641a2b4507ae4
+
+];

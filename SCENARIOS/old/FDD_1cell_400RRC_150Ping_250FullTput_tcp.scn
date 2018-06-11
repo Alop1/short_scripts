@@ -1,0 +1,151 @@
+transfer ue_tr17_default_bearer_ul
+	type tcp
+	packetSize 1400
+	dir uplink
+	packetRate 5.75
+
+transfer ue_tr17_default_bearer_dl
+	type tcp
+	packetSize 1400
+	dir downlink
+	packetRate 17.79
+
+transfer ue_tr17_qci7_17_bearer_ul
+	type tcp
+	packetSize 1400
+	dir uplink
+	packetRate 5.75
+
+transfer ue_tr17_qci7_17_bearer_dl
+	type tcp
+	packetSize 1400
+	dir downlink
+	packetRate 17.79
+
+bearerQoS ue_tr17_qci7_17
+	qci 7
+	network_initiated FALSE
+
+transfer ue_tr17_qci8_17_bearer_ul
+	type tcp
+	packetSize 1400
+	dir uplink
+	packetRate 5.75
+
+transfer ue_tr17_qci8_17_bearer_dl
+	type tcp
+	packetSize 1400
+	dir downlink
+	packetRate 17.79
+
+bearerQoS ue_tr17_qci8_17
+	qci 8
+	network_initiated FALSE
+
+application app_ue[ ue_tr17_qci8_17 ue_tr17_qci7_17 DEFAULT ]
+	startTransfer ue_tr17_default_bearer_ul on DEFAULT as ue_tr17_default_bearer_ul_alias
+	startTransfer ue_tr17_qci7_17_bearer_ul on ue_tr17_qci7_17 as ue_tr17_qci7_17_bearer_ul_alias
+	startTransfer ue_tr17_qci8_17_bearer_ul on ue_tr17_qci8_17 as ue_tr17_qci8_17_bearer_ul_alias
+	startTransfer ue_tr17_default_bearer_dl on DEFAULT as ue_tr17_default_bearer_dl_alias
+	startTransfer ue_tr17_qci7_17_bearer_dl on ue_tr17_qci7_17 as ue_tr17_qci7_17_bearer_dl_alias
+	startTransfer ue_tr17_qci8_17_bearer_dl on ue_tr17_qci8_17 as ue_tr17_qci8_17_bearer_dl_alias
+	wait 86400.0
+	stopTransfer ue_tr17_default_bearer_ul_alias
+	stopTransfer ue_tr17_qci7_17_bearer_ul_alias
+	stopTransfer ue_tr17_qci8_17_bearer_ul_alias
+	stopTransfer ue_tr17_default_bearer_dl_alias
+	stopTransfer ue_tr17_qci7_17_bearer_dl_alias
+	stopTransfer ue_tr17_qci8_17_bearer_dl_alias
+
+
+mobileSession ue
+	connectBearer DEFAULT as DEFAULT_alias
+	connectBearer ue_tr17_qci8_17 as ue_tr17_qci8_17_alias
+	connectBearer ue_tr17_qci7_17 as ue_tr17_qci7_17_alias
+	startApplication app_ue[ ue_tr17_qci8_17_alias ue_tr17_qci7_17_alias DEFAULT_alias  ] as app_ue_alias &
+	wait 86400.0
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+transfer ping_ping17_default_bearer_ul
+	type udp
+	packetSize 250
+	dir uplink
+	packetRate 0.29
+
+transfer ping_ping17_default_bearer_dl
+	type udp
+	packetSize 250
+	dir downlink
+	packetRate 1.2
+
+transfer ping_ping40_qci7_blank_bearer_ul
+	type udp
+	packetSize 40
+	dir uplink
+	packetRate 9.36
+
+transfer ping_ping40_qci7_blank_bearer_dl
+	type udp
+	packetSize 40
+	dir downlink
+	packetRate 9.36
+
+bearerQoS ping_ping40_qci7_blank
+	qci 7
+	network_initiated FALSE
+
+transfer ping_ping40_qci8_blank_bearer_ul
+	type udp
+	packetSize 40
+	dir uplink
+	packetRate 9.36
+
+transfer ping_ping40_qci8_blank_bearer_dl
+	type udp
+	packetSize 40
+	dir downlink
+	packetRate 9.36
+
+bearerQoS ping_ping40_qci8_blank
+	qci 8
+	network_initiated FALSE
+
+application app_ping[ ping_ping40_qci8_blank ping_ping40_qci7_blank DEFAULT ]
+	startTransfer ping_ping40_qci7_blank_bearer_ul on ping_ping40_qci7_blank as ping_ping40_qci7_blank_bearer_ul_alias
+	startTransfer ping_ping40_qci8_blank_bearer_ul on ping_ping40_qci8_blank as ping_ping40_qci8_blank_bearer_ul_alias
+	startTransfer ping_ping40_qci7_blank_bearer_dl on ping_ping40_qci7_blank as ping_ping40_qci7_blank_bearer_dl_alias
+	startTransfer ping_ping40_qci8_blank_bearer_dl on ping_ping40_qci8_blank as ping_ping40_qci8_blank_bearer_dl_alias
+	startTransfer ping_ping17_default_bearer_ul on DEFAULT as ping_ping17_default_bearer_ul_alias
+	startTransfer ping_ping17_default_bearer_dl on DEFAULT as ping_ping17_default_bearer_dl_alias
+	stopTransfer ping_ping40_qci7_blank_bearer_ul_alias
+	stopTransfer ping_ping40_qci8_blank_bearer_ul_alias
+	stopTransfer ping_ping40_qci7_blank_bearer_dl_alias
+	stopTransfer ping_ping40_qci8_blank_bearer_dl_alias
+	wait 86400.0
+	stopTransfer ping_ping17_default_bearer_ul_alias
+	stopTransfer ping_ping17_default_bearer_dl_alias
+
+
+mobileSession ping
+	connectBearer DEFAULT as DEFAULT_alias
+	connectBearer ping_ping40_qci8_blank as ping_ping40_qci8_blank_alias
+	connectBearer ping_ping40_qci7_blank as ping_ping40_qci7_blank_alias
+	startApplication app_ping[ ping_ping40_qci8_blank_alias ping_ping40_qci7_blank_alias DEFAULT_alias  ] as app_ping_alias &
+	wait 86400.0
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+testScenario
+	ue
+		cells[ 1 ]
+		rate 10/s
+		activityIntervalLength 24.9 s
+		ueCapabilities simple1
+
+	ping
+		cells[ 1 ]
+		rate 10/s
+		activityIntervalLength 14.9 s
+		ueCapabilities simple1
+

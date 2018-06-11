@@ -51,7 +51,6 @@ class Test_name_recognizer():
         text = self.test_data
         self.string_tests_name = self.test_data[:]
         if self.isfile(text):
-            # print "to jest plik"
             words = self.read_file(text)
         else:
             words = self.split_string_to_words(text)
@@ -180,9 +179,11 @@ def main():
     Tests_names001_set = Training_data("tests_names_001.txt", 1)
     Random_words_set = Training_data("other_names.txt", 0)
     train_data_tl226 = Training_data("training_positive_tl226.txt",1)
+    lmts_test_names = Training_data("test_name_lmts_tcsdef.txt", 1)
+    lmts_cfg_names = Training_data("commissioning_names_lmts_tcsdef.txt", 0)
 
-    training_data = Random_words_set.training_content + Call_modes_set.training_content + Tests_names001_set.training_content + train_data_tl226.training_content
-    supervisor = Random_words_set.training_supervisor + Call_modes_set.training_supervisor + Tests_names001_set.training_supervisor + train_data_tl226.training_supervisor
+    training_data = lmts_cfg_names.training_content + Random_words_set.training_content + lmts_test_names.training_content + Call_modes_set.training_content + Tests_names001_set.training_content + train_data_tl226.training_content
+    supervisor = lmts_cfg_names.training_supervisor + Random_words_set.training_supervisor + lmts_test_names.training_supervisor + Call_modes_set.training_supervisor + Tests_names001_set.training_supervisor + train_data_tl226.training_supervisor
 
     # prepare decision tree model
     # tree_test = Test_name_recognizer(training_data, supervisor)

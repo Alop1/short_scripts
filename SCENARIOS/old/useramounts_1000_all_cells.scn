@@ -1,0 +1,82 @@
+transfer pingTransferDescriptionDL
+	type udp
+	packetSize 64
+	dir downlink
+	packetRate 0.5
+
+transfer pingTransferDescriptionUL
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 0.5
+	
+transfer sampleTransferDescriptionDL
+	type udp
+	packetSize 1400
+	packetRate 15
+	dir downlink
+	
+transfer sampleTransferDescriptionUL
+	type udp
+	packetSize 1400
+	packetRate 5
+	dir uplink
+	
+#########################################################
+################ Applications ###########################
+#########################################################
+application AppPingData [ bearer ]
+	startTransfer pingTransferDescriptionDL on bearer as pingTransferDL 
+	startTransfer pingTransferDescriptionUL on bearer as pingTransferUL 
+	wait 3600
+	stopTransfer pingTransferDL 
+	stopTransfer pingTransferUL 
+	wait 4
+	
+application AppDLUL [ bearer ]
+	#wait 60
+	#startTransfer pingTransferDescriptionDL on bearer as pingTransferDL 
+	#startTransfer pingTransferDescriptionUL on bearer as pingTransferUL 
+	#wait 10
+	#stopTransfer pingTransferDL 
+	#stopTransfer pingTransferUL 
+	#wait 3
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransferDL 
+	startTransfer sampleTransferDescriptionUL on bearer as sampleTransferUL 
+	wait 2700
+	stopTransfer sampleTransferDL
+	stopTransfer sampleTransferUL
+	wait 11
+		
+#########################################################
+################ MobileSessions #########################
+#########################################################
+mobileSession testSessionPingData
+	connectBearer DEFAULT as stream
+	startApplication AppPingData [ stream ] as myPingApp
+	wait applicationsFinish [ myPingApp ]
+	wait 1
+	releaseBearer stream
+	
+mobileSession testSessionData
+	connectBearer DEFAULT as stream
+	startApplication AppDLUL [ stream ] as myAppDL
+	wait applicationsFinish [ myAppDL ]
+	releaseBearer stream
+	
+#########################################################
+################ testScenario #########################
+#########################################################
+testScenario
+testSessionPingData
+	rate 30.0/s
+	cells[1 2 3]
+	#delayToStart 30 s
+	activityIntervalLength 74.4 s
+	
+testSessionData
+	rate 30.0/s
+	cells[1 2 3]
+	delayToStart  80 s
+	activityIntervalLength 24.9 s
+

@@ -1,0 +1,57 @@
+trafficProfile TransferSMALL_prof
+	downlink
+	packetSize 40
+	packetRate 48
+	uplink
+	packetSize 40   
+	packetRate 10
+	
+trafficProfile TransferAVG_prof
+	downlink
+	packetSize 576       
+	packetRate 24
+	uplink
+	packetSize 576
+	packetRate 5
+
+trafficProfile TransferLARGE_prof
+	downlink
+	packetSize 1420
+	packetRate 24
+	uplink
+	packetSize 1420
+	packetRate 5
+
+transfer TransferSMALL
+        type udp
+        profile TransferSMALL_prof
+
+transfer TransferAVG
+        type udp
+        profile TransferAVG_prof		
+
+transfer TransferLARGE
+        type udp
+        profile TransferLARGE_prof
+
+application App [ bearer ]
+	startTransfer TransferSMALL on bearer as Transfer1
+	startTransfer TransferAVG on bearer as Transfer2
+	startTransfer TransferLARGE on bearer as Transfer3
+    wait 50000
+    stopTransfer Transfer1
+	stopTransfer Transfer2
+	stopTransfer Transfer3
+
+mobileSession testSession
+    connectBearer DEFAULT as stream
+    startApplication App [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+testScenario
+    testSession
+        rate 10.0/s       
+        cells[1 2]
+        ueCapabilities cat5
+        activityIntervalLength 29.9 s

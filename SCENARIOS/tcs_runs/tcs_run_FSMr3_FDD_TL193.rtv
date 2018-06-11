@@ -1,0 +1,318 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+##FL17ASP1###
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17A SP1\GRnD\PET\CRT';
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL11 Traffic models';
+#$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+#my $release = "FL17ASP1";
+
+
+##FL18###
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'L18 OMS\GRnD\PET\CRT';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL193 Traffic models';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+my $release = "FL18";
+
+
+my $sw_version = 'FL18_ENB_0000_000543_000000'; ##must be on EMSS
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+{-TC => "Reconfigure_EPCSIM_standard", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './config_files/epc_cfg_TL193_LTE1042_backhaul235.lua', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Reconfigure_EPCSIM_2MMEs", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './config_files/epc_cfg_TL193_2MMEs_sim_backhaul_235.lua', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Reconfigure_EPCSIM_maxLNRELs", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './config_fles/epc_cfg_TL193_with_x2_64x6.lua', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Reconfigure_EPCSIM_IPv6", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './configs/epc_6cellDualUplaneBezLogow_backhaulIPv6.cfg', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "Reconfigure_EPCSIM_DP", -TP => 'EPCSIM_RECONFIGURATION', -EXECUTION_PARAMS => {-FILE=>  './config_fles/epc_6cellDualUplaneBezLogow_backhaul235.cfg', -EPCSIM=>  'EPCSIM1', -TIMEOUT   => '30', -NUM_OF_RETRIES    => '60',}},
+{-TC => "software_update" , -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version, -USE_NEWEST_BUILD => 'YES', -RELEASE => $release}},
+{-TC => "Commissioning_ENB2_6Cell", -TP => 'FLEXI_RECONFIG', -ENB_DEVICE_NAME => 'ENB2_FCT', -EXECUTION_PARAMS => {-CONFIG_FILE_NAME => 'BTS_ENB193_2cables_2cells_new_plmn.xml', -SCFC_SWAP => '1',}},
+{-TC => "Commissioning_ENB2_6Cell_IPv6", -TP => 'FLEXI_RECONFIG', -ENB_DEVICE_NAME => 'ENB2_FCT', -EXECUTION_PARAMS => {-CONFIG_FILE_NAME => 'BTS_TRS_ENB190_2Cabless_2Cells_DualUplane_IPv6.xml', -SCFC_SWAP => '1',}},
+{-TC => "Turn_on_TL193", -TP => 'power_switch_state_tp', -EXECUTION_PARAMS => {-PORT => 7, -STATE => 'ON'}},
+{-TC => "Turn_off_TL193", -TP => 'power_switch_state_tp', -EXECUTION_PARAMS => {-PORT => 7, -STATE => 'OFF'}},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'YES';
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'NO';
+ # $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_SHB}               = 'YES';
+ # $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-GET_BTSSM_SNAPSHOT}               = 'YES';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}                 = 'NO';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-LMTS_CONFIG_UPDATE }        => 'YES',
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-GET_BTSSM_SNAPSHOT }            => 'YES',
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_CLI_BTS_SNAPSHOT }            => 'YES',
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_EMIL_LOGS }            => 'YES',
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-GENERATE_COMMON_DEVICES}{-CREDENTIALS}{-PASSWORD}    = 'ssp123!!Macro';
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+# "software_update",
+
+
+#your test execution
+
+######	BW-5 
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-5",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-5",
+	
+######  BW-10
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_MME_outage__BW-10",
+	# 'Automated_eNB_Capacity__Traffic_profile_FSMF_normal_MME_outage__BW-10',
+# 'Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-10',
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-10",
+	
+######  BW-15
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-15",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-15",
+	
+######  BW-20
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_no_syslogging__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_no_syslogging__BW-20",	
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal__BW-20",
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_long__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_long__BW-20", 
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_LTE1042__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_LTE1042__BW-20",
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_high_long__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_high_long__BW-20",
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_cell_trace__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_cell_trace__BW-20",
+"Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_high__BW-20",
+	"Automated_eNB_Capacity__Traffic_profile_FSMF_high__BW-20",
+######  BURST_LOAD
+# "Commissionning_for_BTS_Capacity_U-Plane_Burst_Load_enabled",
+	# "BTS_Capacity_U-Plane_Burst_Load_enabled",
+# "Commissionning_for_BTS_Capacity_U-Plane_Burst_Load_disabled",
+	# "BTS_Capacity_U-Plane_Burst_Load_disabled",
+# "Commissionning_for_BTS_Capacity_HO_Burst_Load_enabled",
+	# "BTS_Capacity_HO_Burst_Load_enabled",
+# "Commissionning_for_BTS_Capacity_HO_Burst_Load_disabled",
+	# "BTS_Capacity_HO_Burst_Load_disabled", 
+
+######  LNRELS
+# "Commissionning_for_Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20",
+	# "Automated_eNB_Capacity__Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20_X2_update",
+	
+######  SDL
+# "Commissionning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL",
+	# "Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL",
+# "Commissionning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL",
+	# "Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL",
+	
+######  SDL + CELL_TRACE
+# "Commisioning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace",
+	# "Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace",
+# "Commissionning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_and_cell_trace",
+	# "Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_and_cell_trace", 
+
+######  DUAL_UPLANE
+# "Commissionning_for_Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv4",
+	# "Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv4",
+	# "Automated_eNB_LTE1771_Dual_UPlane_Performace_Handovers",
+# "Commissionning_for_Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv4_single_interface", 
+	# "Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv4_single_interface",
+# "Commissionning_for_Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv6",
+	# "Automated_eNB_LTE1771_Dual_UPlane_Traffic_Profile_IPv6",
+
+###### COMMISIONINGI DO ENB2 NA RAZIE NIE DZIAŁAJĄ TAK JAK POWINNY (DUAL_UPLANE)
+# "Commissionning_for_Traffic_profile_6cells_ENB2",     
+# "Commissionning_for_Traffic_profile_6cells_1cable_ENB2",
+# "Commissionning_for_Traffic_profile_6cells_2cable_IPV6_ENB2", 
+	      
+###### ACB 
+# "Commissionning_for_BTS_Capacity_LTE1788_Automatic_Access_Class_Barring_-_Basic_scenario_-_ACB_start", 
+	# "BTS_Capacity_LTE1788_Automatic_Access_Class_Barring_-_Basic_scenario_-_ACB_start", 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##########################PONIŻEJ OPISY ###########################################################################
+
+#####Zmiana srodowiska testowego dla ponizszych testow EPCSIM conf 6CellBezLogow, lmts.ini dla testow 6cio celkowych
+# 'Commissionning_for_Dual_UPlane_Call_Model_2cables_IPv4',
+    # 'Dual_UPlane_Call_Model_2cables_IPv4',
+    # 'Dual_UPlane_Handovers_2cables_IPv4',
+#####Commisioning oraz ustawienia dla dualUplane powyzszych ###
+  # 'Dual_UPlane_Call_Model_2cables_IPv6',
+# Dla ponizszego testu "wypiecie jednego kabla w commisioningu TRS
+# 'Dual_UPlane_Call_Model_1cable_IPv4_single',
+
+
+### Commissionning_for_Traffic_profile_FSMF_normal__* Odpowiedni comissioning, ustawienia dla  3Cell. ###
+
+  #   'Commissionning_for_Traffic_profile_FSMF_normal__BW-5',
+#     'Traffic_profile_FSMF_normal__BW-5',
+
+    #   'Commissionning_for_Traffic_profile_FSMF_normal__BW-10',
+   #    'Traffic_profile_FSMF_normal__BW-10',
+
+####################################Traffic_profile_FSMF_normal_MME_outage__BW-10################################
+### 4 pmp periody - w połowie pierwszego odpinamy lock jedno MME, w połowie 3ciego unlock mme                ####
+### root EPC:/home/lmts/MME_lock.py -> Odpalamy przed testem ( po konfiguracji EGATE)                         ####
+### Zwykły Commisiong na 10 MHz                                                                              ####
+### SSP-EPC-FSMF193:/home/WTS_trunk_20046/config_files/epc_cfg_TL193_2MMEs_sim.lua                           ####
+### zmiana konfiguracji EPCSIM                                                                               ####
+###EGATE> reset                                                                                              ####
+###EGATE> cfg file=config_files/epc_cfg_TL193_2MMEs_sim.lua                                                  ####
+###EGATE> start                                                                                              ####
+#                                                                                                            ####
+#  'Commissionning_for_Traffic_profile_FSMF_normal_MME_outage__BW-10',                                        ####
+#  'Traffic_profile_FSMF_normal_MME_outage__BW-10',                                                            ####
+##################################################################################################################
+   
+ #    'Commissionning_for_Traffic_profile_FSMF_normal__BW-15',
+#      'Traffic_profile_FSMF_normal__BW-15',
+
+ #      'Commissionning_for_Traffic_profile_FSMF_normal__BW-20',
+#       'Traffic_profile_FSMF_normal__BW-20',
+
+####################################Traffic_profile_FSMF_normal_no_syslogging__BW-20##############################
+### flexi_ssh ( ssh toor4nsn@192.168.255.129 ) 3Cell                                                          ####
+### vi /flash/swconfig.txt                                                                                    ####
+### 0x10041 = 0                                                                                               ####
+### reboot                                                                                                    ####
+#                                                                                                             ####
+#      'Commissionning_for_Traffic_profile_FSMF_normal_no_syslogging__BW-20',                                       ####
+#      'Traffic_profile_FSMF_normal_no_syslogging__BW-20',                                                         ####
+##################################################################################################################
+ 
+####################################Traffic_profile_FSMF_normal_with_cell_trace__BW-20###########################
+#### W definicji testu flaga ACTIVATE_CELL_TRACE = YES lub 1                                                 ####
+#### Ręczne włączenie: EMMSM (8my Desk) cell_trace_activate -if s,x,u                                        ####
+#                                                                                                            ####
+#### syslog uruchomiony                                                                                      ####
+#### /flash/swconfig.txt 0x10041 = 5                                                                         ####
+#                                                                                                            ####
+#   'Commissionning_for_Traffic_profile_FSMF_normal_with_cell_trace__BW-20',                                   ####
+#   'Traffic_profile_FSMF_normal_with_cell_trace__BW-20',                                                      ####
+#################################################################################################################
+
+
+####################################Traffic_profile_FSMF_normal_LTE1042__BW-20####################################
+###EGATE> cfg file=config_files/epc_cfg_TL193_LTE1042.lua (standardowa konfiguracja)                          ####
+### Test bierze tylko QSI 6 - 9                                                                               ####
+#                                                                                                             ####
+#     'Commissionning_for_Traffic_profile_FSMF_normal_LTE1042__BW-20',                                            ####
+     #'Traffic_profile_FSMF_normal_LTE1042__BW-20',                                                               ####
+# ##################################################################################################################
+
+#####################################Traffic_profile_FSMF_high__BW-20#############################################
+#### flexi_ssh ( ssh toor4nsn@192.168.255.129 ) 3Cell                                                         ####
+#### vi /flash/swconfig.txt                                                                                   ####
+#### 0x10041 = 0                                                                                              ####
+#### reboot                                                                                                   ####
+#                                                                                                             ####
+# 'Commissionning_for_Traffic_profile_FSMF_high__BW-20',                                                      ####
+# 'Traffic_profile_FSMF_high__BW-20',                                                                         #####
+##################################################################################################################
+
+# 'Commissionning_for_Traffic_profile_FSMF_normal_long__BW-20',
+# 'Traffic_profile_FSMF_normal_long__BW-20',
+
+### flexi_ssh ( ssh toor4nsn@192.168.255.129 ) 3Cell
+### vi /flash/swconfig.txt
+### 0x10041 = 0
+### reboot
+
+# 'Commissionning_for_Traffic_profile_FSMF_high_long__BW-20',
+# 'Traffic_profile_FSMF_high_long__BW-20',
+
+####################################Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20###################################################################################
+#### Plik konfiguracyjny EPCSima: epc_cfg_TL193_with_x2_64x6.lua #######na WTS_trunk20046 reset ##### cfg_file=config_files/ ##### start                                       ####
+#### na epcsim pula eth2 saseidztwa symulowane 1 2 MME - kolejne od 3 symulowane sasiedztaw                                                                                    ####
+#### Test odpalamy, gdy na eNB zestawi się 65 aktywnych sąsiedztw, czyli gdy komenda na eNB (FCT) 'grep -c 'x2LinkStatus">available' /flash/config/SCFC_*.xml' zwróci 65       ####
+####                                                                                                                                                                           ####
+ # 'Commissionning_for_Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20',                                                                                           ####
+# 'Traffic_profile_FSMF_normal_with_max_number_of_LNRELs__BW-20',                                                                                                              ####
+###################################################################################################################################################################################
+
+
+
+
+#####################################Traffic_profile_FSMF_extreme_high_intraENB_HO_ACB###########################
+#### Zmiana vendor file na eNB (/flash/vendor_*.xml): ovlThrOvl1/ovlThrOvl2 = 5/15 wyjsciowo 90/140         ####
+#### crasign vendor_*                                                                                        ####
+#### craverify vendor_F15* vendor_F15*.xml.p7                                                                ####
+#### ls HashContrainer* ##### czasami sie pojawiaja lecz sa niechciane - nalezy usunac w razie wystepowania  ####
+#### reboot                                                                                                  ####
+#### flex_ssh /flash/                                                                                        ####
+#### Automatic_access_class_barring true -> w zakladce radio elements na BTSSite                             ####
+####                                                                                                         ####
+#   'Commissionning_for_Traffic_profile_FSMF_extreme_high_intraENB_HO_ACB',                                    ####
+   #'Traffic_profile_FSMF_extreme_high_intraENB_HO_ACB',                                                       ####
+##################################################################################################################
+
+#    'Commissionning_for_BTS_Capacity_SR_Burst_Load_OVL_control_enabled',
+#    'BTS_Capacity_SR_Burst_Load_OVL_control_enabled',
+
+ #  'Commissionning_for_BTS_Capacity_SR_Burst_Load_OVL_control_disabled',
+#   'BTS_Capacity_SR_Burst_Load_OVL_control_disabled',
+
+#     'Commissionning_for_BTS_Capacity_HO_Burst_Load_OVL_control_enabled',
+#    'BTS_Capacity_HO_Burst_Load_OVL_control_enabled',
+
+ #   'Commissionning_for_BTS_Capacity_HO_Burst_Load_OVL_control_disabled',
+#     'BTS_Capacity_HO_Burst_Load_OVL_control_disabled',
+
+
+   # 'Traffic_profile_FSMF_extreme_high__BW-20',
+
+
+#####################################Traffic_profile_FSMF_low_traffic_with_SDL__BW-20############################
+#### Różnica w zużyciu CPU pomiędzy testem without_SDL i with_SDL ma być nie większa niż 5% #######          #####
+#### > auto_sdl on -dump none                                                                                #####
+#### flexi193@tartarus:/home/emssim/LOADS/FL00_FSM3_9999_170120_035287> cd /home/flexi193/UPLOADS/SDL/       #####
+#### flexi193@tartarus:~/UPLOADS/SDL> ls -l                                                                  #####
+# 'Commissionning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL',                                #####
+# 'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL',                                                    #####
+# 'Commissionning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL',    #ENB193_CRT_call_models_FL17SP_BW-20_trunk.xml                              #####
+# 'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL',                                                       #####
+#################################################################################################################
+
+#####################################Automated_eNB_Capacity__CPlane_overload_low traffic_FSMF_with_SDL_and_cell_trace#####
+####### Różnica w zużyciu CPU pomiędzy testem without_SDL i with_SDL ma być nie większa niż 2%                       #####
+#                                                                                                                    #####
+# 'Commissioning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace',            #####
+# 'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace',                             #####
+# 'Commissioning_for_Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_and_cell_trace',               #####
+# 'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_and_cell_trace',                                #####
+##########################################################################################################################
+
+# 'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_without_SDL_and_cell_trace',
+# 'Automated_eNB_Capacity__CPlane_overload_low_traffic_FSMF_with_SDL_and_cell_trace',
+
+# 'count_sdl',
+# 'Traffic_profile_FSMF_extreme_high_with_SDL__BW-20_short',
+# 'Traffic_profile_FSMF_extreme_high_intraENB_HO_ACB_short',
+# 'Traffic_profile_FSMF_normal__BW-20_new',
+
+
+
+
+];
+
+

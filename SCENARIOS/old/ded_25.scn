@@ -1,0 +1,2194 @@
+transfer TransferULPing
+	type udp
+	packetSize 64
+	dir uplink
+	packetRate 1.0
+
+application AppPDN [ bearer ]
+		startTransfer TransferULPing on bearer as sampleTransferPDNULPing
+		wait 2000
+		stopTransfer sampleTransferPDNULPing
+
+
+bearerQoS STRM
+        qci   1 # Non-ConversationalVideo
+        mbr_uplink   200 # maximum bit rate  //
+        mbr_downlink 100
+        gbr_uplink   200 # guaranteed bit rate  //
+        gbr_downlink 100
+	network_initiated FALSE
+
+mobileSession SessionPDN
+	connectBearer DEFAULT as stream
+	startApplication AppPDN [ stream ] as myAppPDN &
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+		connectBearer STRM as dedicated
+		wait 4
+		releaseBearer dedicated
+		wait 4
+
+		wait applicationsFinish [ myAppPDN ] 
+	wait 3
+	releaseBearer stream
+
+testScenario
+  SessionPDN
+	rate 5.0/s
+	cells [1]
+	activityIntervalLength 39.9 s
+	ueCapabilities simple1

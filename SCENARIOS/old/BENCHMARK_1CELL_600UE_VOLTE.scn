@@ -1,0 +1,75 @@
+trafficProfile TransferDL_RTP_prof
+      downlink
+      packetSize 45
+      packetRate 50.0
+      uplink
+      packetSize 20
+      packetRate 6.25
+
+trafficProfile TransferUL_RTP_prof
+      uplink
+      packetSize 45
+      packetRate 50.0
+      downlink
+      packetSize 20
+      packetRate 6.25
+	
+transfer TransferDL_RTP
+	type rtp
+	profile TransferDL_RTP_prof
+  
+
+transfer TransferUL_RTP
+	type rtp
+	profile TransferUL_RTP_prof
+
+trafficProfile RTP_MV_prof
+	timeQuantum 3000
+	state1 TransferDL_RTP
+	state2 TransferUL_RTP
+	[ state2 state1 0.6 ]
+	[ state2 state2 0.4 ]
+	[ state1 state2 0.4 ]
+	[ state1 state1 0.6 ]
+	
+	
+transfer Transfer_RTP
+	type rtp
+	profile RTP_MV_prof
+
+	
+application App_RTP1 [ bearerRTP1 ]
+	startTransfer Transfer_RTP on bearerRTP1 as sampleTransferVoLTEDL_RTP1
+	wait 50000
+	stopTransfer sampleTransferVoLTEDL_RTP1
+
+application MyWaitApplication
+        wait 50000
+
+
+bearerQoS VoLTE_RTP
+        qci 1
+        mbr_uplink 44
+        mbr_downlink 44
+        gbr_uplink 44
+        gbr_downlink 44
+        network_initiated FALSE
+
+
+
+mobileSession UesDlTransferSession
+        connectBearer VoLTE_RTP as b1
+        startApplication App_RTP1 [b1] as app1
+	wait applicationsFinish [app1]
+#	startApplication MyWaitApplication as app
+
+testScenario
+        UesDlTransferSession
+                rate 10.0/s
+                cells [1]
+                activityIntervalLength 59.9 s
+
+
+
+
+

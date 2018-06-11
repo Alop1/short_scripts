@@ -1,0 +1,110 @@
+# Num. of UEs:		200 UEs UL + 200 UEs DL / cell
+# Direction:		UL & DL
+# Packet rate:		pps / UE
+
+bearerQoS QCI5
+    qci 5
+
+bearerQoS QCI7
+    qci 7
+	
+transfer sampleTransferDescriptionULPing
+	type udp
+	packetSize 64
+	packetRate 1
+	dir uplink	
+    
+transfer sampleTransferDescription70DL
+    type udp
+    packetSize 70
+    packetRate 8.06
+    dir downlink
+    
+transfer sampleTransferDescription1280DL
+    type udp
+    packetSize 1280
+    packetRate 2.02
+    dir downlink
+
+transfer sampleTransferDescription1460DL
+    type udp
+    packetSize 1460
+    packetRate 10.07
+    dir downlink
+	
+#transfer sampleTransferDescription70UL
+#    type udp
+#    packetSize 70
+#    packetRate 37.53
+#    dir uplink
+
+#transfer sampleTransferDescription576UL
+#    type udp
+#    packetSize 576
+#   packetRate 1.20
+#   dir uplink
+
+#transfer sampleTransferDescription1460UL
+#    type udp
+#    packetSize 1460
+#    packetRate 1.56
+#    dir uplink
+application AppDL [ bearer ]
+
+    startTransfer sampleTransferDescription70DL on bearer as sampleTransfer1 
+    startTransfer sampleTransferDescription1280DL on bearer as sampleTransfer2 
+    startTransfer sampleTransferDescription1460DL on bearer as sampleTransfer3
+	startTransfer sampleTransferDescriptionULPing on bearer as sampleTransfer7
+	
+#    startTransfer sampleTransferDescription70UL on bearer as sampleTransfer4 
+#    startTransfer sampleTransferDescription1280UL on bearer as sampleTransfer5 
+#    startTransfer sampleTransferDescription1460UL on bearer as sampleTransfer6
+
+    wait 2700
+    stopTransfer sampleTransfer1
+    stopTransfer sampleTransfer2
+    stopTransfer sampleTransfer3
+	stopTransfer sampleTransfer7
+	
+#    stopTransfer sampleTransfer4
+#    stopTransfer sampleTransfer5
+#    stopTransfer sampleTransfer6
+    wait 11
+	
+	
+mobileSession testSessionDL
+
+    connectBearer QCI5 as B
+    connectBearer QCI7 as C
+    connectBearer DEFAULT as stream
+    startApplication AppDL [ stream ] as myApp
+    wait applicationsFinish [ myApp ]    
+    releaseBearer stream
+    releaseBearer B
+    releaseBearer C
+    
+mobileSession testSession
+        connectBearer DEFAULT as stream  
+        wait 8                                
+        releaseBearer stream            
+
+
+testScenario
+  testSessionDL
+	rate 30/s
+	#rate 15/s
+	cells[1 2 3]
+	#activityIntervalLength 167.9 s
+	activityIntervalLength 83.13 s
+	#activityIntervalLength 84.33 s
+	
+	
+	
+  testSession
+        rate 0.01/s
+        cells[1 2 3]
+        #activityIntervalLength 1 s
+	delayToStart 180.0 s
+
+
+

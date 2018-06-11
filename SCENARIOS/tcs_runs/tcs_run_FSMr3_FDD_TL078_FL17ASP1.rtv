@@ -1,0 +1,75 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR}); 
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_IPHY.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+
+ ######## FL17ASP1 ############
+ my $release = "FL17ASP1";
+ $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17A SP1\GRnD\PET\CRT';
+ $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL078';
+ #########################
+ my $sw_version = 'FL17SP_ENB_0000_001093_000000';
+
+# ######### FL17A ############
+# my $release = "FL17A";
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'xL17A\GRnD\PET\CRT';
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL185';
+# ##########################
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+
+
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+
+{-TC => "software_update" , -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version, -USE_NEWEST_BUILD => 'YES', -RELEASE => $release}},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'YES';
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'YES';
+# $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-COLLECT_TTI}{-COPY_PARSER_FILES} = 'YES'; # collect_tti.py
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_RTPMSTATS}               = 'YES';
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_IPHY_PERIODIC_STATS}     = 'YES';
+ $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-USE_BB_LOGGING}                  = 'NO';
+ $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-GENERATE_KPI_EXCEL}{-GENERATE_NEW_KPI_EXCEL}        = 'YES';
+ #$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_IPHY_SINGLE_STATS}     = 'NO';
+ #$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-COLLECT_IPHY_PERIODIC_STATS}                  = 'NO';
+
+$::RTV{LAUNCHER}->{TCS} = [
+# "wait_for_build_on_emss",
+#"software_update",
+
+
+# ####################### SWAP #######################
+##### 'SWAP__IPHY_xml_1xFRHC',
+# ####################################################
+# ####################################################
+
+
+# ###________________Commissioning_____________________#
+### 'TL115__2_reCommissionning_fl17a_new_feature_LTE3128',
+# ###--------------------------------------------------#
+
+#'Automated_eNB_Performance_Throughput_LTE3128_3cells_50UE_24UECatM_BW-10',
+'Automated_eNB_Performance_Throughput_3cells_BW-10_only_NB_IoT',
+#'Automated_eNB_Performance_Throughput_LTE3582_3cells_BW-10_only_CAT-M',
+#'Automated_eNB_Performance_Throughput_LTE3819_combined_CAT-M_NB_IoT_legacy',
+
+# ####################################################
+# ####################### SWAP #######################
+# 'SWAP__IPHY_xml_newConfiguration',
+# ####################################################
+# ####################################################
+
+];

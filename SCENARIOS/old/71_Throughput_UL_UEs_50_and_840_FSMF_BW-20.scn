@@ -1,0 +1,67 @@
+# Num. of UEs:		from 50 and 840 UEs/cell UL
+# Direction:		UL 
+# Packet rate:		pps / UE
+
+transfer sampleTransferDescription20MB_50_UEs
+    type udp
+    packetSize 1400   # 20.048 Mbps
+    packetRate 35.8
+    dir downlink
+    
+transfer sampleTransferDescriptionUL
+    type tcp
+    transferSize 1024000000
+    dir uplink
+
+application AppUL_DL [ bearer ]
+    startTransfer sampleTransferDescription20MB_50_UEs on bearer as sampleTransfer50UE
+    startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer1 
+    wait 2700
+    stopTransfer sampleTransfer50UE
+    stopTransfer sampleTransfer1
+    wait 11
+    
+application AppUL [ bearer ]
+    startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer1 
+    wait 2700
+    stopTransfer sampleTransfer1 
+    wait 11
+    
+mobileSession testSessionULDL
+    connectBearer DEFAULT as stream
+    startApplication AppUL_DL [ stream ] as myAppULDL
+    wait applicationsFinish [ myAppULDL ]
+    releaseBearer stream
+       
+mobileSession testSessionUL
+    connectBearer DEFAULT as stream
+    startApplication AppUL [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+testScenario
+# 50 UEs
+    testSessionULDL
+        rate 10.0/s
+        cells[1 2 3]
+        activityIntervalLength 14.9 s
+    
+# 840 UEs        
+    testSessionUL
+        rate 10.0/s
+        cells[1]
+        delayToStart 30 s
+        activityIntervalLength 78.9 s
+
+        
+    testSessionUL
+        rate 10.0/s
+        cells[2]
+        delayToStart 30 s
+        activityIntervalLength 78.9 s
+
+    testSessionUL
+        rate 10.0/s
+        cells[3]
+        delayToStart 30 s
+        activityIntervalLength 78.9 s 

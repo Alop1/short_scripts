@@ -1,0 +1,36 @@
+application MyWaitApplication
+        wait 4
+
+mobileSession MyExampleSession1
+        startApplication MyWaitApplication as app
+mobileSession MyExampleSession2
+        startApplication MyWaitApplication as app
+mobileSession MyExampleSession3
+        startApplication MyWaitApplication as app
+mobileSession MyExampleSession4
+        startApplication MyWaitApplication as app
+mobileSession MyExampleSession5
+        startApplication MyWaitApplication as app
+
+testScenario
+ MyExampleSession1
+        #reattachMode NONE
+        rate 30.5/s
+        cells [1 2 3]
+
+ MyExampleSession2
+        #reattachMode NONE
+        rate 30.5/s
+        cells [1 2 3]
+ MyExampleSession3
+        #reattachMode NONE
+        rate 30.5/s
+        cells [1 2 3]
+ MyExampleSession4
+        #reattachMode NONE
+        rate 30.5/s
+        cells [1 2 3]
+ MyExampleSession5
+        #reattachMode NONE
+        rate 30.5/s
+        cells [1 2 3]

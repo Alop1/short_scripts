@@ -1,0 +1,61 @@
+transfer sampleTransferDescriptionDL
+    type udp
+    packetSize 1400
+    dir downlink
+    packetRate 2814
+
+transfer sampleTransferDescriptionUL
+    type udp
+    packetSize 140
+    dir uplink
+    packetRate 64
+
+application App [ bearer ]
+    startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1
+    wait 2
+    startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer2
+    wait 1000000
+    stopTransfer sampleTransfer1
+    wait 2
+    stopTransfer sampleTransfer2
+    wait 10
+
+bearerQoS myQci1
+        qci 1
+        mbr_uplink 31
+        mbr_downlink 31
+        gbr_uplink 31
+        gbr_downlink 31
+        network_initiated FALSE
+bearerQoS myQci2
+        qci 2
+        mbr_uplink 40
+        mbr_downlink 40
+        gbr_uplink 40
+        gbr_downlink 40
+        network_initiated FALSE
+
+mobileSession testSession
+    connectBearer DEFAULT as stream
+    startApplication App [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+testScenario
+    testSession
+       rate 1/s
+        cells[1]
+	ueCapabilities simple1        
+#	uePool plmn24408
+        activityIntervalLength 3.5 s
+
+
+    testSession
+        rate 1/s
+        cells[2]
+        ueCapabilities simple1
+#	uePool plmn24408
+        activityIntervalLength 3.5 s
+        delayToStart 0.5 s
+
+

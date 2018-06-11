@@ -1,0 +1,94 @@
+bearerQoS QCI1
+	qci 1
+	mbr_uplink 64
+	mbr_downlink 64
+	gbr_uplink 31
+	gbr_downlink 31
+# 	network_initiated TRUE
+
+bearerQoS QCI5
+	qci 5
+#	mbr_uplink 8640
+#	mbr_downlink 8640
+#	gbr_uplink
+#	gbr_downlink
+#	network_initiated TRUE
+
+
+trafficProfile DLandUL
+	downlink
+	packetSize 53
+	packetRate 68
+	uplink
+	packetSize 53
+	packetRate 50
+
+trafficProfile DL
+	downlink
+	packetSize 53
+	packetRate 68
+	uplink
+	packetSize 20
+	packetRate 6
+
+trafficProfile UL
+	downlink
+	packetSize 20
+	packetRate 6
+	uplink
+	packetSize 53
+	packetRate 50
+
+transfer Both
+	type rtp
+	profile DLandUL
+
+transfer OnlyDL
+	type rtp
+	profile DL
+
+transfer OnlyUL
+	type rtp
+	profile UL
+
+trafficProfile markovVolte
+	timeQuantum 3500
+	state3 Both
+	state2 OnlyDL
+	state1 OnlyUL
+	[ state1 state1 0.4 ]
+	[ state1 state2 0.4 ]
+	[ state1 state3 0.2 ]
+	[ state2 state1 0.4 ]
+	[ state2 state2 0.4 ]
+	[ state2 state3 0.2 ]
+	[ state3 state1 0.4 ]
+	[ state3 state2 0.4 ]
+	[ state3 state3 0.2 ]
+
+transfer Mkv
+	type rtp
+	profile markovVolte
+
+application simpleApp [ bearer ]
+	startTransfer Mkv on bearer as sampleTransfer
+	wait 1800
+	stopTransfer sampleTransfer
+
+mobileSession simpleSession
+	connectBearer QCI1 as B
+	connectBearer QCI5 as C
+	#connectBearer DEFAULT as B
+	startApplication simpleApp [ B ] as mySimpleApp &
+	wait applicationsFinish [ mySimpleApp ]
+	#wait applicationsFinish [ mySimpleAppB ]
+	releaseBearer B
+	releaseBearer C
+
+
+testScenario
+  simpleSession
+	rate 30.0/s
+	cells[1 2 3]
+	activityIntervalLength 19.79 s
+

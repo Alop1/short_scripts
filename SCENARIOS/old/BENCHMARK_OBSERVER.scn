@@ -1,0 +1,30 @@
+trafficProfile TransferLARGE_prof
+        downlink
+        packetSize 1
+        packetRate 1
+        uplink
+        packetSize 1
+        packetRate 1
+
+transfer TransferLARGE
+        type udp
+        profile TransferLARGE_prof
+
+application App [ bearer ]
+    startTransfer TransferLARGE on bearer as Transfer3
+    wait 50000
+    stopTransfer Transfer3
+
+mobileSession testSession
+    connectBearer DEFAULT as stream
+    startApplication App [ stream ] as myApp
+    wait applicationsFinish [ myApp ]
+    releaseBearer stream
+
+testScenario
+    testSession
+        rate 2.0/s
+        cells[1] 
+        ueCapabilities cat5
+        activityIntervalLength 7.9 s
+

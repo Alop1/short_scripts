@@ -1,0 +1,13 @@
+application MyWaitApplication 
+	wait 4
+
+mobileSession MyExampleSession
+	startApplication MyWaitApplication as app 
+
+testScenario
+ MyExampleSession
+	#reattachMode NONE
+	rate 135.0/s
+	cells [1 2 3]
+	#activityIntervalLength 0.9 s
+

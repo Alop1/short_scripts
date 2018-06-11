@@ -1,0 +1,95 @@
+# Num. of UEs:		200 UEs UL + 200 UEs DL / cell
+# Direction:		UL & DL
+# Packet rate:		pps / UE
+
+# transfer sampleTransferDescriptionUL
+#	type udp
+#	packetSize 1400
+#	dir uplink
+#	packetRate 5
+
+# application AppUL [ bearer ]
+#	startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer1 
+#	wait 43600
+#	stopTransfer sampleTransfer1 
+#	wait 11
+	
+# mobileSession testSessionUL
+#	connectBearer DEFAULT as stream
+#	startApplication AppUL [ stream ] as myApp
+#	wait applicationsFinish [ myApp ]	
+#	releaseBearer stream
+
+bearerQoS QCI5
+        qci 5
+        
+bearerQoS QCI7
+        qci 7
+	
+transfer sampleTransferDescription40UL
+	type udp
+	packetSize 40
+	packetRate 2.71
+	dir uplink
+    
+transfer sampleTransferDescription576UL
+	type udp
+	packetSize 576
+	packetRate 1.35
+	dir uplink
+
+transfer sampleTransferDescription1500UL
+	type udp
+	packetSize 1500
+	packetRate 1.35
+	dir uplink
+
+transfer sampleTransferDescriptionDL
+        type udp
+        packetSize 40
+        packetRate 0.25
+        dir downlink
+
+
+
+application AppUL [ bearer ]
+
+	startTransfer sampleTransferDescription40UL on bearer as sampleTransfer1 
+    	startTransfer sampleTransferDescription576UL on bearer as sampleTransfer2 
+    	startTransfer sampleTransferDescription1500UL on bearer as sampleTransfer3
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer4
+	wait 27000
+	stopTransfer sampleTransfer1
+    stopTransfer sampleTransfer2
+    stopTransfer sampleTransfer3
+	stopTransfer sampleTransfer4
+	wait 11
+	
+mobileSession testSessionDL
+
+    connectBearer QCI5 as B
+	connectBearer QCI7 as C
+	connectBearer DEFAULT as stream
+	startApplication AppUL [ stream ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer stream
+    releaseBearer B
+    releaseBearer C
+
+testScenario
+  testSessionDL
+	rate 10/s
+	cells[1]
+	activityIntervalLength 149.9 s
+
+  testSessionDL
+        rate 10/s
+        cells[2]
+        activityIntervalLength 149.9 s
+
+  testSessionDL
+        rate 10/s
+        cells[3]
+        activityIntervalLength 149.9 s
+
+

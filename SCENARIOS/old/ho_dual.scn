@@ -1,0 +1,141 @@
+#
+# Num. of UEs:		150 UEs / cell HO UEs + ~50 ATT_DET
+# Direction:		UL & DL
+# HO num:			50/cell
+
+transfer sampleTransferDescription1
+	type udp
+    packetSize 222 
+    dir uplink
+	#packetRate 40
+    packetRate 4
+
+transfer sampleTransferDescription2
+	type udp
+	packetSize 772
+	dir downlink
+	#packetRate 60.0
+    packetRate 6
+		
+transfer sampleTransferDescription3
+	type udp
+    packetSize 1500 
+    dir uplink
+	packetRate 40
+
+transfer sampleTransferDescription4
+	type udp
+	packetSize 1500
+	dir downlink
+	packetRate 60
+		
+
+application AppHO_1 [ bearer ]
+	startTransfer sampleTransferDescription1 on bearer as sampleTransfer1 
+	startTransfer sampleTransferDescription2 on bearer as sampleTransfer2 
+	10000000x
+		wait 6
+		handover to 11
+		wait 6
+		handover to 101
+	stopTransfer sampleTransfer1 
+	stopTransfer sampleTransfer2 
+
+
+application AppHO_2 [ bearer ]
+	startTransfer sampleTransferDescription1 on bearer as sampleTransfer1 
+	startTransfer sampleTransferDescription2 on bearer as sampleTransfer2 
+	10000000x
+		wait 3
+		handover to 12
+		wait 3
+		handover to 103
+	stopTransfer sampleTransfer1 
+	stopTransfer sampleTransfer2 
+
+
+application AppHO_3 [ bearer ]
+	startTransfer sampleTransferDescription1 on bearer as sampleTransfer1 
+	startTransfer sampleTransferDescription2 on bearer as sampleTransfer2 
+	10000000x
+		wait 3
+		handover to 11
+		wait 3
+		handover to 105
+	stopTransfer sampleTransfer1 
+	stopTransfer sampleTransfer2 
+
+
+application AppATT_DET [ bearer ]
+	startTransfer sampleTransferDescription1 on bearer as sampleTransfer3 
+	startTransfer sampleTransferDescription2 on bearer as sampleTransfer4 
+	wait 10
+	stopTransfer sampleTransfer3
+	stopTransfer sampleTransfer4 
+	wait 1
+
+
+	
+mobileSession testSessionHO_1
+	connectBearer DEFAULT as streamHO_1
+	startApplication AppHO_1 [ streamHO_1 ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer streamHO_1
+
+mobileSession testSessionHO_2
+	connectBearer DEFAULT as streamHO_2
+	startApplication AppHO_2 [ streamHO_2 ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer streamHO_2
+	
+	
+mobileSession testSessionHO_3
+	connectBearer DEFAULT as streamHO_3
+	startApplication AppHO_3 [ streamHO_3 ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer streamHO_3
+	
+mobileSession testSessionATT_DET2
+	connectBearer DEFAULT as streamATT_DET
+	startApplication AppATT_DET [ streamATT_DET ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer streamATT_DET	
+	
+mobileSession testSessionATT_DET3
+	connectBearer DEFAULT as streamATT_DET
+	startApplication AppATT_DET [ streamATT_DET ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer streamATT_DET
+	
+	
+testScenario
+  testSessionHO_1
+	rate 1.0/s
+	cells[101]
+	activityIntervalLength 1.8 s
+	#ueCapabilities example1
+
+  testSessionHO_2
+	rate 1.0/s
+	cells[103]
+	activityIntervalLength 1.8 s
+#	ueCapabilities example1	
+	
+#  testSessionHO_3
+#	rate 5.0/s
+#	cells[105]
+#	activityIntervalLength 29.8 s
+#	ueCapabilities example1
+	
+#  testSessionATT_DET2
+#	rate 7.0/s
+#	cells[103]
+#	#ueCapabilities example1	
+    
+#  testSessionATT_DET3
+#	rate 7.0/s
+#	cells[105]
+#	#ueCapabilities example1	
+	
+	
+	

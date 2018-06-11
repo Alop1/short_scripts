@@ -1,0 +1,34 @@
+transfer ue_idle_tr1_default_bearer_ul
+        type udp
+        packetSize 300
+        dir uplink
+        packetRate 2.0
+
+transfer ue_idle_tr1_default_bearer_dl
+        type udp
+        packetSize 1400
+        dir downlink
+        packetRate 10.0
+        #transferSize 4294967295
+
+application app_ue_idle[ DEFAULT ]
+         startTransfer ue_idle_tr1_default_bearer_ul on DEFAULT as ue_idle_tr1_default_bearer_ul_alias
+        startTransfer ue_idle_tr1_default_bearer_dl on DEFAULT as ue_idle_tr1_default_bearer_dl_alias
+        wait 3600.0
+         stopTransfer ue_idle_tr1_default_bearer_ul_alias
+        stopTransfer ue_idle_tr1_default_bearer_dl_alias
+
+
+mobileSession ue_idle
+        connectBearer DEFAULT as DEFAULT_alias
+        startApplication app_ue_idle[ DEFAULT_alias  ] as app_ue_idle_alias
+        wait allApplicationsFinish
+        releaseBearer DEFAULT_alias
+
+testScenario
+        ue_idle
+        cells[ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 101 102 103 104 105]  
+        rate 25/s
+        activityIntervalLength 0.99 s
+        ueCapabilities simple1
+

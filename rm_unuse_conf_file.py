@@ -15,8 +15,6 @@ class Conf_test_finder():
         self.open_test_info_file()
         self.desire_string_conf = desire_string_conf
 
-
-
     def open_test_info_file(self):
         file_content = []
         with open(self.test_info_file, 'r') as f:
@@ -60,27 +58,40 @@ class Cleaner():
         self.test_and_conf = test_and_conf
         self.conf_dir = conf_dir
 
-    def move_selected_files_to_temp(self):
-        if not os.path.exists('testing/temp'):
-            os.mkdir('testing/temp')
-        # move('testing/tcs_def_IPHY.rtv', 'testing/temp/new.rtv')
+    def start_celeaning(self):
+        searched_dir = './SCENARIOS/'
+        self.move_selected_files_to_temp()
         self.copy_old_files_to_old()
-        # rmtree('/testing/temp')
+        self.remove_tmp()
+
+    def move_selected_files_to_temp(self):
+        os.chdir(searched_dir)
+        if not os.path.exists('./temp'):
+            os.mkdir('./temp')
+        for test, conf in self.test_and_conf:
+            print "processing ",conf, 'for test ', test
+            try:
+                move(conf, './temp/'+conf)
+            except:
+                print "nie ma {}".format(conf)
 
     def copy_old_files_to_old(self):
-        if not os.path.exists('testing/old'):
-            os.mkdir('testing/old')
-        os.chdir("testing/")
-        fileList = os.listdir('D:\userdata\lacz\Desktop\developing\short_scripts\\testing')
-        print fileList
+        file_pattern = r'.+\.[a-zA-Z]+'
+        if not os.path.exists('./old'):
+            os.mkdir('./old')
+        # os.chdir(searched_dir)
         for file in glob.glob("*"):
-            print file
-            if re.search(pattern,file):
-                move(file, 'old/'+file)
-            # try:
-            #     move(file, 'old/'+file)
-            # except Exception:
-            #     print "do ladnego obsluzenia"
+            if re.search(file_pattern, file):
+                move(file, './old/'+file)
+
+    def remove_tmp(self):
+        os.chdir("./temp/")
+        for file in glob.glob("*"):
+            move(file, '../'+file)
+        os.chdir("../")
+        rmtree('./temp/')
+
+
 
 
 
@@ -91,9 +102,11 @@ def main():
     Tests_names001_set = Training_data("tests_names_001.txt", 1)
     Random_words_set = Training_data("other_names.txt", 0)
     train_data_tl226 = Training_data("training_positive_tl226.txt",1)
+    lmts_test_names = Training_data("test_name_lmts_tcsdef.txt", 1)
+    lmts_cfg_names = Training_data("commissioning_names_lmts_tcsdef.txt", 0)
 
-    training_data = Random_words_set.training_content + Call_modes_set.training_content + Tests_names001_set.training_content + train_data_tl226.training_content
-    supervisor = Random_words_set.training_supervisor + Call_modes_set.training_supervisor + Tests_names001_set.training_supervisor + train_data_tl226.training_supervisor
+    training_data = lmts_cfg_names.training_content + Random_words_set.training_content + lmts_test_names.training_content + Call_modes_set.training_content + Tests_names001_set.training_content + train_data_tl226.training_content
+    supervisor = lmts_cfg_names.training_supervisor + Random_words_set.training_supervisor + lmts_test_names.training_supervisor + Call_modes_set.training_supervisor + Tests_names001_set.training_supervisor + train_data_tl226.training_supervisor
 
     # prepare RF model
     random_forest = Test_name_recognizer(training_data, supervisor)
@@ -115,15 +128,18 @@ def main():
     # random_forest.test_data = 'tests_negative.txt'
     # random_forest.test_model()
     '''
-    random_forest.test_data = 'tcs_runs/tcs_run_FSMr3_FDD_TL236.rtv'
+    # random_forest.test_data = 'tcs_runs/tcs_run_FSMr3_FDD_TL236.rtv'
+    # random_forest.test_model()
+    # print random_forest.tests_list
+    random_forest.test_data = 'tcs_runs/tcs_run_FSMr3_FDD_TL022.rtv'
     random_forest.test_model()
-    # print random_forest.tests_list[0]
+    print random_forest.tests_list
     # random_forest.test_data = 'short_test_set.txt'
     # random_forest.test_model()
 
     finder = Conf_test_finder(random_forest.tests_list)
     cleaner = Cleaner(finder.test_and_conf)
-    cleaner.move_selected_files_to_temp()
+    cleaner.start_celeaning()
 
 
 

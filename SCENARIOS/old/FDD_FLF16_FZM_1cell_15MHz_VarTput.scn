@@ -1,0 +1,131 @@
+####################################################################################
+# 
+#        Variable lenght t-put
+# 
+####################################################################################
+
+
+trafficProfile Transfer_prof1 
+	downlink 
+	packetSize 5 
+	packetRate 500.0 
+	uplink 
+	packetSize 1200 
+	packetRate 62.5 
+
+trafficProfile Transfer_prof2 
+	downlink 
+	packetSize 1400 
+	packetRate 50.0 
+	uplink 
+	packetSize 4 
+	packetRate 625 
+	
+trafficProfile Transfer_prof3 
+	downlink 
+	packetSize 128 
+	packetRate 50.0 
+	uplink 
+	packetSize 440 
+	packetRate 6.25 
+
+trafficProfile Transfer_prof4 
+	downlink 
+	packetSize 45 
+	packetRate 50.0 
+	uplink 
+	packetSize 20 
+	packetRate 1500 
+	
+trafficProfile Transfer_prof5 
+	downlink 
+	packetSize 1280
+	packetRate 440.0 
+	uplink 
+	packetSize 1333 
+	packetRate 800 
+
+trafficProfile Transfer_prof6 
+	downlink 
+	packetSize 15 
+	packetRate 50.0 
+	uplink 
+	packetSize 11 
+	packetRate 6.25 
+
+
+transfer Transfer1 
+	type udp 
+	profile Transfer_prof1
+
+transfer Transfer2
+	type udp 
+	profile Transfer_prof2	
+
+transfer Transfer3 
+	type udp
+	profile Transfer_prof3
+
+transfer Transfer4 
+	type udp 
+	profile Transfer_prof4
+	
+transfer Transfer5 
+	type udp 
+	profile Transfer_prof5
+
+transfer Transfer6 
+	type udp 
+	profile Transfer_prof6
+	
+trafficProfile TCP_MV_prof 
+	timeQuantum 50 
+	state1 Transfer1 
+	state2 Transfer2 
+	state3 Transfer3 
+	state4 Transfer4
+	state5 Transfer5 
+	state6 Transfer6
+	[ state1 state1 0.2 ] 
+	[ state1 state2 0.5 ] 
+	[ state1 state3 0.3 ] 
+	[ state2 state2 0.2 ] 
+	[ state2 state3 0.5 ] 
+	[ state2 state4 0.3 ] 
+	[ state3 state3 0.2 ] 
+	[ state3 state4 0.5 ] 
+	[ state3 state5 0.3 ] 
+	[ state4 state4 0.2 ] 
+	[ state4 state5 0.5 ] 
+	[ state4 state6 0.3 ] 
+	[ state5 state5 0.2 ] 
+	[ state5 state6 0.5 ] 
+	[ state5 state1 0.3 ] 
+	[ state6 state6 0.2 ] 
+	[ state6 state1 0.5 ] 
+	[ state6 state2 0.3 ] 
+	
+transfer Transfer_Var 
+	type udp 
+	profile TCP_MV_prof 
+	
+	
+application VarTransffer [ bearer ] 
+	startTransfer Transfer_Var on bearer as sampleTransferVar
+	wait 43200
+	stopTransfer sampleTransferVar 
+	
+	
+mobileSession testSessionVar
+	connectBearer DEFAULT as DEFAULT_alias 
+	wait 2 
+	startApplication VarTransffer [ DEFAULT_alias ] as myApp_Var1
+	wait applicationsFinish [ myApp_Var1 ] 
+	releaseBearer DEFAULT_alias 
+	
+testScenario
+	testSessionVar
+		rate 10.0/s
+		cells[1]
+		ueCapabilities simple1
+		activityIntervalLength 0.99 s

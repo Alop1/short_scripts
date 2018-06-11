@@ -1,0 +1,199 @@
+#!/usr/bin/perl
+use lib;
+use strict;
+
+my $ue_simulator = uc($::RTV{PAF_PARAMS}{-SETUP}{-UE_SIMULATOR});
+
+require $ENV{'SSTLIB_DIR'} . "/../sstlib_scripts/PAF/CONF/RTV/CRT_PET/TCSDEF/tcs_def_$ue_simulator.rtv";
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-UPLOAD_TO_RP_ONLY_PASS} = 1;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'L18 OMS\GRnD\PET\CRT';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_LAB} = 'L18 SP\Branch_CRT\4G_ASL2L3_KRA\PET_Vrf_SG';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-TEST_SET_NAME} = 'CRT Regression_PET_Flexi rel3 TL26';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-UPLOAD_TO_REP_PORTAL}{-QC_TEST_PLAN} = 'GRnD\Automation Test Cases';
+
+my $sw_version = 'FL18_ENB_0000_000121_000000'; ##must be on EMSS
+my $release = "FL18";
+
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+@{$::RTV{LAUNCHER}->{TCS_DEF}},
+{-TC => "wait_for_build_on_emss", -TP => 'wait_for_build_on_emss_tp', -EXECUTION_PARAMS => {-BUILD =>  $sw_version,}},
+
+# {-TC => "software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version, USE_NEWEST_BUILD => 'YES', -RELEASE => $release}},
+{-TC => "newest_software_update", -TP => 'software_update_emss_tp', -CRITICAL => 1, -EXECUTION_PARAMS => {-TARGET => "/home/emssim/LOADS/$sw_version/ENB_release_BTSSM_downloadable_wo_images.zip",-DESIRED_VERSION => $sw_version, -USE_NEWEST_BUILD => 'YES', -RELEASE => $release}},
+];
+
+## ADDITIONAL FLAGS IF NEEDED
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-NON_BLOCKING_POST}               = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PACKING_SYSLOG_FILES}            = 'NO';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPDATE_DB}                       = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-UPLOAD_TO_REP_PORTAL}            = 'YES';
+# $::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV}              = 'NO';
+
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-GENERATE_COMMON_DEVICES}{-CREDENTIALS}{-PASSWORD}    = 'ssp123!!Macro';
+
+$::RTV{LAUNCHER}->{TCS} = [# "wait_for_build_on_emss",
+
+
+#----------------------------------------------------------------------------
+
+# "software_update",
+# "newest_software_update",
+
+
+#-----------------------------------------------------------------------------
+#TCs with FBBC  - | lmts_fbbc.ini
+#-----------------------------------------------------------------------------
+  # "Turn_on_TL022",
+ ##  "Commission_epc_sim_fbba_20MHz_DL", #run if  you do not want congiguration changes  
+  # "Commission_epc_sim_fbba_20MHz_DL_plusLmtsConf",
+	  # "Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_1500_FSMF_FBBx_BW-20",
+	  # ];my $a=[
+	  # "Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_1500_FSMF_FBBx_BW-20",#*
+ # "Commission_epc_sim_fbbc_5_10_15MHz_DL",
+	  # "Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_max1250_FSMF_FBBx_BW_5_10_15",
+ # "Commission_epc_sim_fbbc_5_10_15MHz_UL",
+	  # "Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_max1250_FSMF_FBBx_BW_5_10_15",
+	
+  "Turn_off_TL022",
+	
+		
+#-----------------------------------------------------------------------------
+	# 1.4MHz 6xcells | lmts.ini_6cells_FXFA_TL69  | lmts.ini_6cells_FXFA.ini
+# -----------------------------------------------------------------------------	
+
+  'Commissioning_LTEPETOUTL69_BTS_1.4MHz__6cells_FL17_plus_lmtsConf',
+	  'Automated_eNB_Capacity__User_amount_with_FSMF__BW-1_4__UE-240_SIMO_6cells',#*
+	  'Automated_BTS_Performance_Total_BTS_Throughput_UL_1_4MHz_SIMO_6cells',
+  'Commissioning_IAV_KRA_TL026_1_4MHz_DL_1x2_6-cell_FL17',  #byl przecinek
+	  'Automated_BTS_Performance_Total_BTS_Throughput_DL_1_4MHz_SIMO_6cells',
+	  'Automated_eNB_Capacity_BHCA_BW_1_4MHz_SIMO_6cells',]; my $a = [
+
+  "Commissioning_LTEPETOUTL69_BTS_3MHz_6cells",
+	  "Automated_BTS_Performance_Total_BTS_Throughput_DL_3MHz_SIMO_6cells",
+	  "Automated_BTS_Performance_Total_BTS_Throughput_UL_3MHz_SIMO_6cells",
+	  "Automated_eNB_Capacity__User_amount_with_FSMF__BW-3__UE-720_SIMO_6cells",
+	  
+###-----------------------------------------------------------------------------
+	#1.4MHz 3xcells | lmts.ini_3cells_TL69,   | lmts.ini_3cells.ini
+###-----------------------------------------------------------------------------	
+
+  'Commissioning_IAV_KRA_BTS_1.4MHz_FL17', #PCMD
+	  'Automated_eNB_Capacity__User_amount_with_FSMF__BW-1_4__UE-120',
+	  'Automated_BTS_Performance_Total_BTS_Throughput_UL_1_4MHz',
+  'Commissioning_KRA_TL026_1_4MHz_dual_stream_3-cell_FL17',  
+	  'Automated_BTS_Performance_Total_BTS_Throughput_DL_1_4MHz_dual_stream_MIMO',
+	  'Automated_eNB_Capacity_BHCA_BW_1_4MHz',
+
+  "Commissioning_LTEPETOUTL69_BTS_3MHz",
+	  "Automated_BTS_Performance_Total_BTS_Throughput_DL_3MHz",
+	  "Automated_BTS_Performance_Total_BTS_Throughput_UL_3MHz",
+	  "Automated_eNB_Capacity_BHCA_BW_3MHz",
+	  "Automated_eNB_Capacity__User_amount_with_FSMF__BW-3__UE-360",
+
+#-----------------------------------------------------------------------------
+	# 20MHz 3xcells scheduled users | lmts.ini_3cells_TL69, | lmts.ini_3cells.ini
+# -----------------------------------------------------------------------------	
+
+  'Commissioning_IAVKRATL026_20MHz_FL17',
+	  'Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_DL_120mbps_FSMF_BW-20',
+	  'Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_UL_35mbps_FSMF_BW-20',
+	
+	
+	 # "Turn_on_TL022",
+ # "Commissioning_IAVKRATL026_20MHz_FL17_with_FBBC",
+	 # 'Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_UL_35mbps_FSMF_with_FBBC_BW-20_2',
+	 # "Automated_eNB_Capacity_Actively_scheduled_users_mixed_pr_UL_35mbps_FSMF_FBBC_BW-20",
+	 # "Turn_off_TL022",
+	
+	
+#-----------------------------------------------------------------------------
+#	#4cell shared BBpool  |  lmts_4cellBB_TL26.ini 
+#-----------------------------------------------------------------------------
+
+### 'Commissioning_BTS_5MHz_4cell_sharedBB_userAmount', #run if  you do not want TL congiguration changes  
+"Commissioning_BTS_5MHz_4cell_sharedBB_userAmount_plus_lmtsConf",
+	 'Automated_eNB_Capacity__User_amount_with_FSMF_shared_BB_pool__BW-5__UE-1260',
+ 'Commissioning_BTS_5MHz_4cell_sharedBB',
+	 'Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF_shared_BB_pool__BW-5__UE-1260',
+	 'Automated_eNB_Capacity__Actively_scheduled_users_full_UL_UDP_with_FSMF_shared_BB_pool__BW-5__UE-1260',
+	 'Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF_shared_BB_pool__BW-5__RATE-150', 
+	 'Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_DL_with_FSMF_shared_BB_pool_7UE_14TB__BW-5',
+	 'Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_shared_BB_pool_7UE_7TB__BW-5', 
+ 'Commissioning_BTS_5MHz_4cell_sharedBB_Throughput',
+	 'Automated_eNB_Capacity__Throughput_UL_UDP_with_FSMF_shared_BB_pool__BW-5', 
+	 'Automated_eNB_Capacity__Throughput_DL_UDP_with_FSMF_shared_BB_pool__BW-5', 
+	 'Automated_eNB_Capacity__Throughput_simultaneous_DL_UL_UDP_with_FSMF_shared_BB_pool__BW-5', 
+	
+"Commissioning_BTS_10MHz_4cell_sharedBB",
+	 'Automated_eNB_Capacity__Actively_scheduled_users_full_DL_UDP_with_FSMF_shared_BB_pool__BW-10__UE-1260', 
+	 'Automated_eNB_Capacity__Actively_scheduled_users_full_UL_UDP_with_FSMF_shared_BB_pool__BW-10__UE-1260', 
+     'Automated_eNB_Capacity__User_amount_with_FSMF_shared_BB_pool__BW-10__UE-1260', 
+	 'Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF_shared_BB_pool__BW-10__RATE-90',
+	 'Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF_shared_BB_pool__BW-10__RATE-90',
+	 'Automated_eNB_Capacity__Intra_eNB_handover_performance_with_FSMF_shared_BB_pool__BW-10__RATE-150', 
+ 'Commissioning_BTS_10MHz_4cell_sharedBB_Throughput',
+	 'Automated_eNB_Capacity__Throughput_simultaneous_DL_UL_UDP_with_FSMF_shared_BB_pool__BW-10',	
+
+
+#-----------------------------------------------------------------------------	
+#	Throughputs with UEs 50-xxx | lmts_3cellsTL26.ini| lmts.ini_HO3cell
+#-----------------------------------------------------------------------------
+
+  "Commissioning_5_10_15MHz_tput_standalone_FRGP_to_max720UE_DL_plus_lmtsConf",
+ 	  'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_max720_FSMF__BW-5_10_15',
+  "Commissioning_5_10_15MHz_tput_standalone_FRGP_to_max720UE_UL",
+	  'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_max720_FSMF__BW-5_10_15',
+  "Commissioning_20MHz_tput_standalone_FRGP_to840UE_DL",
+	  'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_840_FSMF__BW-20',
+  "Commissioning_20MHz_tput_standalone_FRGP_to840UE_UL",
+	  'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_840_FSMF__BW-20',
+	
+	
+#-----------------------------------------------------------------------------
+#	#NFTRs from OUL |  lmts_3cellsTL26.ini | epc_cfg_nftr1.lua | lmts.ini_HO3cell
+#-----------------------------------------------------------------------------
+ 'Commissionig_nftr_tc15_firstVoLTEUE_1',
+	 'Automated_eNB_Capacity_Static_Users_max_numberNBR_600_firstVoLTEUE',#*
+	 'Automated_eNB_Capacity_Static_Users_max_numberNBR_600_firstDataUE',	
+
+	
+#-----------------------  re-exacution -----------------------------------
+
+	
+	
+########################################################################################
+# TESTS BEFORE MERGE
+########################################################################################	
+# "Commissioning_5MHz_tput_standalone_FRGP_to480UE_DL",
+# "Commissioning_5MHz_tput_standalone_FRGP_to480UE_DL_plus_lmtsConf",
+	# 'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_480_FSMF__BW-5',
+# "Commissioning_5MHz_tput_standalone_FRGP_to480UE_UL",
+	# 'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_480_FSMF__BW-5',
+# "Commissioning_10MHz_tput_standalone_FRGP_to600UE_DL",
+	# 'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_600_FSMF__BW-10',
+# "Commissioning_10MHz_tput_standalone_FRGP_to600UE_UL",
+	# 'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_600_FSMF__BW-10',
+# "Commissioning_15MHz_tput_standalone_FRGP_to720UE_DL",
+	# 'Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_720_FSMF__BW-15',#*
+# "Commissioning_15MHz_tput_standalone_FRGP_to720UE_UL",
+	# 'Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_720_FSMF__BW-15',
+		
+#----------------------------- -------------------- -----------------------------------
+# "Commission_epc_sim_fbba_15MHz_DL",
+	# "Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_1250_FSMF_FBBx_BW-15",#*
+	# "Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_1250_FSMF_FBBx_BW-15",#
+	
+# "Commission_epc_sim_fbba_10MHz_UL",	
+	# "Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_1000_FSMF_FBBx_BW-10",#
+# "Commission_epc_sim_fbba_10MHz", 		
+	# "Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_1000_FSMF_FBBx_BW-10",#*
+	
+ # "Commission_epc_sim_fbba_5MHz_UL_Tput",	
+	# "Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_840_FSMF_FBBx_BW-5",#*
+# "Commission_epc_sim_fbba_5MHz_Tput", 	
+	# "Automated_eNB_Capacity__Throughput_DL_UEs_from_50_to_840_FSMF_FBBx_BW-5",#
+		
+];
+
+

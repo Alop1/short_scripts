@@ -1,0 +1,35 @@
+transfer ue_1_tr_mm_default_bearer_ul
+	type udp
+	packetSize 32
+	dir uplink
+	packetRate 146.29
+
+transfer ue_1_tr_mm_default_bearer_dl
+	type udp
+	packetSize 32
+	dir downlink
+	packetRate 536.38
+
+application app_ue_1[ DEFAULT ]
+	startTransfer ue_1_tr_mm_default_bearer_ul on DEFAULT as ue_1_tr_mm_default_bearer_ul_alias
+	startTransfer ue_1_tr_mm_default_bearer_dl on DEFAULT as ue_1_tr_mm_default_bearer_dl_alias
+	wait 86400.0
+	stopTransfer ue_1_tr_mm_default_bearer_ul_alias
+	stopTransfer ue_1_tr_mm_default_bearer_dl_alias
+
+
+mobileSession ue_1
+	connectBearer DEFAULT as DEFAULT_alias
+	startApplication app_ue_1[ DEFAULT_alias  ] as app_ue_1_alias &
+	wait 86400.0
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+testScenario
+	ue_1
+		cells[ 1 ]
+		delayToStart 0.5 s
+		rate 2/s
+		activityIntervalLength 419.75 s
+		ueCapabilities utraFDD
+

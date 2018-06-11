@@ -1,0 +1,70 @@
+#############################################################
+# 120 UE per eNB - 60 per cell - TCP
+#
+# Default per cell  DL: 105.6 Mbit/s    UL: 30.4 Mbit/s
+# ===========================================================
+# TOTAL: 	     DL: 211.2 Mbit/s   UL: 60.8 Mbit/s
+#
+#
+# Step 1
+# 30 attach/detach per sec (1st carrier))
+# Step 2
+# 30 attach/detach per sec (2nd carrier)
+#############################################################
+
+transfer TransferDL
+	type udp
+	packetSize 2200
+	dir downlink
+	packetRate 100.0
+
+transfer TransferUL
+	type udp
+	packetSize 1900
+	dir uplink
+	packetRate 100.0
+	
+	
+	
+application AppTransferShort [ bearerPDN ] 
+	startTransfer TransferDL on bearerPDN as sampleTransferShortPDNDL 
+	startTransfer TransferUL on bearerPDN as sampleTransferShortPDNUL 
+	wait 2
+	stopTransfer sampleTransferShortPDNDL 
+	stopTransfer sampleTransferShortPDNUL
+	
+
+	
+mobileSession testSessionStep_1
+	connectBearer DEFAULT as stream5 
+	startApplication AppTransferShort [ stream5 ] as myAppTransferShort5 &
+	wait applicationsFinish [ myAppTransferShort5 ]
+	releaseBearer stream5
+	
+	
+mobileSession testSessionStep_2
+	connectBearer DEFAULT as stream6
+	startApplication AppTransferShort [ stream6 ] as myAppTransferShort6 &
+	wait applicationsFinish [ myAppTransferShort6 ]
+	releaseBearer stream6
+		
+testScenario
+	
+	#######################################################################################
+	# Step 1
+	# 100 attach/detach per sec (1st carrier))
+	#######################################################################################	
+	testSessionStep_1
+		rate 15/s
+		cells[1]
+		ueCapabilities cat5
+		
+	#######################################################################################
+	# Step 2
+	# 100 attach/detach per sec (2nd carrier)
+	#######################################################################################	
+	testSessionStep_2
+		rate 15/s
+		cells[2]
+		ueCapabilities cat5
+		

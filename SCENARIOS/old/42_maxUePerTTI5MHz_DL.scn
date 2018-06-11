@@ -1,0 +1,28 @@
+	
+transfer sampleTransferDescriptionDL
+	type udp
+	packetSize 1450
+	packetRate 405.0
+	dir downlink
+
+
+application AppDL [ bearer ]
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+	wait 27000
+	stopTransfer sampleTransfer1 
+	wait 11
+
+	
+mobileSession testSessionDL
+	connectBearer DEFAULT as stream
+	startApplication AppDL [ stream ] as myApp
+	wait applicationsFinish [ myApp ]	
+	releaseBearer stream
+
+
+testScenario
+  testSessionDL
+	rate 6/s
+	cells[1 2 3]
+	activityIntervalLength 3.4 s
+

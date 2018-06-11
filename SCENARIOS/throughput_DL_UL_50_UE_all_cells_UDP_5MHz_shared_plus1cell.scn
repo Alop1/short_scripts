@@ -1,0 +1,44 @@
+#	
+transfer sampleTransferDescriptionUL
+	type udp
+	packetSize 1400
+	packetRate 22.5
+    dir uplink
+# 50*1400*22.5*8=12.6Mbps
+# achieved on LMTS: 18.4 with Nloss=73%
+	
+application AppUL [ bearer ]
+	startTransfer sampleTransferDescriptionUL on bearer as sampleTransfer1 
+	wait 2700
+	stopTransfer sampleTransfer1 
+	wait 11
+
+	
+transfer sampleTransferDescriptionDL
+	type udp
+	packetSize 1450
+	packetRate 66.5
+	dir downlink
+# 50*1450*66.5*8=38.57Mbps	
+# achieved on LMTS: 77.2 with Nloss=75.5 %
+
+application AppDL [ bearer ]
+	startTransfer sampleTransferDescriptionDL on bearer as sampleTransfer1 
+	wait 2700
+	stopTransfer sampleTransfer1 
+	wait 11
+	
+mobileSession testSessionDL
+	connectBearer DEFAULT as stream
+	startApplication AppDL [ stream ] as myApp &
+	startApplication AppUL [ stream ] as myAppUL 
+	wait applicationsFinish [ myApp ]	
+	wait applicationsFinish [ myAppUL ]	
+	releaseBearer stream
+
+testScenario
+  testSessionDL
+	rate 20/s
+	cells[1 2 3 4]
+	activityIntervalLength 9.96 s
+

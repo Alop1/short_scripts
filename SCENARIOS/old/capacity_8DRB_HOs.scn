@@ -1,0 +1,334 @@
+#
+transfer TransferDL
+	type udp
+	packetSize 36
+	dir downlink
+	packetRate 0.1
+
+
+transfer TransferUL
+        type udp
+        packetSize 36
+        dir uplink
+        packetRate 0.1
+
+
+
+application App [ bearer ]
+	startTransfer TransferDL on bearer as sampleTransferDL
+	wait 2
+    startTransfer TransferUL on bearer as sampleTransferUL
+	wait 6000
+    stopTransfer sampleTransferDL
+	wait 2
+	stopTransfer sampleTransferUL
+
+application App2 [ bearer ]
+	startTransfer TransferDL on bearer as sampleTransferDL
+	wait 2
+    startTransfer TransferUL on bearer as sampleTransferUL
+	wait 6000
+    stopTransfer sampleTransferDL
+	wait 2
+	stopTransfer sampleTransferUL
+
+application App3 [ bearer ]
+	startTransfer TransferDL on bearer as sampleTransferDL
+	wait 2
+    startTransfer TransferUL on bearer as sampleTransferUL
+	wait 6000
+    stopTransfer sampleTransferDL
+	wait 2
+	stopTransfer sampleTransferUL
+
+	
+bearerQoS Bearer1
+	qci		1
+	mbr_uplink	20
+	mbr_downlink	10
+	gbr_uplink	20
+	gbr_downlink	10
+	network_initiated FALSE
+
+bearerQoS Bearer2
+	qci             2
+	mbr_uplink      20
+	mbr_downlink    10
+	gbr_uplink      20
+	gbr_downlink    10
+	network_initiated FALSE
+
+bearerQoS Bearer3
+	qci             3
+	mbr_uplink      20
+	mbr_downlink    10
+	gbr_uplink      20
+	gbr_downlink    10
+	network_initiated FALSE
+
+bearerQoS Bearer4
+	qci             4
+	mbr_uplink      20
+	mbr_downlink    10
+	gbr_uplink      20
+	gbr_downlink    10
+	network_initiated FALSE
+
+bearerQoS Bearer5
+	qci             5
+
+bearerQoS Bearer6
+	qci             6
+
+bearerQoS Bearer7
+	qci             7
+
+
+bearerQoS Bearer8
+	qci		8
+
+
+mobileSession testSession1
+	connectBearer DEFAULT as stream
+	startApplication App [ stream ] as myApp &
+	wait 8
+#	connectBearer Bearer1 as stream1
+#	startApplication App [ stream1 ] as myApp1 &
+#	wait 4
+#	connectBearer Bearer2 as stream2
+#	startApplication App [ stream2 ] as myApp2 &
+#	wait 4
+#	connectBearer Bearer3 as stream3
+#	startApplication App [ stream3 ] as myApp3 &
+#	wait 4
+	connectBearer Bearer1 as stream4
+	startApplication App [ stream4 ] as myApp4 &
+	wait 8
+	connectBearer Bearer5 as stream5
+	startApplication App [ stream5 ] as myApp5 &
+	wait 8
+	connectBearer Bearer6 as stream6
+	startApplication App [ stream6 ] as myApp6 &
+	wait 8
+	connectBearer Bearer7 as stream7
+	startApplication App [ stream7 ] as myApp7 &
+	wait 8
+	connectBearer Bearer8 as stream8
+	startApplication App [ stream8 ] as myApp8 &
+	wait  8
+	
+	
+	
+	
+	
+	
+	1200x
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 1
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+	wait allApplicationsFinish
+#	releaseBearer stream
+#	wait 2
+#	releaseBearer stream1
+#	wait 2
+#	releaseBearer stream2
+#	wait 2
+#	releaseBearer stream3
+#	wait 2
+	releaseBearer stream4
+	wait 2
+	releaseBearer stream5
+	wait 2
+	releaseBearer stream6
+	wait 2
+	releaseBearer stream7
+	wait 2
+	releaseBearer stream8
+
+mobileSession testSession2
+	connectBearer DEFAULT as stream2
+	startApplication App2 [ stream2 ] as myApp &
+	wait 8
+#	connectBearer Bearer1 as stream1
+#	startApplication App [ stream1 ] as myApp1 &
+#	wait 4
+#	connectBearer Bearer2 as stream2
+#	startApplication App [ stream2 ] as myApp2 &
+#	wait 4
+#	connectBearer Bearer3 as stream3
+#	startApplication App [ stream3 ] as myApp3 &
+#	wait 4
+	connectBearer Bearer1 as stream4
+	startApplication App2 [ stream4 ] as myApp4 &
+	wait 8
+	connectBearer Bearer5 as stream5
+	startApplication App2 [ stream5 ] as myApp5 &
+	wait 8
+	connectBearer Bearer6 as stream6
+	startApplication App2 [ stream6 ] as myApp6 &
+	wait 8
+	connectBearer Bearer7 as stream7
+	startApplication App2 [ stream7 ] as myApp7 &
+	wait 8
+	connectBearer Bearer8 as stream8
+	startApplication App2 [ stream8 ] as myApp8 &
+	wait 8
+	1200x
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 1
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2	
+		wait 3
+	wait allApplicationsFinish
+#	releaseBearer stream
+#	wait 2
+#	releaseBearer stream1
+#	wait 2
+#	releaseBearer stream2
+#	wait 2
+#	releaseBearer stream3
+#	wait 2
+	releaseBearer stream4
+	wait 2
+	releaseBearer stream5
+	wait 2
+	releaseBearer stream6
+	wait 2
+	releaseBearer stream7
+	wait 2
+	releaseBearer stream8
+
+mobileSession testSession3
+	connectBearer DEFAULT as stream3
+	startApplication App3 [ stream3 ] as myApp &
+	wait 8
+#	connectBearer Bearer1 as stream1
+#	startApplication App [ stream1 ] as myApp1 &
+#	wait 4
+#	connectBearer Bearer2 as stream2
+#	startApplication App [ stream2 ] as myApp2 &
+#	wait 4
+#	connectBearer Bearer3 as stream3
+#	startApplication App [ stream3 ] as myApp3 &
+#	wait 4
+	connectBearer Bearer1 as stream4
+	startApplication App3 [ stream4 ] as myApp4 &
+	wait 8
+	connectBearer Bearer5 as stream5
+	startApplication App3 [ stream5 ] as myApp5 &
+	wait 8
+	connectBearer Bearer6 as stream6
+	startApplication App3 [ stream6 ] as myApp6 &
+	wait 8
+	connectBearer Bearer7 as stream7
+	startApplication App3 [ stream7 ] as myApp7 &
+	wait 8
+	connectBearer Bearer8 as stream8
+	startApplication App3 [ stream8 ] as myApp8 &
+	wait 8
+	1200x
+		handover to 2	
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 1
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+		handover to 1
+		wait 3
+		handover to 2
+		wait 3
+		handover to 3
+		wait 3
+	wait allApplicationsFinish
+#	releaseBearer stream
+#	wait 2
+#	releaseBearer stream1
+#	wait 2
+#	releaseBearer stream2
+#	wait 2
+#	releaseBearer stream3
+#	wait 2
+	releaseBearer stream4
+	wait 2
+	releaseBearer stream5
+	wait 2
+	releaseBearer stream6
+	wait 2
+	releaseBearer stream7
+	wait 2
+	releaseBearer stream8
+	
+testScenario
+  testSession1
+	rate 10.0/s
+	cells[1]
+	activityIntervalLength 0.97 s
+ueCapabilities example1
+
+  testSession2
+	rate 10.0/s
+	cells[2]
+	activityIntervalLength 0.97 s
+	delayToStart 2.0 s
+ueCapabilities example1
+
+  testSession3
+	rate 10.0/s
+	cells[3]
+	activityIntervalLength 0.97 s
+	delayToStart 5.0 s
+ueCapabilities example1
+
+

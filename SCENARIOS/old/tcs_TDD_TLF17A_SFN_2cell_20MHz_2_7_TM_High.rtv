@@ -1,0 +1,127 @@
+#!/usr/bin/perl
+
+use Storable qw(dclone);
+require 'PET/TCSDEF/TM_FZM_default.rtv';
+
+#Author: Tomasz Kowal
+my $test_line_id = $::RTV{PAF_PARAMS}{-SETUP}{-TESTLINE};
+$::RTV{PAF_PARAMS}{-TEST}{-DOMAIN} = 'SC-PET_Longevity';
+#--------------------------------------------------------------------------------------------
+
+my $enb_id = $::RTV{SST_LIB}->{-SETUP_VAR}->{-ENB_ID}->[0];
+my $datestring = localtime();
+#my $date = $datestring =~ s/\s//g;
+$datestring =~ s/['\:']//g;
+$datestring =~ tr/ //ds;
+my $stability_commands = {
+    -START_COMMANDS => {
+        'EPCSIM'          => [ 'sgw_stats id=1 clear', 'pgw_stats id=1 clear', 'sgw_stats id=1', 'pgw_stats id=1' ],
+        },
+    -COMMANDS => {
+        },
+    -END_COMMANDS => {
+        'EPCSIM'          => [ 'sgw_stats id=1', 'pgw_stats id=1' ],
+        },
+    };
+
+ $::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-PERFORM_ENB_COMMISSIONING}{-ENB_NAMES}                     = ['ENB1_FZP_SFN1_MASTER', ];    
+    
+my $periodical_enb_cmds = {    
+    -COMMANDS => {
+                'ENB\d_LSP'          => "/vobs/sstlib_scripts/LTE/FA_SSP/conf/CMD/FZM_PET/enb_lsp_transport",
+    }
+};
+                        
+#--------------------------------------------------------------------------------------------
+
+$::RTV{LAUNCHER}->{CONFIG} = {
+-EVAL_MODE => 1,
+# TCS - run TCs declared in TCS section or passed by --tc parameters
+# TGS - run TCs from TGs declared in TGS section or passed by --tg parameters
+# TCS_DEF - TCs defined in TCS_DEF section - default
+-TCS_MODE => 'TCS',
+
+};
+
+
+
+$::RTV{PAF_PARAMS}{-TEST}{-DURATION} = 1*60*60;
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-COLLECT_BENCHMARK_STATS}{-PERIOD_TIME}         = 180;
+	
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PERFORM_ENB_COMMISSIONING}      = 'YES';	#changed
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-PREPARE_UE_SIM_ENV}{-LMTS}{-LMTS_CONFIG_UPDATE}= 'YES';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PRECHECK_UE_SIM_ENV} = 'YES';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-RUN_PERIODICAL_CMDS}      = 'YES';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-RUN_UNIVERSAL_OBSERVER}      = 'YES';
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-FAKE_PAGGING}      = 'YES';
+$::RTV{PAF_PARAMS}{-DETAILS_PARAMS}{-RUN_PERIODICAL_CMDS}{-UNIV_MMI_CMD} = $stability_commands;
+$::RTV{PAF_PARAMS}{-FEATURE_FLAG}{-PREPARE_UE_SIM_ENV} = 'YES';
+
+
+################################################################################################################
+$::RTV{LAUNCHER}->{TCS_DEF} = [
+
+################################TEST CASES#######################################################################
+
+
+#CAPACITY
+
+{
+-TC => "TDD_TLF17A_SFN_2cell_20MHz_TM_High", -TP => 'PAF',
+-EXECUTION_PARAMS => {
+    -TEST => {
+    },
+    -FEATURE_FLAG => {
+		-REMOVE_SWCONFIG                => 'NO',
+		-COLLECT_DDR_STATS => 'YES',		
+    },
+    -DETAILS_PARAMS => {
+        -START_SCENARIO             => {
+            -SCENARIO_NAME              => "TDD_TLF17A_SFN_2cell_20MHz_TM_High",
+        },  
+    	-GENERATE_KPI_EXCEL => {
+            	-GENERATE_NEW_KPI_EXCEL        => YES,
+	},
+        -FAKE_PAGGING       => {
+            -PAGING_VALUES => [
+            {
+            -ENB_ID             => '1',
+            -FAKE_PAGING_RATE   => '44',
+            },
+            ],
+        },
+        
+            
+            
+        -PERFORM_ENB_COMMISSIONING  => {
+            -FILES                      => [ "TLF17A_SFN_2cell_11antennas_2_7_20MHz_TM_with_FZP-TDD-099_SFN_FZP-TDD-102.xml", ],
+        },           
+        # -PREPARE_UE_SIM_ENV => {
+            # -LMTS => {
+                # -FEATURE => {
+                    # -LMTS_CONFIG_UPDATE          => {
+                        # -SOURCE_FILE                => "lmts_1cell_20MHz_earfcn_39000_$test_line_id.ini",
+                    # },
+                # },
+            # },
+        # },
+        # -UPLOAD_TO_REP_PORTAL       => {
+            # -TC_QC                      => "FZAP Indoor - Minimum 200 Active CA UEs per cell with 2 cell CA 20MHz 1_7",
+        # },
+    },
+    -POST => {        
+       	-VALIDATION_RULESETS => ['PRT_cellSector1_LMTS_Transffer_Success_Rate_protocol_UDP_commonParameter','PRT_cellSector1_Success_Rate_Attach_BearerResourceAllocation_commonParameter','PRT_UE_Failures_Count_commonParameter','PRT_cellSector2_LMTS_Transffer_Success_Rate_protocol_UDP_commonParameter','PRT_cellSector2_Success_Rate_Attach_BearerResourceAllocation_commonParameter'],
+
+    },
+},
+},
+
+];
+
+
+#################################################################################################################
+$::RTV{LAUNCHER}->{TCS} = [
+
+"TDD_TLF17A_SFN_2cell_20MHz_TM_High",
+
+];

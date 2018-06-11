@@ -1,0 +1,77 @@
+transfer ue_traffic_tr1_default_bearer_ul
+	type tcp
+	packetSize 1400
+	dir uplink
+	packetRate 3.4
+
+transfer ue_traffic_tr1_default_bearer_dl
+	type tcp
+	packetSize 1400
+	dir downlink
+	packetRate 33.37
+
+transfer ue_traffic_tr1_qci7_bearer_ul
+	type tcp
+	packetSize 1400
+	dir uplink
+	packetRate 3.4
+
+transfer ue_traffic_tr1_qci7_bearer_dl
+	type tcp
+	packetSize 1400
+	dir downlink
+	packetRate 33.37
+
+bearerQoS ue_traffic_tr1_qci7
+	qci 7
+	network_initiated FALSE
+
+transfer ue_traffic_tr1_qci8_bearer_ul
+	type tcp
+	packetSize 1400
+	dir uplink
+	packetRate 3.4
+
+transfer ue_traffic_tr1_qci8_bearer_dl
+	type tcp
+	packetSize 1400
+	dir downlink
+	packetRate 33.37
+
+bearerQoS ue_traffic_tr1_qci8
+	qci 8
+	network_initiated FALSE
+
+application app_ue_traffic[ DEFAULT ue_traffic_tr1_qci8 ue_traffic_tr1_qci7 ]
+	startTransfer ue_traffic_tr1_default_bearer_ul on DEFAULT as ue_traffic_tr1_default_bearer_ul_alias
+	startTransfer ue_traffic_tr1_qci7_bearer_ul on ue_traffic_tr1_qci7 as ue_traffic_tr1_qci7_bearer_ul_alias
+	startTransfer ue_traffic_tr1_qci8_bearer_ul on ue_traffic_tr1_qci8 as ue_traffic_tr1_qci8_bearer_ul_alias
+	startTransfer ue_traffic_tr1_default_bearer_dl on DEFAULT as ue_traffic_tr1_default_bearer_dl_alias
+	startTransfer ue_traffic_tr1_qci7_bearer_dl on ue_traffic_tr1_qci7 as ue_traffic_tr1_qci7_bearer_dl_alias
+	startTransfer ue_traffic_tr1_qci8_bearer_dl on ue_traffic_tr1_qci8 as ue_traffic_tr1_qci8_bearer_dl_alias
+	wait 259200.0
+	stopTransfer ue_traffic_tr1_default_bearer_ul_alias
+	stopTransfer ue_traffic_tr1_qci7_bearer_ul_alias
+	stopTransfer ue_traffic_tr1_qci8_bearer_ul_alias
+	stopTransfer ue_traffic_tr1_default_bearer_dl_alias
+	stopTransfer ue_traffic_tr1_qci7_bearer_dl_alias
+	stopTransfer ue_traffic_tr1_qci8_bearer_dl_alias
+
+
+mobileSession ue_traffic
+	connectBearer DEFAULT as DEFAULT_alias
+	connectBearer ue_traffic_tr1_qci8 as ue_traffic_tr1_qci8_alias
+	connectBearer ue_traffic_tr1_qci7 as ue_traffic_tr1_qci7_alias
+	startApplication app_ue_traffic[ DEFAULT_alias ue_traffic_tr1_qci8_alias ue_traffic_tr1_qci7_alias  ] as app_ue_traffic_alias &
+	wait 259200.0
+	wait allApplicationsFinish
+	releaseBearer DEFAULT_alias
+
+testScenario
+	ue_traffic
+		cells[ 1 ]
+		rate 10/s
+		activityIntervalLength 19.999 s
+		ueCapabilities simple1
+
+
