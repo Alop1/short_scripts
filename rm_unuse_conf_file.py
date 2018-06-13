@@ -133,8 +133,16 @@ def main():
     # random_forest.test_model()
 
     finder = Conf_test_finder(random_forest.tests_list)
-    cleaner = Cleaner(finder.test_and_conf)
-    cleaner.start_celeaning()
+    # for test,conf in  finder.test_and_conf:
+    #     print "{} do testu {}".format(conf, test)
+
+    dict = {test_name: conf for ( test_name, conf) in finder.test_and_conf}
+    print dict
+    import json
+    with open('jason_scenarios.json', 'w') as f:
+        json.dump(dict, f)
+    # cleaner = Cleaner(finder.test_and_conf)
+    # cleaner.start_celeaning()
 
 
 

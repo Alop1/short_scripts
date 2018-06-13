@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4c2c2279-a0f9-415d-9d34-6bfea205fc60" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/scenarios_sed.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/rm_unuse_conf_file.py" afterPath="$PROJECT_DIR$/rm_unuse_conf_file.py" />
     </list>
@@ -24,11 +25,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="rm_unuse_conf_file.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="rm_unuse_conf_file.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/rm_unuse_conf_file.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="646">
-              <caret line="38" column="55" lean-forward="true" selection-start-line="38" selection-start-column="55" selection-end-line="38" selection-end-column="55" />
+            <state relative-caret-position="920">
+              <caret line="135" column="45" lean-forward="true" selection-start-line="135" selection-start-column="45" selection-end-line="135" selection-end-column="45" />
               <folding>
                 <element signature="e#0#65#0" expanded="true" />
               </folding>
@@ -36,11 +37,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AI_recognize_test.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="scenarios_sed.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scenarios_sed.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="323">
+              <caret line="19" column="0" lean-forward="true" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AI_recognize_test.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AI_recognize_test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="867">
-              <caret line="183" column="0" lean-forward="false" selection-start-line="183" selection-start-column="0" selection-end-line="183" selection-end-column="0" />
+            <state relative-caret-position="357">
+              <caret line="27" column="38" lean-forward="true" selection-start-line="27" selection-start-column="38" selection-end-line="27" selection-end-column="38" />
               <folding />
             </state>
           </provider>
@@ -73,6 +86,7 @@
       <find>slowo</find>
       <find>tests_list</find>
       <find>Old_file_cleaner</find>
+      <find>Automated_eNB_Capacity__Maximum_number_of_UEs_per_TTI_in_UL_with_FSMF_shared_BB_pool_7UE_7TB__BW</find>
       <find>SCENARIO_NAME</find>
     </findStrings>
   </component>
@@ -85,10 +99,13 @@
         <option value="$PROJECT_DIR$/get_training_data.py" />
         <option value="$PROJECT_DIR$/AI_recognize_test.py" />
         <option value="$PROJECT_DIR$/rm_unuse_conf_file.py" />
+        <option value="$PROJECT_DIR$/scenarios_sed.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="x" value="47" />
+    <option name="y" value="-8" />
     <option name="width" value="1598" />
     <option name="height" value="898" />
   </component>
@@ -136,7 +153,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.rm_unuse_conf_file">
+  <component name="RunManager" selected="Python.scenarios_sed">
     <configuration name="AI_recognize_test" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -188,16 +205,35 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
-    <list size="3">
+    <configuration name="scenarios_sed" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Python27\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scenarios_sed.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+    </configuration>
+    <list size="4">
       <item index="0" class="java.lang.String" itemvalue="Python.AI_recognize_test" />
       <item index="1" class="java.lang.String" itemvalue="Python.rm_unuse_conf_file" />
       <item index="2" class="java.lang.String" itemvalue="Python.get_training_data" />
+      <item index="3" class="java.lang.String" itemvalue="Python.scenarios_sed" />
     </list>
     <recent_temporary>
-      <list size="3">
-        <item index="0" class="java.lang.String" itemvalue="Python.rm_unuse_conf_file" />
-        <item index="1" class="java.lang.String" itemvalue="Python.AI_recognize_test" />
-        <item index="2" class="java.lang.String" itemvalue="Python.get_training_data" />
+      <list size="4">
+        <item index="0" class="java.lang.String" itemvalue="Python.scenarios_sed" />
+        <item index="1" class="java.lang.String" itemvalue="Python.rm_unuse_conf_file" />
+        <item index="2" class="java.lang.String" itemvalue="Python.AI_recognize_test" />
+        <item index="3" class="java.lang.String" itemvalue="Python.get_training_data" />
       </list>
     </recent_temporary>
   </component>
@@ -205,7 +241,7 @@
     <option name="remove_strategy" value="false" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25586355" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -323,21 +359,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/rm_unuse_conf_file.py">
+    <entry file="file://$PROJECT_DIR$/scenarios_sed.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="646">
-          <caret line="38" column="55" lean-forward="true" selection-start-line="38" selection-start-column="55" selection-end-line="38" selection-end-column="55" />
+        <state relative-caret-position="323">
+          <caret line="19" column="0" lean-forward="true" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
           <folding>
-            <element signature="e#0#65#0" expanded="true" />
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AI_recognize_test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="867">
-          <caret line="183" column="0" lean-forward="false" selection-start-line="183" selection-start-column="0" selection-end-line="183" selection-end-column="0" />
+        <state relative-caret-position="357">
+          <caret line="27" column="38" lean-forward="true" selection-start-line="27" selection-start-column="38" selection-end-line="27" selection-end-column="38" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/rm_unuse_conf_file.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="920">
+          <caret line="135" column="45" lean-forward="true" selection-start-line="135" selection-start-column="45" selection-end-line="135" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#65#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
