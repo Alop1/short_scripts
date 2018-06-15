@@ -55,24 +55,25 @@ $::RTV{LAUNCHER}->{TCS} = [# "wait_for_build_on_emss",
  # "Commission_epc_sim_fbbc_5_10_15MHz_UL",
 	  # "Automated_eNB_Capacity__Throughput_UL_UEs_from_50_to_max1250_FSMF_FBBx_BW_5_10_15",
 	
-  "Turn_off_TL022",
+  # "Turn_off_TL022",
 	
 		
 #-----------------------------------------------------------------------------
 	# 1.4MHz 6xcells | lmts.ini_6cells_FXFA_TL69  | lmts.ini_6cells_FXFA.ini
 # -----------------------------------------------------------------------------	
 
-  'Commissioning_LTEPETOUTL69_BTS_1.4MHz__6cells_FL17_plus_lmtsConf',
-	  'Automated_eNB_Capacity__User_amount_with_FSMF__BW-1_4__UE-240_SIMO_6cells',#*
-	  'Automated_BTS_Performance_Total_BTS_Throughput_UL_1_4MHz_SIMO_6cells',
-  'Commissioning_IAV_KRA_TL026_1_4MHz_DL_1x2_6-cell_FL17',  #byl przecinek
-	  'Automated_BTS_Performance_Total_BTS_Throughput_DL_1_4MHz_SIMO_6cells',
-	  'Automated_eNB_Capacity_BHCA_BW_1_4MHz_SIMO_6cells',]; my $a = [
+  # 'Commissioning_LTEPETOUTL69_BTS_1.4MHz__6cells_FL17_plus_lmtsConf',
+	  # 'Automated_eNB_Capacity__User_amount_with_FSMF__BW-1_4__UE-240_SIMO_6cells',#*
+	  # 'Automated_BTS_Performance_Total_BTS_Throughput_UL_1_4MHz_SIMO_6cells',
+  # 'Commissioning_IAV_KRA_TL026_1_4MHz_DL_1x2_6-cell_FL17',  #byl przecinek
+	  # 'Automated_BTS_Performance_Total_BTS_Throughput_DL_1_4MHz_SIMO_6cells',
+	  # 'Automated_eNB_Capacity_BHCA_BW_1_4MHz_SIMO_6cells',]; my $a = [
 
-  "Commissioning_LTEPETOUTL69_BTS_3MHz_6cells",
-	  "Automated_BTS_Performance_Total_BTS_Throughput_DL_3MHz_SIMO_6cells",
-	  "Automated_BTS_Performance_Total_BTS_Throughput_UL_3MHz_SIMO_6cells",
+  # "Commissioning_LTEPETOUTL69_BTS_3MHz_6cells",
+	  # "Automated_BTS_Performance_Total_BTS_Throughput_DL_3MHz_SIMO_6cells",
+	  # "Automated_BTS_Performance_Total_BTS_Throughput_UL_3MHz_SIMO_6cells",
 	  "Automated_eNB_Capacity__User_amount_with_FSMF__BW-3__UE-720_SIMO_6cells",
+	  
 	  
 ###-----------------------------------------------------------------------------
 	#1.4MHz 3xcells | lmts.ini_3cells_TL69,   | lmts.ini_3cells.ini
